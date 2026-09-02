@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Saludo from '../components/Saludo.jsx';
+import '../styles/global.css'; // carga estilos de tailwind
+---
+
+<Layout title="Portfolio - Agustina">
+  <main class="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center p-4 font-sans">
+    <h1 class="text-4xl font-extrabold text-indigo-500 mb-6 tracking-tight">Mi Portfolio Interactivo</h1>
+    <Saludo client:load />
+  </main>
+</Layout>

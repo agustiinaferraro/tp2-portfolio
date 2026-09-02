@@ -1,0 +1,20 @@
+{
+  "name": "portfolio-backend",
+  "version": "0.0.1",
+  "description": "Backend del portfolio: API REST + conexión a MongoDB",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.1.0",
+    "express": "^4.21.2",
+    "mongoose": "^8.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
