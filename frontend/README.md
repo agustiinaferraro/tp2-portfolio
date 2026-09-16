@@ -44,3 +44,9 @@ All commands are run from the root of the project, from a terminal:
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+
+## Deploy
+
+Deployado en Vercel como sitio estático: https://frontend-rose-pi-57.vercel.app
+
+- La variable `PUBLIC_API_URL` (URL del backend) se configura en Vercel y se inlinea en el build.

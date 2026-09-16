@@ -37,3 +37,10 @@ backend/
 El servidor arranca en `http://localhost:4000`.
 
 > Los modelos y rutas de datos se definen según las necesidades del portfolio (ver README de la raíz).
+
+## Deploy
+
+Deployado en Vercel como función serverless: https://backend-delta-two-78.vercel.app
+
+- La variable `MONGODB_URI` se configura en Vercel (no se sube al repositorio).
+- `vercel.json` define el build con `@vercel/node` y enruta todas las peticiones a `server.js`.
