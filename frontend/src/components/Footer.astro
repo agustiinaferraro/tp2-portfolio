@@ -1,0 +1,39 @@
+---
+// Pie de página: navegación, redes y copyright
+const anio = new Date().getFullYear();
+
+const enlaces = [
+  { href: '#inicio', texto: 'Inicio' },
+  { href: '#sobre-mi', texto: 'Sobre mí' },
+  { href: '#proyectos', texto: 'Proyectos' },
+  { href: '#servicios', texto: 'Servicios' },
+  { href: '#contacto', texto: 'Contacto' },
+];
+---
+
+<footer class="border-t border-zinc-800 bg-zinc-950">
+  <div class="max-w-6xl mx-auto px-4 py-10 flex flex-col items-center gap-6 text-center">
+    <a href="#inicio" class="font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+      AG.
+    </a>
+
+    <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+      {
+        enlaces.map((enlace) => (
+          <li>
+            <a
+              href={enlace.href}
+              class="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              {enlace.texto}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="text-sm text-zinc-500">
+      © {anio} Agustina Ferraro · Multimediagus
+    </p>
+  </div>
+</footer>

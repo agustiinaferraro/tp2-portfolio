@@ -1,0 +1,17 @@
+---
+// Sección de Proyectos: marco y título (estáticos)
+// La grilla con los datos dinámicos vive en GrillaProyectos.jsx (isla de React)
+import GrillaProyectos from './GrillaProyectos.jsx';
+---
+
+<section id="proyectos" class="py-24 px-4">
+  <div class="max-w-6xl mx-auto space-y-10">
+    <div class="text-center space-y-3">
+      <h2 class="text-3xl font-bold text-white">Proyectos</h2>
+      <p class="text-zinc-400 max-w-xl mx-auto">
+        Una selección de mis trabajos. Cargados dinámicamente desde la base de datos.
+      </p>
+    </div>
+    <GrillaProyectos client:load />
+  </div>
+</section>

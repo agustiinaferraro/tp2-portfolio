@@ -1,0 +1,17 @@
+---
+// Sección de Servicios: marco y título (estáticos)
+// La grilla con los datos dinámicos vive en GrillaServicios.jsx (isla de React)
+import GrillaServicios from './GrillaServicios.jsx';
+---
+
+<section id="servicios" class="py-24 px-4 bg-zinc-900/40 border-y border-zinc-800/50">
+  <div class="max-w-6xl mx-auto space-y-10">
+    <div class="text-center space-y-3">
+      <h2 class="text-3xl font-bold text-white">Servicios</h2>
+      <p class="text-zinc-400 max-w-xl mx-auto">
+        Lo que puedo ofrecerte para llevar tu proyecto del concepto al resultado.
+      </p>
+    </div>
+    <GrillaServicios client:load />
+  </div>
+</section>

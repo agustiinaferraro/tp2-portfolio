@@ -1,4 +1,4 @@
-// Componente de Proyectos
+// Grilla de Proyectos (parte dinámica de la sección)
 // Se apoya en la capa de datos (api/proyectos.js) para obtener la información
 // Maneja los estados: "cargando", "con datos", "sin datos" y "error"
 import { useEffect, useState } from 'react';

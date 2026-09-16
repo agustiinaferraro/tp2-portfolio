@@ -1,4 +1,4 @@
-// Componente de Servicios
+// Grilla de Servicios (parte dinámica de la sección)
 // Se apoya en la capa de datos (api/servicios.js) para obtener la información
 // Maneja los estados: "cargando", "con datos", "sin datos" y "error"
 import { useEffect, useState } from 'react';
