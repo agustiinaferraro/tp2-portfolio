@@ -1,0 +1,44 @@
+---
+// Componente de navegación
+// Un menú fijo en la parte superior que lleva a cada sección del portfolio
+// Responsive: en pantallas chicas se convierte en un menú desplegable (hamburguesa)
+const enlaces = [
+  { href: '#inicio', texto: 'Inicio' },
+  { href: '#sobre-mi', texto: 'Sobre mí' },
+  { href: '#proyectos', texto: 'Proyectos' },
+  { href: '#servicios', texto: 'Servicios' },
+  { href: '#contacto', texto: 'Contacto' },
+];
+---
+
+<header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
+  <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between" aria-label="Principal">
+    <a href="#inicio" class="font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+      AG.
+    </a>
+
+    <!-- Menú de escritorio (siempre visible en pantallas medianas en adelante) -->
+    <ul class="hidden md:flex items-center gap-6">
+      {
+        enlaces.map((enlace) => (
+          <li>
+            <a
+              href={enlace.href}
+              class="text-sm text-zinc-300 hover:text-white transition-colors"
+            >
+              {enlace.texto}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a
+          href="#contacto"
+          class="text-sm px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors font-medium"
+        >
+          Hablemos
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
