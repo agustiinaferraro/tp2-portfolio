@@ -1,0 +1,28 @@
+---
+// Página dinámica de un servicio: /servicios/[slug]
+// getStaticPaths genera una página por cada servicio (usando la lista estática)
+// El contenido en sí lo trae la API del lado del cliente (ServicioDetalle)
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import ServicioDetalle from '../../components/ServicioDetalle.jsx';
+import { servicios } from '../../data/servicios.js';
+
+export function getStaticPaths() {
+  return servicios.map((servicio) => ({
+    params: { slug: servicio.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const servicioInfo = servicios.find((servicio) => servicio.slug === slug);
+const titulo = servicioInfo?.nombre ?? 'Servicio';
+---
+
+<Layout title={`${titulo} | Agustina Ferraro`}>
+  <Navbar />
+  <main class="pt-16">
+    <ServicioDetalle slug={slug} client:load />
+  </main>
+  <Footer />
+</Layout>

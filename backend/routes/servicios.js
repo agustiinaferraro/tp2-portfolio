@@ -16,4 +16,18 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET a /api/servicios/:slug
+// Devuelve un solo servicio según su slug (ej. /api/servicios/diseno-ux-ui)
+router.get('/:slug', async (req, res) => {
+  try {
+    const servicio = await Servicio.findOne({ slug: req.params.slug });
+    if (!servicio) {
+      return res.status(404).json({ mensaje: 'Servicio no encontrado' });
+    }
+    res.json(servicio);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener el servicio', error: error.message });
+  }
+});
+
 export default router;

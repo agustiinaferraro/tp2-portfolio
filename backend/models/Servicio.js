@@ -8,6 +8,14 @@ const servicioSchema = new mongoose.Schema(
       type: String,
       required: [true, 'El nombre del servicio es obligatorio'],
     },
+    // Identificador amigable para las URLs (ej. /servicios/diseno-ux-ui)
+    slug: {
+      type: String,
+      required: [true, 'El slug del servicio es obligatorio'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     descripcion: {
       type: String,
       default: '',

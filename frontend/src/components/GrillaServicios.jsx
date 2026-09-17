@@ -41,10 +41,20 @@ export default function GrillaServicios() {
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {servicios.map((servicio) => (
         <li key={servicio._id}>
-          <article className="h-full p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-indigo-500/50 transition-colors">
-            <h3 className="text-xl font-bold text-white mb-2">{servicio.nombre}</h3>
-            <p className="text-zinc-400 text-sm leading-relaxed">{servicio.descripcion}</p>
-          </article>
+          <a
+            href={`/servicios/${servicio.slug ?? servicio._id}`}
+            className="block h-full group"
+          >
+            <article className="h-full p-6 rounded-2xl bg-zinc-900 border border-zinc-800 group-hover:border-indigo-500/50 transition-colors flex flex-col">
+              <h3 className="text-xl font-bold text-white mb-2">{servicio.nombre}</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                {servicio.descripcion}
+              </p>
+              <p className="mt-4 text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                Ver más →
+              </p>
+            </article>
+          </a>
         </li>
       ))}
     </ul>

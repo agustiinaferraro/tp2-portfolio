@@ -5,3 +5,8 @@ import { peticionGET } from './client.js';
 export function obtenerServicios() {
   return peticionGET('/api/servicios');
 }
+
+// Devuelve un solo servicio según su slug (ej. diseno-ux-ui)
+export function obtenerServicioPorSlug(slug) {
+  return peticionGET(`/api/servicios/${slug}`);
+}

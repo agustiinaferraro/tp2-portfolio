@@ -1,44 +1,131 @@
 ---
 // Componente de navegación
-// Un menú fijo en la parte superior que lleva a cada sección del portfolio
+// Menú fijo en la parte superior con links a las páginas y anclas del home
 // Responsive: en pantallas chicas se convierte en un menú desplegable (hamburguesa)
+import { servicios } from '../data/servicios.js';
+
+// Anclas que apuntan al home. Al usar "/#..." funcionan desde cualquier página
 const enlaces = [
-  { href: '#inicio', texto: 'Inicio' },
-  { href: '#sobre-mi', texto: 'Sobre mí' },
-  { href: '#proyectos', texto: 'Proyectos' },
-  { href: '#servicios', texto: 'Servicios' },
-  { href: '#contacto', texto: 'Contacto' },
+  { href: '/#inicio', texto: 'Inicio' },
+  { href: '/#sobre-mi', texto: 'Sobre mí' },
+  { href: '/#proyectos', texto: 'Proyectos' },
+  { href: '/#contacto', texto: 'Contacto' },
 ];
 ---
 
 <header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
-  <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between" aria-label="Principal">
-    <a href="#inicio" class="font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+  <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4" aria-label="Principal">
+    <a href="/" class="font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
       AG.
     </a>
 
-    <!-- Menú de escritorio (siempre visible en pantallas medianas en adelante) -->
+    <!-- Menú de escritorio (visible en pantallas medianas en adelante) -->
     <ul class="hidden md:flex items-center gap-6">
       {
         enlaces.map((enlace) => (
           <li>
-            <a
-              href={enlace.href}
-              class="text-sm text-zinc-300 hover:text-white transition-colors"
-            >
+            <a href={enlace.href} class="text-sm text-zinc-300 hover:text-white transition-colors">
               {enlace.texto}
             </a>
           </li>
         ))
       }
       <li>
+        <details class="relative">
+          <summary class="flex items-center gap-1 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors list-none [&::-webkit-details-marker]:hidden">
+            Servicios
+            <span aria-hidden="true">▾</span>
+          </summary>
+          <ul class="absolute left-0 top-full mt-2 w-64 rounded-xl bg-zinc-900 border border-zinc-800 shadow-lg p-2 space-y-1">
+            {
+              servicios.map((servicio) => (
+                <li>
+                  <a
+                    href={`/servicios/${servicio.slug}`}
+                    class="block px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                  >
+                    {servicio.nombre}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </details>
+      </li>
+      <li>
         <a
-          href="#contacto"
+          href="/#contacto"
           class="text-sm px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors font-medium"
         >
           Hablemos
         </a>
       </li>
     </ul>
+
+    <!-- Botón del menú móvil (hamburguesa) -->
+    <button
+      type="button"
+      class="md:hidden flex flex-col items-center justify-center gap-1.5 w-10 h-10 rounded-lg text-zinc-300 hover:text-white transition-colors"
+      aria-label="Abrir menú"
+      aria-expanded="false"
+      data-menu-boton
+    >
+      <span class="block w-6 h-0.5 bg-current"></span>
+      <span class="block w-6 h-0.5 bg-current"></span>
+      <span class="block w-6 h-0.5 bg-current"></span>
+    </button>
   </nav>
+
+  <!-- Menú móvil (oculto, se muestra con el botón) -->
+  <div class="md:hidden hidden border-t border-zinc-800 bg-zinc-950 px-4 py-4" data-menu>
+    <ul class="space-y-1">
+      {
+        enlaces.map((enlace) => (
+          <li>
+            <a href={enlace.href} class="block py-2 text-zinc-300 hover:text-white transition-colors">
+              {enlace.texto}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <p class="text-sm text-zinc-500 pt-3 pb-1">Servicios</p>
+        <ul class="space-y-1">
+          {
+            servicios.map((servicio) => (
+              <li>
+                <a
+                  href={`/servicios/${servicio.slug}`}
+                  class="block py-2 pl-2 text-zinc-300 hover:text-white transition-colors"
+                >
+                  {servicio.nombre}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </li>
+      <li class="pt-3 pb-1">
+        <a
+          href="/#contacto"
+          class="block text-center px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors font-medium"
+        >
+          Hablemos
+        </a>
+      </li>
+    </ul>
+  </div>
 </header>
+
+<script>
+  // Toggle del menú móvil: muestra/oculta el menú y actualiza el botón
+  const boton = document.querySelector('[data-menu-boton]');
+  const menu = document.querySelector('[data-menu]');
+  if (boton && menu) {
+    boton.addEventListener('click', () => {
+      const seAbre = menu.classList.toggle('hidden');
+      boton.setAttribute('aria-expanded', String(!seAbre));
+      boton.setAttribute('aria-label', seAbre ? 'Abrir menú' : 'Cerrar menú');
+    });
+  }
+</script>

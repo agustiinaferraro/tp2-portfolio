@@ -9,29 +9,35 @@ import Servicio from './models/Servicio.js';
 dotenv.config();
 
 // Los 5 servicios que ofrece el portfolio
+// El "slug" es el identificador que aparece en la URL de cada servicio
 const servicios = [
   {
     nombre: 'Desarrollo Full Stack',
+    slug: 'desarrollo-full-stack',
     descripcion:
       'Creación de sitios y aplicaciones web completas, conectando la interfaz de usuario (frontend) con la lógica de negocio, APIs y bases de datos (backend).',
   },
   {
     nombre: 'Diseño UX/UI',
+    slug: 'diseno-ux-ui',
     descripcion:
       'Investigación, prototipos interactivos y diseño de interfaces intuitivas, funcionales y centradas en el usuario.',
   },
   {
     nombre: 'Diseño Gráfico e Identidad',
+    slug: 'diseno-grafico-identidad',
     descripcion:
       'Sistemas de marca, piezas digitales, gráfica publicitaria y material para redes.',
   },
   {
     nombre: 'Edición de Video',
+    slug: 'edicion-de-video',
     descripcion:
       'Montaje audiovisual y contenido adaptado a redes o presentaciones.',
   },
   {
     nombre: 'Motion Graphics / Animación',
+    slug: 'motion-graphics',
     descripcion:
       'Animación 2D y gráficos en movimiento para videos, presentaciones e interfaces.',
   },
