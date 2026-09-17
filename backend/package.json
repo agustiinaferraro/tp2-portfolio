@@ -4,6 +4,8 @@
   "description": "Backend del portfolio: API REST + conexión a MongoDB",
   "type": "module",
   "main": "server.js",
+  "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"

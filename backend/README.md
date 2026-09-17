@@ -19,7 +19,7 @@ backend/
 1. Instalá las dependencias:
 
    ```sh
-   npm install
+   yarn install
    ```
 
 2. Copiá la plantilla de variables de entorno y completá tus datos de MongoDB Atlas:
@@ -31,7 +31,7 @@ backend/
 3. Levantá el servidor en modo desarrollo:
 
    ```sh
-   npm run dev
+   yarn dev
    ```
 
 El servidor arranca en `http://localhost:4000`.

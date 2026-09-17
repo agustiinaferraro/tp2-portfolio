@@ -16,8 +16,8 @@ Web estática e interactiva del portfolio. Construida con Astro, componentes de 
 
 ```sh
 cd frontend
-npm install
-npm run dev      # Levanta el sitio en http://localhost:4321
+yarn install
+yarn dev      # Levanta el sitio en http://localhost:4321
 ```
 
 ## Backend (`backend/`)
@@ -26,8 +26,8 @@ API REST + conexión a MongoDB que gestiona los datos del portfolio (proyectos, 
 
 ```sh
 cd backend
-npm install
-npm run dev      # Levanta la API en http://localhost:4000
+yarn install
+yarn dev      # Levanta la API en http://localhost:4000
 ```
 
 > Los modelos de datos y endpoints se definen según las necesidades del portfolio. Ver `backend/README.md`.
