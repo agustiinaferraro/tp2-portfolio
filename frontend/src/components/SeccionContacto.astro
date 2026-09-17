@@ -1,7 +1,9 @@
 ---
 // Sección de Contacto
-// Por ahora es un placeholder; en la Etapa 2 se reemplaza por un formulario
-// Las URL de las redes se completan cuando estén definidas
+// La parte estática (título y redes) vive en este .astro
+// El formulario en sí es un componente React (client:load) con estados
+import FormularioContacto from './FormularioContacto.jsx';
+
 const canales = [
   { href: '#', texto: 'LinkedIn' },
   { href: '#', texto: 'GitHub' },
@@ -11,11 +13,16 @@ const canales = [
 ---
 
 <section id="contacto" class="py-24 px-4">
-  <div class="max-w-2xl mx-auto text-center space-y-6">
-    <h2 class="text-3xl font-bold text-white">Contacto</h2>
-    <p class="text-zinc-400 leading-relaxed">
-      Esta sección estará lista en la Etapa 2. Por ahora, podés escribirme por mail o redes.
-    </p>
+  <div class="max-w-2xl mx-auto text-center space-y-8">
+    <div class="space-y-6">
+      <h2 class="text-3xl font-bold text-white">Contacto</h2>
+      <p class="text-zinc-400 leading-relaxed">
+        ¿Tenés un proyecto en mente? Escribime y te respondo a la brevedad.
+      </p>
+    </div>
+
+    <FormularioContacto client:load />
+
     <address class="not-italic">
       <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-zinc-300">
         {

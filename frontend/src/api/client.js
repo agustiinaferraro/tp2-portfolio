@@ -13,3 +13,17 @@ export async function peticionGET(ruta) {
   }
   return respuesta.json();
 }
+
+// Función genérica para enviar datos a la API (POST)
+// Convierte el objeto a JSON y lo manda en el body de la petición
+export async function peticionPOST(ruta, datos) {
+  const respuesta = await fetch(`${API_BASE}${ruta}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos),
+  });
+  if (!respuesta.ok) {
+    throw new Error(`Error al enviar a ${ruta}: ${respuesta.status}`);
+  }
+  return respuesta.json();
+}

@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 import { conectarDB } from './config/db.js';
 import proyectosRouter from './routes/proyectos.js';
 import serviciosRouter from './routes/servicios.js';
+import mensajesRouter from './routes/mensajes.js';
 
 // Se cargan las variables de entorno del archivo .env (solo importa en local)
 dotenv.config();
@@ -36,6 +37,7 @@ app.use(async (req, res, next) => {
 // Rutas de la API (públicas por ahora)
 app.use('/api/proyectos', proyectosRouter);
 app.use('/api/servicios', serviciosRouter);
+app.use('/api/mensajes', mensajesRouter);
 
 // Ruta de prueba para saber que el servidor está vivo
 app.get('/', (req, res) => {
