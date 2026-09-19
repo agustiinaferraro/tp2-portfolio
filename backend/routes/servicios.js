@@ -1,12 +1,12 @@
-// Rutas públicas de la API para los servicios
-// El frontend consulta estas rutas para mostrar los servicios ofrecidos
+//rutas publicas de la api para los servicios
+//el frontend consulta estas rutas para mostrar los servicios ofrecidos
 import { Router } from 'express';
 import Servicio from '../models/Servicio.js';
 
 const router = Router();
 
-// GET a /api/servicios
-// Devuelve la lista de todos los servicios cargados en la base
+//get a /api/servicios
+//devuelve la lista de todos los servicios cargados en la base
 router.get('/', async (req, res) => {
   try {
     const servicios = await Servicio.find();
@@ -16,8 +16,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET a /api/servicios/:slug
-// Devuelve un solo servicio según su slug (ej. /api/servicios/diseno-ux-ui)
+//get a /api/servicios/:slug
+//devuelve un solo servicio segun su slug (ej. /api/servicios/diseno-ux-ui)
 router.get('/:slug', async (req, res) => {
   try {
     const servicio = await Servicio.findOne({ slug: req.params.slug });

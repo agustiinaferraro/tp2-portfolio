@@ -1,10 +1,11 @@
 ---
-// Página dinámica de un servicio: /servicios/[slug]
-// getStaticPaths genera una página por cada servicio (usando la lista estática)
-// El contenido en sí lo trae la API del lado del cliente (ServicioDetalle)
+//pagina dinamica de un servicio: /servicios/[slug]
+//getstaticpaths genera una pagina por cada servicio (usando la lista estatica)
+//el contenido en si lo trae la api del lado del cliente (serviciodetalle)
 import Layout from '../../layouts/Layout.astro';
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
+import BackButton from '../../components/BackButton.astro';
 import ServicioDetalle from '../../components/ServicioDetalle.jsx';
 import { servicios } from '../../data/servicios.js';
 
@@ -20,8 +21,11 @@ const titulo = servicioInfo?.nombre ?? 'Servicio';
 ---
 
 <Layout title={`${titulo} | Agustina Ferraro`}>
-  <Navbar />
+  <Navbar seccionActiva="servicios" />
   <main class="pt-16">
+    <div class="max-w-3xl mx-auto px-4 pt-8">
+      <BackButton href="/servicios" />
+    </div>
     <ServicioDetalle slug={slug} client:load />
   </main>
   <Footer />

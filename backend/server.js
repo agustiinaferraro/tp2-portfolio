@@ -1,30 +1,30 @@
-// Punto de entrada del backend (servidor + API)
-// Funciona en dos ambientes:
-//   - Local:  node server.js   (arranca con app.listen)
-//   - Vercel: la app se exporta como función serverless
+//punto de entrada del backend (servidor + api)
+//funciona en dos ambientes:
+//- local:  node server.js   (arranca con app.listen)
+//- vercel: la app se exporta como funcion serverless
 
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-// Importa la conexión a MongoDB y las rutas
+//importa la conexion a mongodb y las rutas
 import { conectarDB } from './config/db.js';
 import proyectosRouter from './routes/proyectos.js';
 import serviciosRouter from './routes/servicios.js';
 import mensajesRouter from './routes/mensajes.js';
 
-// Se cargan las variables de entorno del archivo .env (solo importa en local)
+//se cargan las variables de entorno del archivo .env (solo importa en local)
 dotenv.config();
 
-// Se crea la aplicación Express
+//se crea la aplicacion express
 const app = express();
 
-// Middlewares globales
-app.use(cors());           // Permite que el frontend (Astro) pueda consultar la API
-app.use(express.json());   // Permite recibir JSON en el body de las peticiones
+//middlewares globales
+app.use(cors());           //permite que el frontend (astro) pueda consultar la api
+app.use(express.json());   //permite recibir json en el body de las peticiones
 
-// Middleware: se conecta a MongoDB antes de cada petición
-// Reutiliza la conexión si ya está abierta (la función de conexión lo maneja)
+//middleware: se conecta a mongodb antes de cada peticion
+//reutiliza la conexion si ya esta abierta (la funcion de conexion lo maneja)
 app.use(async (req, res, next) => {
   try {
     await conectarDB();
@@ -34,26 +34,26 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Rutas de la API (públicas por ahora)
+//rutas de la api (publicas por ahora)
 app.use('/api/proyectos', proyectosRouter);
 app.use('/api/servicios', serviciosRouter);
 app.use('/api/mensajes', mensajesRouter);
 
-// Ruta de prueba para saber que el servidor está vivo
+//ruta de prueba para saber que el servidor esta vivo
 app.get('/', (req, res) => {
   res.json({ mensaje: 'API del portfolio funcionando' });
 });
 
-// Puerto del servidor (por defecto 4000 si no está en .env)
+//puerto del servidor (por defecto 4000 si no esta en .env)
 const PORT = process.env.PORT || 4000;
 
-// Solo se arranca el servidor en local con app.listen.
-// En Vercel no se usa listen: la app se exporta y Vercel la ejecuta.
+//solo se arranca el servidor en local con app.listen.
+//en vercel no se usa listen: la app se exporta y vercel la ejecuta.
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
   });
 }
 
-// Se exporta la app para que Vercel pueda ejecutarla como función serverless
+//se exporta la app para que vercel pueda ejecutarla como funcion serverless
 export default app;

@@ -1,0 +1,51 @@
+---
+//boton reutilizable para volver
+//uso: <backbutton href="/" /> o sin href (en ese caso usa history.back)
+//styles: pill outline con flecha, escala al hover y encogida al apretar
+const { href = '' } = Astro.props;
+---
+
+{
+  href ? (
+    <a
+      href={href}
+      class="inline-flex items-center gap-2 text-sm text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 font-medium"
+    >
+      <svg
+        aria-hidden="true"
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+      </svg>
+      Volver
+    </a>
+  ) : (
+    <button
+      type="button"
+      data-back-button
+      class="inline-flex items-center gap-2 text-sm text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 font-medium"
+    >
+      <svg
+        aria-hidden="true"
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+      </svg>
+      Volver
+    </button>
+  )
+}
+
+<script>
+  //si no se pasa href, vuelve una pagina atras con el historial del navegador
+  const boton = document.querySelector('[data-back-button]');
+  boton?.addEventListener('click', () => history.back());
+</script>

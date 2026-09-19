@@ -1,5 +1,5 @@
-// Modelo (esquema) de Proyecto
-// Define qué datos tiene cada proyecto del portfolio y sus tipos
+//modelo (esquema) de proyecto
+//define que datos tiene cada proyecto del portfolio y sus tipos
 import mongoose from 'mongoose';
 
 const proyectoSchema = new mongoose.Schema(
@@ -9,36 +9,36 @@ const proyectoSchema = new mongoose.Schema(
       required: [true, 'El título es obligatorio'],
     },
     resumen: {
-      // Qué problema había y cómo se resolvió
+      //que problema habia y como se resolvio
       type: String,
       default: '',
     },
     tags: {
-      // Roles aplicados, ej: ["UX/UI", "Full Stack", "Motion"]
+      //roles aplicados, ej: ["ux/ui", "full stack", "motion"]
       type: [String],
       default: [],
     },
     imagen: {
-      // URL de la imagen (más adelante vendrá de Cloudinary)
+      //url de la imagen (mas adelante vendra de cloudinary)
       type: String,
       default: '',
     },
     link: {
-      // URL al proyecto publicado o repositorio
+      //url al proyecto publicado o repositorio
       type: String,
       default: '',
     },
     destacado: {
-      // true = proyecto destacado, false = normal
+      //true = proyecto destacado, false = normal
       type: Boolean,
       default: false,
     },
   },
   {
-    // Agrega automáticamente "createdAt" y "updatedAt"
+    //agrega automaticamente "createdat" y "updatedat"
     timestamps: true,
   }
 );
 
-// Se exporta el modelo. El nombre en MongoDB será "proyectos" (en plural, en minúsculas)
+//se exporta el modelo. el nombre en mongodb sera "proyectos" (en plural, en minusculas)
 export default mongoose.model('Proyecto', proyectoSchema);

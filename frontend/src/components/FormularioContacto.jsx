@@ -1,19 +1,28 @@
-// Formulario de contacto
-// Muestra los estados: formulario → enviando → éxito / error
+//formulario de contacto
+//muestra los estados: formulario - enviando - exito / error
 import { useState } from 'react';
 import { enviarMensaje } from '../api/mensajes.js';
 
+//tu numero de whatsapp en formato internacional (pais 54 + celular sin 0)
+const TELEFONO_WHATSAPP = '5491131166948';
+
+//arma el link de whatsapp con el mensaje ya escrito
+function armarLinkWhatsApp({ nombre, email, mensaje }) {
+  const texto = `Hola! Soy ${nombre} (${email}). ${mensaje}`;
+  return `https://wa.me/${TELEFONO_WHATSAPP}?text=${encodeURIComponent(texto)}`;
+}
+
 export default function FormularioContacto() {
   const [formulario, setFormulario] = useState({ nombre: '', email: '', mensaje: '' });
-  const [estado, setEstado] = useState('idle'); // idle | enviando | exito | error
+  const [estado, setEstado] = useState('idle'); //idle | enviando | exito | error
   const [error, setError] = useState('');
 
-  // Cada tecla que escribís actualiza el campo correspondiente
+  //cada tecla que se escribe actualiza el campo correspondiente
   function manejarCambio(e) {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   }
 
-  // Al enviar el formulario se llama a la API
+  //al enviar el formulario se llama a la api
   async function manejarEnvio(e) {
     e.preventDefault();
     if (estado === 'enviando') return;
@@ -22,6 +31,8 @@ export default function FormularioContacto() {
     setError('');
     try {
       await enviarMensaje(formulario);
+      //se abre whatsapp con el mensaje precargado (pestana nueva)
+      window.open(armarLinkWhatsApp(formulario), '_blank');
       setEstado('exito');
       setFormulario({ nombre: '', email: '', mensaje: '' });
     } catch (err) {
@@ -30,7 +41,7 @@ export default function FormularioContacto() {
     }
   }
 
-  // Estado: mensaje enviado
+  //estado: mensaje enviado
   if (estado === 'exito') {
     return (
       <div
@@ -42,7 +53,7 @@ export default function FormularioContacto() {
         <button
           type="button"
           onClick={() => setEstado('idle')}
-          className="mt-4 text-sm text-emerald-200 underline"
+          className="mt-4 text-sm text-emerald-200 underline transition-all duration-200 hover:scale-105 active:scale-95 active:text-emerald-100"
         >
           Enviar otro mensaje
         </button>
@@ -103,7 +114,7 @@ export default function FormularioContacto() {
       <button
         type="submit"
         disabled={estado === 'enviando'}
-        className="w-full px-6 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full px-6 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 hover:scale-105 active:scale-95 active:bg-indigo-400 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {estado === 'enviando' ? 'Enviando...' : 'Enviar mensaje'}
       </button>

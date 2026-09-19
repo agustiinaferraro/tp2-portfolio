@@ -1,5 +1,5 @@
-// Modelo (esquema) de Servicio
-// Define qué datos tiene cada servicio que ofreces en el portfolio
+//modelo (esquema) de servicio
+//define que datos tiene cada servicio que ofreces en el portfolio
 import mongoose from 'mongoose';
 
 const servicioSchema = new mongoose.Schema(
@@ -8,7 +8,7 @@ const servicioSchema = new mongoose.Schema(
       type: String,
       required: [true, 'El nombre del servicio es obligatorio'],
     },
-    // Identificador amigable para las URLs (ej. /servicios/diseno-ux-ui)
+    //identificador amigable para las urls (ej. /servicios/diseno-ux-ui)
     slug: {
       type: String,
       required: [true, 'El slug del servicio es obligatorio'],
@@ -26,5 +26,5 @@ const servicioSchema = new mongoose.Schema(
   }
 );
 
-// Se exporta el modelo. El nombre en MongoDB será "servicios"
+//se exporta el modelo. el nombre en mongodb sera "servicios"
 export default mongoose.model('Servicio', servicioSchema);

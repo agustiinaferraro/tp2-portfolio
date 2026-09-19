@@ -1,6 +1,6 @@
-// Grilla de Proyectos (parte dinámica de la sección)
-// Se apoya en la capa de datos (api/proyectos.js) para obtener la información
-// Maneja los estados: "cargando", "con datos", "sin datos" y "error"
+//grilla de proyectos (parte dinamica de la seccion)
+//se apoya en la capa de datos (api/proyectos.js) para obtener la informacion
+//maneja los estados: "cargando", "con datos", "sin datos" y "error"
 import { useEffect, useState } from 'react';
 import { obtenerProyectos } from '../api/proyectos.js';
 
@@ -16,7 +16,7 @@ export default function GrillaProyectos() {
       .finally(() => setCargando(false));
   }, []);
 
-  // Estado: error
+  //estado: error
   if (error) {
     return (
       <p role="alert" className="text-red-400 text-center">
@@ -25,12 +25,12 @@ export default function GrillaProyectos() {
     );
   }
 
-  // Estado: cargando
+  //estado: cargando
   if (cargando) {
     return <p className="text-zinc-400 text-center">Cargando proyectos...</p>;
   }
 
-  // Estado: sin datos
+  //estado: sin datos
   if (proyectos.length === 0) {
     return (
       <p className="text-zinc-400 text-center">
@@ -39,13 +39,13 @@ export default function GrillaProyectos() {
     );
   }
 
-  // Estado: con datos
+  //estado: con datos
   return (
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {proyectos.map((proyecto) => (
         <li key={proyecto._id}>
           <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-indigo-500/50 transition-colors">
-            {/* Imagen si la tiene */}
+            {/* imagen si la tiene */}
             {proyecto.imagen && (
               <figure className="m-0">
                 <img
@@ -57,7 +57,7 @@ export default function GrillaProyectos() {
             )}
             <div className="p-6 flex flex-col gap-3 flex-1">
               <h3 className="text-xl font-bold text-white">{proyecto.titulo}</h3>
-              {/* Tags / roles aplicados */}
+              {/* tags / roles aplicados */}
               {proyecto.tags?.length > 0 && (
                 <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
                   {proyecto.tags.map((tag) => (

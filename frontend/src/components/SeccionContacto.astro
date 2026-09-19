@@ -1,40 +1,37 @@
 ---
-// Sección de Contacto
-// La parte estática (título y redes) vive en este .astro
-// El formulario en sí es un componente React (client:load) con estados
+//seccion de contacto
+//la parte estatica (titulo y redes) vive en este .astro
+//el formulario en si es un componente react (client:load) con estados
 import FormularioContacto from './FormularioContacto.jsx';
 
-const canales = [
-  { href: '#', texto: 'LinkedIn' },
-  { href: '#', texto: 'GitHub' },
-  { href: '#', texto: 'Behance' },
-  { href: '#', texto: '@multimediagus' },
-];
 ---
 
 <section id="contacto" class="py-24 px-4">
   <div class="max-w-2xl mx-auto text-center space-y-8">
-    <div class="space-y-6">
-      <h2 class="text-3xl font-bold text-white">Contacto</h2>
+    <div class="space-y-6 text-left">
+      <h2 class="text-4xl font-bold text-white inline-flex items-center gap-3">
+        <svg
+          aria-hidden="true"
+          class="w-9 h-9 text-indigo-400"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
+          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="m22 6-10 7L2 6" />
+        </svg>
+        Contacto
+      </h2>
       <p class="text-zinc-400 leading-relaxed">
         ¿Tenés un proyecto en mente? Escribime y te respondo a la brevedad.
       </p>
     </div>
 
     <FormularioContacto client:load />
-
-    <address class="not-italic">
-      <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-zinc-300">
-        {
-          canales.map((canal) => (
-            <li>
-              <a href={canal.href} class="hover:text-white transition-colors">
-                {canal.texto}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </address>
   </div>
 </section>

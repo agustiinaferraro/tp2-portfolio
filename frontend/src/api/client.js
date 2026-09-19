@@ -1,11 +1,11 @@
-// Capa de datos: client base para llamar a la API del backend
-// El frontend consulta la API desde acá, no desde los componentes
+//capa de datos: client base para llamar a la api del backend
+//el frontend consulta la api desde aca, no desde los componentes
 
-// URL base del backend. Se configura con PUBLIC_API_URL o usa localhost en desarrollo
+//url base del backend. se configura con public_api_url o usa localhost en desarrollo
 const API_BASE = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:4000';
 
-// Función genérica que hace una petición a la API y devuelve los datos en JSON
-// Si la respuesta no es correcta, lanza un error explicando qué pasó
+//funcion generica que hace una peticion a la api y devuelve los datos en json
+//si la respuesta no es correcta, lanza un error explicando que paso
 export async function peticionGET(ruta) {
   const respuesta = await fetch(`${API_BASE}${ruta}`);
   if (!respuesta.ok) {
@@ -14,8 +14,8 @@ export async function peticionGET(ruta) {
   return respuesta.json();
 }
 
-// Función genérica para enviar datos a la API (POST)
-// Convierte el objeto a JSON y lo manda en el body de la petición
+//funcion generica para enviar datos a la api (post)
+//convierte el objeto a json y lo manda en el body de la peticion
 export async function peticionPOST(ruta, datos) {
   const respuesta = await fetch(`${API_BASE}${ruta}`, {
     method: 'POST',

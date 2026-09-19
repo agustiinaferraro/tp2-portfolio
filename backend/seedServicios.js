@@ -1,6 +1,6 @@
-// Script para cargar (o actualizar) los servicios en MongoDB
-// Uso: node seedServicios.js
-// Es una herramienta de desarrollo: se ejecuta una vez y listo
+//script para cargar (o actualizar) los servicios en mongodb
+//uso: node seedservicios.js
+//es una herramienta de desarrollo: se ejecuta una vez y listo
 
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -8,8 +8,8 @@ import Servicio from './models/Servicio.js';
 
 dotenv.config();
 
-// Los 5 servicios que ofrece el portfolio
-// El "slug" es el identificador que aparece en la URL de cada servicio
+//los 5 servicios que ofrece el portfolio
+//el "slug" es el identificador que aparece en la url de cada servicio
 const servicios = [
   {
     nombre: 'Desarrollo Full Stack',
@@ -48,7 +48,7 @@ async function cargarServicios() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Conectado a MongoDB Atlas');
 
-    // Se borran los servicios existentes y se cargan los nuevos
+    //se borran los servicios existentes y se cargan los nuevos
     await Servicio.deleteMany({});
     await Servicio.insertMany(servicios);
 

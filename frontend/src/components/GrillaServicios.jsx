@@ -1,15 +1,15 @@
-// Grilla de Servicios (parte dinámica de la sección)
-// Se apoya en la capa de datos (api/servicios.js) para obtener la información
-// Maneja los estados: "cargando", "con datos", "sin datos" y "error"
+//grilla de servicios (parte dinamica de la seccion)
+//se apoya en la capa de datos (api/servicios.js) para obtener la informacion
+//maneja los estados: "cargando", "con datos", "sin datos" y "error"
 import { useEffect, useState } from 'react';
 import { obtenerServicios } from '../api/servicios.js';
 
 export default function GrillaServicios() {
-  const [servicios, setServicios] = useState([]); // lista de servicios
-  const [cargando, setCargando] = useState(true); // ¿está cargando?
-  const [error, setError] = useState(null); // ¿hubo error?
+  const [servicios, setServicios] = useState([]); //lista de servicios
+  const [cargando, setCargando] = useState(true); //¿esta cargando?
+  const [error, setError] = useState(null); //¿hubo error?
 
-  // Se ejecuta una vez al montar el componente: pide los servicios al backend
+  //se ejecuta una vez al montar el componente: pide los servicios al backend
   useEffect(() => {
     obtenerServicios()
       .then((datos) => setServicios(datos))
@@ -17,7 +17,7 @@ export default function GrillaServicios() {
       .finally(() => setCargando(false));
   }, []);
 
-  // Estado: error
+  //estado: error
   if (error) {
     return (
       <p role="alert" className="text-red-400 text-center">
@@ -26,17 +26,17 @@ export default function GrillaServicios() {
     );
   }
 
-  // Estado: cargando
+  //estado: cargando
   if (cargando) {
     return <p className="text-zinc-400 text-center">Cargando servicios...</p>;
   }
 
-  // Estado: sin datos
+  //estado: sin datos
   if (servicios.length === 0) {
     return <p className="text-zinc-400 text-center">Todavía no hay servicios cargados.</p>;
   }
 
-  // Estado: con datos → se muestran las tarjetas
+  //estado: con datos → se muestran las tarjetas
   return (
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {servicios.map((servicio) => (

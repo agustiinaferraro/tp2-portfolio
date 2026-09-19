@@ -1,5 +1,5 @@
-// Modelo de un mensaje del formulario de contacto
-// "timestamps: true" agrega createdAt y updatedAt automáticamente
+//modelo de un mensaje del formulario de contacto
+//"timestamps: true" agrega createdat y updatedat automaticamente
 import mongoose from 'mongoose';
 
 const mensajeSchema = new mongoose.Schema(

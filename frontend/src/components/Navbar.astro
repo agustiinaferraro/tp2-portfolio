@@ -1,71 +1,49 @@
 ---
-// Componente de navegación
-// Menú fijo en la parte superior con links a las páginas y anclas del home
-// Responsive: en pantallas chicas se convierte en un menú desplegable (hamburguesa)
-import { servicios } from '../data/servicios.js';
+//componente de navegacion
+//menu fijo en la parte superior con links a las pags y un buscador
+//responsive en pantallas chicas se convierte en un menu hamburguesa
+import Buscador from './Buscador.jsx';
 
-// Anclas que apuntan al home. Al usar "/#..." funcionan desde cualquier página
+//prop opcional para resaltar el link activo del nav
+//"servicios" se pasa desde las paginas de servicio
+const { seccionActiva = '' } = Astro.props;
+
+//enlaces del nav. cada uno lleva su clave "activo" para resaltarse en su pagina
 const enlaces = [
-  { href: '/#inicio', texto: 'Inicio' },
-  { href: '/#sobre-mi', texto: 'Sobre mí' },
-  { href: '/#proyectos', texto: 'Proyectos' },
-  { href: '/#contacto', texto: 'Contacto' },
+  { href: '/', texto: 'Inicio' },
+  { href: '/sobre-mi', texto: 'Sobre mí', activo: 'sobre-mi' },
+  { href: '/proyectos', texto: 'Proyectos', activo: 'proyectos' },
+  { href: '/servicios', texto: 'Servicios', activo: 'servicios' },
+  { href: '/contacto', texto: 'Contacto', activo: 'contacto' },
 ];
 ---
 
-<header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
+<header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800" data-activo={seccionActiva}>
   <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4" aria-label="Principal">
-    <a href="/" class="font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-      AG.
+   <a href="/#inicio" class="flex items-center gap-2 font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+      <img src="/img/logo.png" alt="Logo" class="w-15 h-15 object-cover rounded-full"/>
     </a>
 
-    <!-- Menú de escritorio (visible en pantallas medianas en adelante) -->
+    <!--menu de escritorio (visible en pantallas medianas en adelante)-->
     <ul class="hidden md:flex items-center gap-6">
       {
         enlaces.map((enlace) => (
           <li>
-            <a href={enlace.href} class="text-sm text-zinc-300 hover:text-white transition-colors">
+            <a href={enlace.href} data-link={enlace.activo ?? ''} class="nav-link text-sm text-zinc-300 hover:text-white transition-colors">
               {enlace.texto}
             </a>
           </li>
         ))
       }
       <li>
-        <details class="relative">
-          <summary class="flex items-center gap-1 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors list-none [&::-webkit-details-marker]:hidden">
-            Servicios
-            <span aria-hidden="true">▾</span>
-          </summary>
-          <ul class="absolute left-0 top-full mt-2 w-64 rounded-xl bg-zinc-900 border border-zinc-800 shadow-lg p-2 space-y-1">
-            {
-              servicios.map((servicio) => (
-                <li>
-                  <a
-                    href={`/servicios/${servicio.slug}`}
-                    class="block px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-                  >
-                    {servicio.nombre}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </details>
-      </li>
-      <li>
-        <a
-          href="/#contacto"
-          class="text-sm px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors font-medium"
-        >
-          Hablemos
-        </a>
+        <Buscador client:load />
       </li>
     </ul>
 
-    <!-- Botón del menú móvil (hamburguesa) -->
+    <!--btn menu hamburguesa-->
     <button
       type="button"
-      class="md:hidden flex flex-col items-center justify-center gap-1.5 w-10 h-10 rounded-lg text-zinc-300 hover:text-white transition-colors"
+      class="md:hidden flex flex-col items-center justify-center gap-1.5 w-10 h-10 rounded-lg text-zinc-300 hover:text-white hover:scale-105 active:scale-95 active:bg-zinc-800 transition-all duration-200"
       aria-label="Abrir menú"
       aria-expanded="false"
       data-menu-boton
@@ -76,49 +54,27 @@ const enlaces = [
     </button>
   </nav>
 
-  <!-- Menú móvil (oculto, se muestra con el botón) -->
+  <!--menu movil (oculto, se muestra con el boton)-->
   <div class="md:hidden hidden border-t border-zinc-800 bg-zinc-950 px-4 py-4" data-menu>
     <ul class="space-y-1">
       {
         enlaces.map((enlace) => (
           <li>
-            <a href={enlace.href} class="block py-2 text-zinc-300 hover:text-white transition-colors">
+            <a href={enlace.href} data-link={enlace.activo ?? ''} class="nav-link block py-2 text-zinc-300 hover:text-white transition-colors">
               {enlace.texto}
             </a>
           </li>
         ))
       }
       <li>
-        <p class="text-sm text-zinc-500 pt-3 pb-1">Servicios</p>
-        <ul class="space-y-1">
-          {
-            servicios.map((servicio) => (
-              <li>
-                <a
-                  href={`/servicios/${servicio.slug}`}
-                  class="block py-2 pl-2 text-zinc-300 hover:text-white transition-colors"
-                >
-                  {servicio.nombre}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </li>
-      <li class="pt-3 pb-1">
-        <a
-          href="/#contacto"
-          class="block text-center px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors font-medium"
-        >
-          Hablemos
-        </a>
+        <Buscador client:load />
       </li>
     </ul>
   </div>
 </header>
 
 <script>
-  // Toggle del menú móvil: muestra/oculta el menú y actualiza el botón
+  //toggle del menu movil: muestra/oculta el menu y actualiza el btn
   const boton = document.querySelector('[data-menu-boton]');
   const menu = document.querySelector('[data-menu]');
   if (boton && menu) {

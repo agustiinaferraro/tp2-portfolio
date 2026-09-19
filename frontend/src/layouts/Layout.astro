@@ -1,8 +1,9 @@
 ---
-// Layout base: estructura HTML para todas las páginas
-// Recibe una "title" (título de la página) como prop opcional
-// Importa los estilos globales (Tailwind) para todas las páginas
+//layout base: estructura html para todas las paginas
+//recibe una "title" (titulo de la pagina) como prop opcional
+//importa los estilos globales (tailwind) para todas las paginas
 import '../styles/global.css';
+import BotonHablemos from '../components/BotonHablemos.astro';
 
 const { title } = Astro.props;
 ---
@@ -23,6 +24,7 @@ const { title } = Astro.props;
 	</head>
 	<body class="bg-zinc-950 text-zinc-100 font-sans antialiased">
 		<slot />
+		<BotonHablemos />
 	</body>
 </html>
 

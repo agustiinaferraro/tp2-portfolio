@@ -1,14 +1,14 @@
-// Archivo de configuración de la conexión a MongoDB
-// Importa mongoose (la librería que conecta y habla con MongoDB)
+//archivo de configuracion de la conexion a mongodb
+//importa mongoose (la libreria que conecta y habla con mongodb)
 import mongoose from 'mongoose';
 
-// Se guarda la conexión para reutilizarla y no abrir una en cada petición
+//se guarda la conexion para reutilizarla y no abrir una en cada peticion
 let conexion = null;
 
-// Esta función conecta el backend con MongoDB Atlas
-// Se usa la variable MONGODB_URI que está en el archivo .env
+//esta funcion conecta el backend con mongodb atlas
+//se usa la variable mongodb_uri que esta en el archivo .env
 export async function conectarDB() {
-  // Si ya hay una conexión abierta, se reutiliza
+  //si ya hay una conexion abierta, se reutiliza
   if (conexion) return conexion;
 
   conexion = mongoose.connect(process.env.MONGODB_URI);

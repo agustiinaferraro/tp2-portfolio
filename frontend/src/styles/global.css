@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+/*todos los botones y el desplegable de servicios muestran la manito al pasar el mouse*/
+button,
+summary {
+  cursor: pointer;
+}
+
+/*boton flotante "hablemos": el icono de chat flota suavemente*/
+.fab-chat {
+  animation: flotar 2.5s ease-in-out infinite;
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/*subrayado animado del nav: se dibuja de izquierda a derecha con transition*/
+.nav-link {
+  background-image: linear-gradient(to right, #fff, #fff);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 2px;
+  transition: background-size 0.25s ease-out, color 0.2s;
+  padding-bottom: 3px;
+}
+
+/*cuando la seccion o pagina es la activa, el subrayado se completa y el texto se resalta*/
+body:has(#inicio:target) a[href="/"],
+body:has(#sobre-mi:target) a[href="/#sobre-mi"],
+body:has(#proyectos:target) a[href="/#proyectos"],
+body:has(#contacto:target) a[href="/#contacto"],
+header[data-activo="sobre-mi"] a[data-link="sobre-mi"],
+header[data-activo="proyectos"] a[data-link="proyectos"],
+header[data-activo="contacto"] a[data-link="contacto"],
+header[data-activo="servicios"] a[data-link="servicios"] {
+  background-size: 100% 2px;
+  color: #fff;
+  font-weight: 700;
+}
