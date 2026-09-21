@@ -1,52 +1,35 @@
-# Astro Starter Kit: Basics
+# Frontend — Portfolio
 
-```sh
-npm create astro@latest -- --template basics
+Sitio web del portfolio, construido con Astro + React + Tailwind CSS v4.
+
+## Estructura
+
+```
+src/
+├── components/   # secciones y componentes (astro y react)
+├── data/         # indice estatico del buscador (paginas y servicios)
+├── layouts/      # layout general del sitio
+├── pages/        # rutas: inicio, sobre-mi, proyectos, servicios, contacto y admin
+├── api/          # capa de datos: funciones que hablan con el backend
+└── styles/       # estilos globales
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Comandos
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
-
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `yarn install`            | Installs dependencies                            |
-| `yarn dev`                | Starts local dev server at `localhost:4321`      |
-| `yarn build`              | Build your production site to `./dist/`          |
-| `yarn preview`            | Preview your build locally, before deploying     |
-| `yarn astro ...`          | Run CLI commands like `astro add`, `astro check` |
-| `yarn astro -- --help`    | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Comando          | Descripcion                                 |
+| :--------------- | :------------------------------------------ |
+| `yarn install`   | Instala las dependencias                    |
+| `yarn dev`       | Levanta el sitio en `localhost:4321`        |
+| `yarn astro build` | Genera los archivos estaticos en `dist/`    |
+| `yarn preview`   | Sirve el build generado en local            |
 
 ## Deploy
 
-Deployado en Vercel como sitio estático: https://frontend-rose-pi-57.vercel.app
+Desplegado en Vercel como sitio estático: https://agustinaportfolio.vercel.app
 
 - La variable `PUBLIC_API_URL` (URL del backend) se configura en Vercel y se inlinea en el build.
+- La variable `PUBLIC_API_URL` actualmente apunta a https://agustinaportfolio-api.vercel.app
+
+## Panel de administración
+
+La ruta `/admin` es un panel privado para cargar, editar y borrar proyectos y para leer los mensajes del formulario de contacto. Pide la clave `ADMIN_CLAVE` que se configura en el backend (local: `backend/.env`, producción: Vercel).

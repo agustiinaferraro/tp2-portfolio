@@ -40,7 +40,8 @@ El servidor arranca en `http://localhost:4000`.
 
 ## Deploy
 
-Deployado en Vercel como función serverless: https://backend-delta-two-78.vercel.app
+Deployado en Vercel como función serverless: https://agustinaportfolio-api.vercel.app
 
 - La variable `MONGODB_URI` se configura en Vercel (no se sube al repositorio).
+- La variable `ADMIN_CLAVE` (clave del panel `/admin`) también se configura en Vercel.
 - `vercel.json` define el build con `@vercel/node` y enruta todas las peticiones a `server.js`.

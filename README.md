@@ -36,7 +36,7 @@ yarn dev      # Levanta la API en http://localhost:4000
 
 Ambas partes están deployadas en Vercel, cada una como un proyecto independiente conectado a este repositorio:
 
-- **Frontend:** https://frontend-rose-pi-57.vercel.app
-- **Backend (API):** https://backend-delta-two-78.vercel.app
+- **Frontend:** https://agustinaportfolio.vercel.app
+- **Backend (API):** https://agustinaportfolio-api.vercel.app
 
 Cada proyecto tiene configurado su **Root Directory** (`frontend` y `backend`) y sus variables de entorno en Vercel. Cada `push` a `main` dispara un deploy automático.
