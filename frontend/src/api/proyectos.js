@@ -16,9 +16,9 @@ export function obtenerProyectosLigeros() {
   return peticionGET('/api/proyectos?ligero=true');
 }
 
-//verifica si la clave de administrador es correcta
-export function verificarClave(clave) {
-  return peticionPOST('/api/admin/verificar', { clave });
+//verifica si el usuario y la clave de administrador son correctos
+export function verificarClave(usuario, clave) {
+  return peticionPOST('/api/admin/verificar', { usuario, clave });
 }
 
 //crea un proyecto nuevo (solo admin)

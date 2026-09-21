@@ -43,5 +43,5 @@ El servidor arranca en `http://localhost:4000`.
 Deployado en Vercel como función serverless: https://agustinaportfolio-api.vercel.app
 
 - La variable `MONGODB_URI` se configura en Vercel (no se sube al repositorio).
-- La variable `ADMIN_CLAVE` (clave del panel `/admin`) también se configura en Vercel.
+- Las variables `ADMIN_USUARIO` y `ADMIN_CLAVE` (credenciales del panel `/admin`) también se configuran en Vercel.
 - `vercel.json` define el build con `@vercel/node` y enruta todas las peticiones a `server.js`.

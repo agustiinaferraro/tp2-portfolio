@@ -1,5 +1,5 @@
 //panel de administracion: sirve para cargar, editar y borrar proyectos
-//se pide una clave al entrar y las modificaciones se envian con esa clave
+//se pide usuario y clave al entrar y las modificaciones se envian con esa clave
 //la imagen se convierte a base64 y se guarda en la base junto al resto de los datos
 import { useEffect, useState } from 'react';
 import {
@@ -17,6 +17,7 @@ function claveIncorrecta(error) {
 }
 
 export default function AdminProyectos() {
+  const [usuario, setUsuario] = useState('');
   const [clave, setClave] = useState('');
   const [sesion, setSesion] = useState(false);
   const [cargandoSesion, setCargandoSesion] = useState(false);
@@ -49,11 +50,11 @@ export default function AdminProyectos() {
     setCargandoSesion(true);
     setMensaje(null);
     try {
-      await verificarClave(clave.trim());
+      await verificarClave(usuario.trim(), clave.trim());
       setSesion(true);
       cargarProyectos();
     } catch (error) {
-      mostrarMensaje(claveIncorrecta(error) ? 'Contraseña incorrecta' : error.message, 'error');
+      mostrarMensaje(claveIncorrecta(error) ? 'Usuario o contraseña incorrecta' : error.message, 'error');
     } finally {
       setCargandoSesion(false);
     }
@@ -61,6 +62,7 @@ export default function AdminProyectos() {
 
   function salir() {
     setSesion(false);
+    setUsuario('');
     setClave('');
     setProyectos([]);
     resetearFormulario();
@@ -137,7 +139,40 @@ export default function AdminProyectos() {
     }
   }
 
-  function alElegirImagen(evento) {
+  //se redimensiona la imagen en el navegador para que el guardado no falle por lo pesado
+  function comprimirImagen(archivo) {
+    return new Promise((resolver, rechazar) => {
+      const lector = new FileReader();
+      lector.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          //si ya viene chica y liviana se deja como esta
+          if (archivo.size <= 500 * 1024 && img.width <= 1280 && img.height <= 1280) {
+            resolver(lector.result);
+            return;
+          }
+          const escala = Math.min(1280 / img.width, 1280 / img.height, 1);
+          const ancho = Math.round(img.width * escala);
+          const alto = Math.round(img.height * escala);
+          const canvas = document.createElement('canvas');
+          canvas.width = ancho;
+          canvas.height = alto;
+          const contexto = canvas.getContext('2d');
+          //se rellena de blanco para que el jpg no quede con fondo transparente
+          contexto.fillStyle = '#fff';
+          contexto.fillRect(0, 0, ancho, alto);
+          contexto.drawImage(img, 0, 0, ancho, alto);
+          resolver(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => rechazar(new Error('No se pudo leer la imagen'));
+        img.src = lector.result;
+      };
+      lector.onerror = () => rechazar(new Error('No se pudo leer el archivo'));
+      lector.readAsDataURL(archivo);
+    });
+  }
+
+  async function alElegirImagen(evento) {
     const archivo = evento.target.files?.[0];
     if (!archivo) return;
     //se limita el tamaño para que entre en la base de datos sin problemas
@@ -146,12 +181,19 @@ export default function AdminProyectos() {
       evento.target.value = '';
       return;
     }
-    const lector = new FileReader();
-    lector.onload = () => {
-      setImagen(lector.result);
+    try {
+      const lista = await comprimirImagen(archivo);
+      if (lista.length > 1.5 * 1024 * 1024) {
+        mostrarMensaje('La imagen sigue pesando demasiado. Probá con otra más liviana.', 'error');
+        evento.target.value = '';
+        return;
+      }
+      setImagen(lista);
       mostrarMensaje(null);
-    };
-    lector.readAsDataURL(archivo);
+    } catch (error) {
+      mostrarMensaje(error.message, 'error');
+      evento.target.value = '';
+    }
   }
 
   const claseInput =
@@ -164,19 +206,28 @@ export default function AdminProyectos() {
       <div className="max-w-md mx-auto px-4 py-16">
         <form onSubmit={iniciarSesion} className="space-y-4 p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
           <h1 className="text-2xl font-bold text-white">Panel de administración</h1>
-          <p className="text-sm text-zinc-400">Ingresá la contraseña para gestionar los proyectos.</p>
+          <p className="text-sm text-zinc-400">Ingresá tu usuario y contraseña para gestionar los proyectos.</p>
+          <input
+            type="text"
+            value={usuario}
+            onChange={(e) => setUsuario(e.target.value)}
+            placeholder="Usuario"
+            aria-label="Usuario de administrador"
+            autoComplete="username"
+            className={claseInput}
+          />
           <input
             type="password"
             value={clave}
             onChange={(e) => setClave(e.target.value)}
             placeholder="Contraseña"
             aria-label="Contraseña de administrador"
-            autoFocus
+            autoComplete="current-password"
             className={claseInput}
           />
           <button
             type="submit"
-            disabled={cargandoSesion || !clave.trim()}
+            disabled={cargandoSesion || !usuario.trim() || !clave.trim()}
             className={`${claseBoton} w-full bg-violet-600 hover:bg-violet-500 text-white disabled:bg-zinc-800`}
           >
             {cargandoSesion ? 'Verificando...' : 'Entrar'}
@@ -252,7 +303,7 @@ export default function AdminProyectos() {
             onChange={alElegirImagen}
             className="block w-full text-sm text-zinc-400 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-violet-600 file:text-white file:font-medium file:cursor-pointer hover:file:bg-violet-500 file:transition-colors"
           />
-          <p className="text-xs text-zinc-600">Máximo 8 MB. La imagen se guarda en la base de datos.</p>
+          <p className="text-xs text-zinc-600">Máximo 8 MB. Se comprime sola para que entre en la base de datos.</p>
         </div>
 
         {imagen && (

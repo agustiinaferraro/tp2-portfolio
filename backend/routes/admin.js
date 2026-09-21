@@ -4,15 +4,20 @@ import { Router } from 'express';
 const router = Router();
 
 //post a /api/admin/verificar
-//recibe la clave y responde si es valida o no (sin revelar informacion extra)
+//recibe usuario y clave y responde si son validos o no (sin revelar informacion extra)
 router.post('/verificar', (req, res) => {
-  const { clave } = req.body ?? {};
+  const { usuario, clave } = req.body ?? {};
 
-  if (process.env.ADMIN_CLAVE && clave === process.env.ADMIN_CLAVE) {
+  if (
+    process.env.ADMIN_USUARIO &&
+    process.env.ADMIN_CLAVE &&
+    usuario === process.env.ADMIN_USUARIO &&
+    clave === process.env.ADMIN_CLAVE
+  ) {
     return res.json({ ok: true });
   }
 
-  res.status(401).json({ ok: false, mensaje: 'Clave incorrecta' });
+  res.status(401).json({ ok: false, mensaje: 'Usuario o contraseña incorrecta' });
 });
 
 export default router;
