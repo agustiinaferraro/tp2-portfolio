@@ -19,7 +19,7 @@ const proyectoSchema = new mongoose.Schema(
       default: [],
     },
     imagen: {
-      //url de la imagen (mas adelante vendra de cloudinary)
+      //imagen en base64 que se sube desde el panel admin
       type: String,
       default: '',
     },

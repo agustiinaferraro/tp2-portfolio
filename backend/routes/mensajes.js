@@ -1,8 +1,21 @@
 //rutas de la api de mensajes
+//el post es publico (el formulario de contacto lo usa), la lectura y el borrado piden clave de admin
 import { Router } from 'express';
 import Mensaje from '../models/Mensaje.js';
+import esAdmin from '../middlewares/esAdmin.js';
 
 const router = Router();
+
+//get a /api/mensajes (solo admin)
+//devuelve todos los mensajes recibidos, los mas nuevos primero
+router.get('/', esAdmin, async (req, res) => {
+  try {
+    const mensajes = await Mensaje.find().sort({ createdAt: -1 }).lean();
+    res.json(mensajes);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
+  }
+});
 
 //post a /api/mensajes
 //recibe los datos del formulario de contacto y los guarda en la base
@@ -22,6 +35,24 @@ router.post('/', async (req, res) => {
     res.status(201).json({ mensaje: 'Mensaje recibido', datos: nuevoMensaje });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al guardar el mensaje', error: error.message });
+  }
+});
+
+//delete a /api/mensajes/:id (solo admin)
+//borra un mensaje de la base
+router.delete('/:id', esAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const borrado = await Mensaje.findByIdAndDelete(id);
+
+    if (!borrado) {
+      return res.status(404).json({ mensaje: 'Mensaje no encontrado' });
+    }
+
+    res.json({ mensaje: 'Mensaje borrado' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al borrar el mensaje', error: error.message });
   }
 });
 

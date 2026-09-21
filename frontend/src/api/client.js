@@ -27,3 +27,20 @@ export async function peticionPOST(ruta, datos) {
   }
   return respuesta.json();
 }
+
+//funcion generica para modificar datos del panel de admin (post, put o delete)
+//manda la clave de administrador en el header x-admin-clave para que el backend valide
+export async function peticionAdmin(metodo, ruta, datos, clave) {
+  const respuesta = await fetch(`${API_BASE}${ruta}`, {
+    method: metodo,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-clave': clave,
+    },
+    body: datos ? JSON.stringify(datos) : undefined,
+  });
+  if (!respuesta.ok) {
+    throw new Error(`Error en ${metodo} ${ruta}: ${respuesta.status}`);
+  }
+  return respuesta.json();
+}

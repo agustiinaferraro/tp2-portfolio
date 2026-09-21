@@ -1,5 +1,5 @@
-//capa de datos: funciones para consultar los proyectos
-import { peticionGET } from './client.js';
+//capa de datos: funciones para consultar proyectos y gestionar los del admin
+import { peticionGET, peticionPOST, peticionAdmin } from './client.js';
 
 //devuelve todos los proyectos
 export function obtenerProyectos() {
@@ -9,4 +9,29 @@ export function obtenerProyectos() {
 //devuelve solo los proyectos destacados
 export function obtenerProyectosDestacados() {
   return peticionGET('/api/proyectos?destacados=true');
+}
+
+//devuelve los proyectos sin imagenes (para el buscador, asi la carga es liviana)
+export function obtenerProyectosLigeros() {
+  return peticionGET('/api/proyectos?ligero=true');
+}
+
+//verifica si la clave de administrador es correcta
+export function verificarClave(clave) {
+  return peticionPOST('/api/admin/verificar', { clave });
+}
+
+//crea un proyecto nuevo (solo admin)
+export function crearProyecto(datos, clave) {
+  return peticionAdmin('POST', '/api/proyectos', datos, clave);
+}
+
+//actualiza un proyecto existente (solo admin)
+export function actualizarProyecto(id, datos, clave) {
+  return peticionAdmin('PUT', `/api/proyectos/${id}`, datos, clave);
+}
+
+//borra un proyecto (solo admin)
+export function borrarProyecto(id, clave) {
+  return peticionAdmin('DELETE', `/api/proyectos/${id}`, undefined, clave);
 }

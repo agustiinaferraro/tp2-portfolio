@@ -12,6 +12,7 @@ import { conectarDB } from './config/db.js';
 import proyectosRouter from './routes/proyectos.js';
 import serviciosRouter from './routes/servicios.js';
 import mensajesRouter from './routes/mensajes.js';
+import adminRouter from './routes/admin.js';
 
 //se cargan las variables de entorno del archivo .env (solo importa en local)
 dotenv.config();
@@ -21,7 +22,7 @@ const app = express();
 
 //middlewares globales
 app.use(cors());           //permite que el frontend (astro) pueda consultar la api
-app.use(express.json());   //permite recibir json en el body de las peticiones
+app.use(express.json({ limit: '25mb' }));   //permite recibir json en el body, con margen para imagenes en base64
 
 //middleware: se conecta a mongodb antes de cada peticion
 //reutiliza la conexion si ya esta abierta (la funcion de conexion lo maneja)
@@ -34,10 +35,11 @@ app.use(async (req, res, next) => {
   }
 });
 
-//rutas de la api (publicas por ahora)
+//rutas de la api (el get es publico, las modificaciones piden clave de admin)
 app.use('/api/proyectos', proyectosRouter);
 app.use('/api/servicios', serviciosRouter);
 app.use('/api/mensajes', mensajesRouter);
+app.use('/api/admin', adminRouter);
 
 //ruta de prueba para saber que el servidor esta vivo
 app.get('/', (req, res) => {

@@ -10,7 +10,7 @@ const { seccionActiva = '' } = Astro.props;
 
 //enlaces del nav. cada uno lleva su clave "activo" para resaltarse en su pagina
 const enlaces = [
-  { href: '/', texto: 'Inicio' },
+  { href: '/#inicio', texto: 'Inicio', activo: 'inicio' },
   { href: '/sobre-mi', texto: 'Sobre mí', activo: 'sobre-mi' },
   { href: '/proyectos', texto: 'Proyectos', activo: 'proyectos' },
   { href: '/servicios', texto: 'Servicios', activo: 'servicios' },
@@ -20,12 +20,15 @@ const enlaces = [
 
 <header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800" data-activo={seccionActiva}>
   <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4" aria-label="Principal">
-   <a href="/#inicio" class="flex items-center gap-2 font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+   <a href="/#inicio" class="flex items-center gap-2 font-bold text-violet-400 hover:text-violet-300 transition-colors">
       <img src="/img/logo.png" alt="Logo" class="w-15 h-15 object-cover rounded-full"/>
     </a>
 
-    <!--menu de escritorio (visible en pantallas medianas en adelante)-->
+    <!--menu de escritorio: buscador a la izquierda y luego los links-->
     <ul class="hidden md:flex items-center gap-6">
+      <li>
+        <Buscador client:idle />
+      </li>
       {
         enlaces.map((enlace) => (
           <li>
@@ -35,9 +38,6 @@ const enlaces = [
           </li>
         ))
       }
-      <li>
-        <Buscador client:load />
-      </li>
     </ul>
 
     <!--btn menu hamburguesa-->
@@ -57,6 +57,9 @@ const enlaces = [
   <!--menu movil (oculto, se muestra con el boton)-->
   <div class="md:hidden hidden border-t border-zinc-800 bg-zinc-950 px-4 py-4" data-menu>
     <ul class="space-y-1">
+      <li class="pb-3">
+        <Buscador client:idle />
+      </li>
       {
         enlaces.map((enlace) => (
           <li>
@@ -66,9 +69,6 @@ const enlaces = [
           </li>
         ))
       }
-      <li>
-        <Buscador client:load />
-      </li>
     </ul>
   </div>
 </header>
@@ -84,4 +84,20 @@ const enlaces = [
       boton.setAttribute('aria-label', seAbre ? 'Abrir menú' : 'Cerrar menú');
     });
   }
+
+  //resalta el link de la seccion que esta en pantalla al scrollear (de paso resalta "inicio" al cargar)
+  const links = [...document.querySelectorAll('header a[data-link]')];
+  const ids = [...document.querySelectorAll('main section[id]')].map((s) => s.id);
+  function resaltarActivo() {
+    const centro = window.scrollY + window.innerHeight * 0.35;
+    let activo = '';
+    for (const id of ids) {
+      const seccion = document.getElementById(id);
+      if (seccion && seccion.offsetTop <= centro) activo = id;
+    }
+    links.forEach((link) => link.classList.toggle('activo', link.getAttribute('data-link') === activo));
+  }
+  window.addEventListener('scroll', resaltarActivo, { passive: true });
+  window.addEventListener('load', resaltarActivo);
+  resaltarActivo();
 </script>

@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import SeccionInicio from '../components/SeccionInicio.astro';
+import Saludo from '../components/Saludo.jsx';
 import SeccionSobreMi from '../components/SeccionSobreMi.astro';
 import SeccionProyectos from '../components/SeccionProyectos.astro';
 import SeccionServicios from '../components/SeccionServicios.astro';
@@ -13,6 +14,7 @@ import Footer from '../components/Footer.astro';
   <Navbar />
   <main class="pt-16">
     <SeccionInicio />
+    <Saludo client:load />
     <SeccionSobreMi />
     <SeccionProyectos />
     <SeccionServicios />
