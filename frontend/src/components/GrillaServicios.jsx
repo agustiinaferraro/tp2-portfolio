@@ -3,6 +3,7 @@
 //maneja los estados: "cargando", "con datos", "sin datos" y "error"
 import { useEffect, useState } from 'react';
 import { obtenerServicios } from '../api/servicios.js';
+import IconoServicio from './IconoServicio.jsx';
 
 export default function GrillaServicios() {
   const [servicios, setServicios] = useState([]); //lista de servicios
@@ -45,12 +46,15 @@ export default function GrillaServicios() {
             href={`/servicios/${servicio.slug ?? servicio._id}`}
             className="block h-full group"
           >
-            <article className="h-full p-6 rounded-2xl bg-zinc-900 border border-zinc-800 group-hover:border-indigo-500/50 transition-colors flex flex-col">
+            <article className="h-full p-6 rounded-2xl bg-white/10 group-hover:bg-white/20 backdrop-blur-md border border-violet-400/40 group-hover:border-violet-400/70 group-hover:scale-[1.03] active:scale-95 shadow-lg shadow-violet-500/10 transition-all duration-200 flex flex-col">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 border border-violet-400/40 text-violet-400 mb-4">
+                <IconoServicio slug={servicio.slug ?? servicio._id} className="w-6 h-6" />
+              </span>
               <h3 className="text-xl font-bold text-white mb-2">{servicio.nombre}</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
                 {servicio.descripcion}
               </p>
-              <p className="mt-4 text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
+              <p className="mt-4 text-sm font-medium text-violet-400 group-hover:text-violet-300 transition-colors">
                 Ver más →
               </p>
             </article>

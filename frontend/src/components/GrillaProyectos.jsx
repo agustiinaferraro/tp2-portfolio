@@ -44,8 +44,8 @@ export default function GrillaProyectos() {
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {proyectos.map((proyecto) => (
         <li key={proyecto._id}>
-          <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-indigo-500/50 transition-colors">
-            {/* imagen si la tiene */}
+          <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
+            {/*imagen si la tiene*/}
             {proyecto.imagen && (
               <figure className="m-0">
                 <img
@@ -57,13 +57,13 @@ export default function GrillaProyectos() {
             )}
             <div className="p-6 flex flex-col gap-3 flex-1">
               <h3 className="text-xl font-bold text-white">{proyecto.titulo}</h3>
-              {/* tags / roles aplicados */}
+              {/*tags / roles aplicados*/}
               {proyecto.tags?.length > 0 && (
                 <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
                   {proyecto.tags.map((tag) => (
                     <li
                       key={tag}
-                      className="text-xs px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"
+                      className="text-xs px-2 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20"
                     >
                       {tag}
                     </li>
@@ -79,7 +79,7 @@ export default function GrillaProyectos() {
                     href={proyecto.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1"
+                    className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
                   >
                     Ver proyecto <span aria-hidden="true">→</span>
                   </a>

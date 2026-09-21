@@ -21,26 +21,61 @@ summary {
   }
 }
 
-/*subrayado animado del nav: se dibuja de izquierda a derecha con transition*/
+/*subrayado del nav: se dibuja de izquierda a derecha con scaleX (se anima en todos los navegadores)*/
 .nav-link {
-  background-image: linear-gradient(to right, #fff, #fff);
-  background-repeat: no-repeat;
-  background-position: left bottom;
-  background-size: 0% 2px;
-  transition: background-size 0.25s ease-out, color 0.2s;
+  position: relative;
   padding-bottom: 3px;
+  transition: color 0.2s;
 }
 
-/*cuando la seccion o pagina es la activa, el subrayado se completa y el texto se resalta*/
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s ease-out;
+}
+
+/*la linea aparece al pasar el mouse, al resaltar la seccion con el scroll o cuando esta activa*/
+.nav-link:hover::after,
+.nav-link.activo::after,
+body:has(#inicio:target) a[href="/"]::after,
+body:has(#sobre-mi:target) a[href="/#sobre-mi"]::after,
+body:has(#proyectos:target) a[href="/#proyectos"]::after,
+body:has(#servicios:target) a[href="/#servicios"]::after,
+body:has(#contacto:target) a[href="/#contacto"]::after,
+header[data-activo="sobre-mi"] a[data-link="sobre-mi"]::after,
+header[data-activo="proyectos"] a[data-link="proyectos"]::after,
+header[data-activo="servicios"] a[data-link="servicios"]::after,
+header[data-activo="contacto"] a[data-link="contacto"]::after {
+  transform: scaleX(1);
+}
+
+/*cuando esta activa, el texto del link se resalta*/
+.nav-link.activo,
 body:has(#inicio:target) a[href="/"],
 body:has(#sobre-mi:target) a[href="/#sobre-mi"],
 body:has(#proyectos:target) a[href="/#proyectos"],
+body:has(#servicios:target) a[href="/#servicios"],
 body:has(#contacto:target) a[href="/#contacto"],
 header[data-activo="sobre-mi"] a[data-link="sobre-mi"],
 header[data-activo="proyectos"] a[data-link="proyectos"],
-header[data-activo="contacto"] a[data-link="contacto"],
-header[data-activo="servicios"] a[data-link="servicios"] {
-  background-size: 100% 2px;
+header[data-activo="servicios"] a[data-link="servicios"],
+header[data-activo="contacto"] a[data-link="contacto"] {
   color: #fff;
   font-weight: 700;
+}
+
+/*scroll suave al saltar entre secciones y margen para que el nav fijo no las tape*/
+html {
+  scroll-behavior: smooth;
+}
+
+main section[id] {
+  scroll-margin-top: 4rem;
 }

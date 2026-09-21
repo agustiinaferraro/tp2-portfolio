@@ -2,6 +2,7 @@
 //trae el contenido desde la api y maneja los estados cargando / error / vacio / datos
 import { useEffect, useState } from 'react';
 import { obtenerServicioPorSlug } from '../api/servicios.js';
+import IconoServicio from './IconoServicio.jsx';
 
 export default function ServicioDetalle({ slug }) {
   const [servicio, setServicio] = useState(null);
@@ -50,8 +51,11 @@ export default function ServicioDetalle({ slug }) {
   //estado: con datos
   return (
     <section className="max-w-3xl mx-auto px-4 py-24">
-      <p className="text-indigo-400 font-medium tracking-widest uppercase text-sm">Servicio</p>
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-white mt-2">{servicio.nombre}</h1>
+      <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 mb-6">
+        <IconoServicio slug={servicio.slug} className="w-8 h-8" />
+      </span>
+      <p className="text-violet-400 font-medium tracking-widest uppercase text-sm">Servicio</p>
+      <h1 className="text-4xl font-bold text-white mt-2">{servicio.nombre}</h1>
       <p className="text-lg text-zinc-400 leading-relaxed mt-6">{servicio.descripcion}</p>
     </section>
   );
