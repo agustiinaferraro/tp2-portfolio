@@ -122,7 +122,7 @@ export default function GrillaProyectos() {
                 type="button"
                 onClick={() => setCategoria(c.slug)}
                 aria-pressed={categoria === c.slug}
-                className={`px-3 py-1 rounded-full text-sm border transition-colors cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-sm border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
                   categoria === c.slug
                     ? 'bg-violet-600 text-white border-violet-600'
                     : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-violet-500/50'
