@@ -50,6 +50,7 @@ export default function AdminProyectos() {
   const [nuevaNombre, setNuevaNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [imagenes, setImagenes] = useState([]);
+  const [destacado, setDestacado] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
@@ -115,6 +116,7 @@ export default function AdminProyectos() {
     setNuevaNombre('');
     setNuevaDescripcion('');
     setImagenes([]);
+    setDestacado(false);
     setEditandoId(null);
   }
 
@@ -126,6 +128,7 @@ export default function AdminProyectos() {
     setNuevaNombre('');
     setNuevaDescripcion('');
     setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
+    setDestacado(!!proyecto.destacado);
     setMensaje(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -159,6 +162,7 @@ export default function AdminProyectos() {
       servicio: slugServicio,
       imagen: imagenes[0] ?? '',
       imagenes: imagenes.slice(1),
+      destacado,
     };
     try {
       if (editandoId) {
@@ -295,6 +299,17 @@ export default function AdminProyectos() {
             className={`${claseInput} resize-y`}
           />
         </div>
+
+        <label htmlFor="admin-destacado" className="flex items-center gap-3 text-sm text-zinc-300 cursor-pointer">
+          <input
+            id="admin-destacado"
+            type="checkbox"
+            checked={destacado}
+            onChange={(e) => setDestacado(e.target.checked)}
+            className="w-4 h-4 accent-violet-500 cursor-pointer"
+          />
+          Destacado en la portada
+        </label>
 
         <div className="space-y-1">
           <label htmlFor="admin-servicio" className="block text-sm text-zinc-300">

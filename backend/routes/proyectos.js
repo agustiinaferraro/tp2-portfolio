@@ -43,10 +43,10 @@ router.get('/:id', async (req, res) => {
 });
 
 //post a /api/proyectos (solo admin)
-//crea un proyecto nuevo con titulo (obligatorio), y resumen, imagenes, imagen y servicio opcionales
+//crea un proyecto nuevo con titulo (obligatorio), y resumen, imagenes, imagen, servicio y destacado opcionales
 router.post('/', esAdmin, async (req, res) => {
   try {
-    const { titulo, resumen, imagen, imagenes, servicio } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio, destacado } = req.body ?? {};
 
     //validacion: el titulo es obligatorio
     if (!titulo || !titulo.trim()) {
@@ -64,7 +64,7 @@ router.post('/', esAdmin, async (req, res) => {
       servicio: servicio ?? '',
       tags: [],
       link: '',
-      destacado: false,
+      destacado: destacado === true,
     });
 
     res.status(201).json({ mensaje: 'Proyecto creado', datos: nuevoProyecto });
@@ -78,7 +78,7 @@ router.post('/', esAdmin, async (req, res) => {
 router.put('/:id', esAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, resumen, imagen, imagenes, servicio } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio, destacado } = req.body ?? {};
 
     //se arma un objeto solo con los campos que vinieron en la peticion
     const cambios = {};
@@ -89,6 +89,7 @@ router.put('/:id', esAdmin, async (req, res) => {
       cambios.imagenes = (imagenes ?? []).map((i) => (typeof i === 'string' ? i.trim() : '')).filter(Boolean);
     }
     if (servicio !== undefined) cambios.servicio = servicio;
+    if (destacado !== undefined) cambios.destacado = destacado === true;
 
     const actualizado = await Proyecto.findByIdAndUpdate(id, cambios, {
       new: true,

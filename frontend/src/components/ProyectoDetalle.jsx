@@ -48,6 +48,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   const [nuevaNombre, setNuevaNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [imagenes, setImagenes] = useState([]);
+  const [destacado, setDestacado] = useState(false);
 
   //login inline si no hay sesion guardada
   const [usuarioLogin, setUsuarioLogin] = useState('');
@@ -93,6 +94,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     setNuevaNombre('');
     setNuevaDescripcion('');
     setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
+    setDestacado(!!proyecto.destacado);
     setMensaje(null);
     setEditando(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -158,6 +160,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
         //la primera imagen del formulario es la portada y el resto la galeria
         imagen: imagenes[0] ?? '',
         imagenes: imagenes.slice(1),
+        destacado,
       };
 
       const actualizado = await actualizarProyecto(id, datos, clave);
@@ -424,6 +427,17 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
               className={claseInput}
             />
           </div>
+
+          <label htmlFor="det-destacado" className="flex items-center gap-3 text-sm text-zinc-300 cursor-pointer">
+            <input
+              id="det-destacado"
+              type="checkbox"
+              checked={destacado}
+              onChange={(e) => setDestacado(e.target.checked)}
+              className="w-4 h-4 accent-violet-500 cursor-pointer"
+            />
+            Destacado en la portada
+          </label>
 
           <div className="space-y-1">
             <label htmlFor="det-tags" className="block text-sm text-zinc-300">

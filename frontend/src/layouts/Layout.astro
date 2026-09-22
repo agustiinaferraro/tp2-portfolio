@@ -23,6 +23,10 @@ const { title } = Astro.props;
 		<title>{title ?? 'Agustina Ferraro | Diseñadora Multimedia'}</title>
 	</head>
 	<body class="bg-zinc-950 text-zinc-100 font-sans antialiased">
+		{/*accesibilidad: link para saltar al contenido con el teclado*/}
+		<a href="#contenido" class="saltar-a-contenido">
+			Saltar al contenido
+		</a>
 		<slot />
 		<BotonHablemos />
 	</body>
