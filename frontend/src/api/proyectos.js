@@ -21,6 +21,11 @@ export function obtenerProyectosPorServicio(slug) {
   return peticionGET(`/api/proyectos?servicio=${encodeURIComponent(slug)}`);
 }
 
+//devuelve un solo proyecto segun su id (para la pagina de detalle)
+export function obtenerProyectoPorId(id) {
+  return peticionGET(`/api/proyectos/${encodeURIComponent(id)}`);
+}
+
 //verifica si el usuario y la clave de administrador son correctos
 export function verificarClave(usuario, clave) {
   return peticionPOST('/api/admin/verificar', { usuario, clave });

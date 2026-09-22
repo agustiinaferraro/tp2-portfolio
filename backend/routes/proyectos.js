@@ -28,6 +28,20 @@ router.get('/', async (req, res) => {
   }
 });
 
+//get a /api/proyectos/:id
+//devuelve un solo proyecto segun su id (para la pagina de detalle)
+router.get('/:id', async (req, res) => {
+  try {
+    const proyecto = await Proyecto.findById(req.params.id).lean();
+    if (!proyecto) {
+      return res.status(404).json({ mensaje: 'Proyecto no encontrado' });
+    }
+    res.json(proyecto);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener el proyecto', error: error.message });
+  }
+});
+
 //post a /api/proyectos (solo admin)
 //crea un proyecto nuevo con titulo (obligatorio), y resumen, imagen y servicio opcionales
 router.post('/', esAdmin, async (req, res) => {

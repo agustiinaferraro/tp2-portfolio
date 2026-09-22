@@ -75,15 +75,21 @@ export default function ServicioDetalle({ slug }) {
                 <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
                   {proyecto.imagen && (
                     <figure className="m-0">
-                      <img
-                        src={proyecto.imagen}
-                        alt={`Imagen del proyecto ${proyecto.titulo}`}
-                        className="w-full h-40 object-cover"
-                      />
+                      <a href={`/proyectos/?id=${proyecto._id}`}>
+                        <img
+                          src={proyecto.imagen}
+                          alt={`Imagen del proyecto ${proyecto.titulo}`}
+                          className="w-full h-40 object-cover hover:opacity-90 transition-opacity"
+                        />
+                      </a>
                     </figure>
                   )}
                   <div className="p-6 flex flex-col gap-3 flex-1">
-                    <h3 className="text-xl font-bold text-white">{proyecto.titulo}</h3>
+                    <h3 className="text-xl font-bold text-white">
+                      <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
+                        {proyecto.titulo}
+                      </a>
+                    </h3>
                     <p className="text-zinc-400 text-sm leading-relaxed flex-1">{proyecto.resumen}</p>
                     {proyecto.link && (
                       <p className="mt-auto">

@@ -9,17 +9,29 @@ import {
   actualizarProyecto,
   borrarProyecto,
 } from '../api/proyectos.js';
+import { obtenerServicios, crearServicio } from '../api/servicios.js';
+import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
+import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
-import { servicios } from '../data/servicios.js';
+import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
 //mensaje de error para saber si el problema fue la clave (401) o algo mas
 function claveIncorrecta(error) {
   return /401/.test(error.message);
 }
 
+//junta los servicios de la base con la lista estatica para que nunca quede vacia
+//si hay repetidos, gana el de la base (puede tener nombre actualizado)
+function juntarServicios(listaApi) {
+  const porSlug = new Map();
+  for (const servicio of serviciosEstaticos) porSlug.set(servicio.slug, servicio);
+  for (const servicio of listaApi) porSlug.set(servicio.slug, servicio);
+  return [...porSlug.values()];
+}
+
 //nombre del servicio a partir de su slug, para mostrar la categoría del proyecto
-function nombreServicio(slug) {
-  return servicios.find((s) => s.slug === slug)?.nombre ?? '';
+function nombreServicio(lista, slug) {
+  return lista.find((s) => s.slug === slug)?.nombre ?? '';
 }
 
 export default function AdminProyectos() {
@@ -34,11 +46,28 @@ export default function AdminProyectos() {
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [servicio, setServicio] = useState('');
+  const [nuevaNombre, setNuevaNombre] = useState('');
+  const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [imagen, setImagen] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
+  const [listaServicios, setListaServicios] = useState(serviciosEstaticos);
   const [mensaje, setMensaje] = useState(null);
+
+  //al entrar: si ya hay sesion guardada (por ejemplo desde el detalle de un proyecto) se reusa
+  useEffect(() => {
+    const sesion = leerSesion();
+    if (sesion) {
+      setSesion(true);
+      setClave(sesion.clave);
+      setUsuario(sesion.usuario);
+      cargarProyectos();
+    }
+    obtenerServicios()
+      .then((lista) => setListaServicios(juntarServicios(lista)))
+      .catch(() => {});
+  }, []);
 
   function mostrarMensaje(texto, tipo = 'ok') {
     setMensaje({ texto, tipo });
@@ -58,6 +87,7 @@ export default function AdminProyectos() {
     setMensaje(null);
     try {
       await verificarClave(usuario.trim(), clave.trim());
+      guardarSesion(usuario.trim(), clave.trim());
       setSesion(true);
       cargarProyectos();
     } catch (error) {
@@ -68,6 +98,7 @@ export default function AdminProyectos() {
   }
 
   function salir() {
+    borrarSesion();
     setSesion(false);
     setUsuario('');
     setClave('');
@@ -80,6 +111,8 @@ export default function AdminProyectos() {
     setTitulo('');
     setResumen('');
     setServicio('');
+    setNuevaNombre('');
+    setNuevaDescripcion('');
     setImagen('');
     setEditandoId(null);
   }
@@ -89,6 +122,8 @@ export default function AdminProyectos() {
     setTitulo(proyecto.titulo ?? '');
     setResumen(proyecto.resumen ?? '');
     setServicio(proyecto.servicio ?? '');
+    setNuevaNombre('');
+    setNuevaDescripcion('');
     setImagen(proyecto.imagen ?? '');
     setMensaje(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -106,7 +141,21 @@ export default function AdminProyectos() {
     }
     setGuardando(true);
     setMensaje(null);
-    const datos = { titulo: titulo.trim(), resumen: resumen.trim(), servicio: servicio.trim() };
+    let slugServicio = servicio.trim();
+    //si se elige "crear categoria nueva", se crea o se reusa una con ese nombre
+    if (slugServicio === OPCION_NUEVA_CATEGORIA) {
+      if (!nuevaNombre.trim()) {
+        mostrarMensaje('Escribí el nombre de la categoría nueva', 'error');
+        setGuardando(false);
+        return;
+      }
+      const creado = await crearServicio(nuevaNombre.trim(), nuevaDescripcion.trim(), clave);
+      slugServicio = creado.datos.slug;
+      obtenerServicios()
+        .then((lista) => setListaServicios(juntarServicios(lista)))
+        .catch(() => {});
+    }
+    const datos = { titulo: titulo.trim(), resumen: resumen.trim(), servicio: slugServicio };
     if (imagen) datos.imagen = imagen;
     try {
       if (editandoId) {
@@ -146,39 +195,6 @@ export default function AdminProyectos() {
         mostrarMensaje(error.message, 'error');
       }
     }
-  }
-
-  //se redimensiona la imagen en el navegador para que el guardado no falle por lo pesado
-  function comprimirImagen(archivo) {
-    return new Promise((resolver, rechazar) => {
-      const lector = new FileReader();
-      lector.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          //si ya viene chica y liviana se deja como esta
-          if (archivo.size <= 500 * 1024 && img.width <= 1280 && img.height <= 1280) {
-            resolver(lector.result);
-            return;
-          }
-          const escala = Math.min(1280 / img.width, 1280 / img.height, 1);
-          const ancho = Math.round(img.width * escala);
-          const alto = Math.round(img.height * escala);
-          const canvas = document.createElement('canvas');
-          canvas.width = ancho;
-          canvas.height = alto;
-          const contexto = canvas.getContext('2d');
-          //se rellena de blanco para que el jpg no quede con fondo transparente
-          contexto.fillStyle = '#fff';
-          contexto.fillRect(0, 0, ancho, alto);
-          contexto.drawImage(img, 0, 0, ancho, alto);
-          resolver(canvas.toDataURL('image/jpeg', 0.8));
-        };
-        img.onerror = () => rechazar(new Error('No se pudo leer la imagen'));
-        img.src = lector.result;
-      };
-      lector.onerror = () => rechazar(new Error('No se pudo leer el archivo'));
-      lector.readAsDataURL(archivo);
-    });
   }
 
   async function alElegirImagen(evento) {
@@ -312,14 +328,49 @@ export default function AdminProyectos() {
             className={claseInput}
           >
             <option value="">Sin categoría</option>
-            {servicios.map((s) => (
+            {listaServicios.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.nombre}
               </option>
             ))}
+            <option value={OPCION_NUEVA_CATEGORIA}>+ Crear categoría nueva...</option>
           </select>
           <p className="text-xs text-zinc-600">Elegí en qué servicio aparece este proyecto.</p>
         </div>
+
+        {servicio === OPCION_NUEVA_CATEGORIA && (
+          <div className="space-y-3 rounded-xl border border-violet-500/30 bg-violet-500/5 p-4">
+            <div className="space-y-1">
+              <label htmlFor="admin-nueva-nombre" className="block text-sm text-zinc-300">
+                Nombre de la categoría nueva *
+              </label>
+              <input
+                id="admin-nueva-nombre"
+                type="text"
+                value={nuevaNombre}
+                onChange={(e) => setNuevaNombre(e.target.value)}
+                placeholder="Ej: Fotografía"
+                className={claseInput}
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="admin-nueva-desc" className="block text-sm text-zinc-300">
+                Descripción breve (opcional)
+              </label>
+              <input
+                id="admin-nueva-desc"
+                type="text"
+                value={nuevaDescripcion}
+                onChange={(e) => setNuevaDescripcion(e.target.value)}
+                placeholder="De qué se trata esta categoría"
+                className={claseInput}
+              />
+            </div>
+            <p className="text-xs text-zinc-500">
+              La categoría queda guardada y se puede usar en otros proyectos. Su página propia se suma con la próxima actualización de la web.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-1">
           <label htmlFor="admin-imagen" className="block text-sm text-zinc-300">
@@ -395,9 +446,9 @@ export default function AdminProyectos() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-white truncate">{proyecto.titulo}</p>
-                  {nombreServicio(proyecto.servicio) && (
+                  {nombreServicio(listaServicios, proyecto.servicio) && (
                     <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
-                      {nombreServicio(proyecto.servicio)}
+                      {nombreServicio(listaServicios, proyecto.servicio)}
                     </span>
                   )}
                   <p className="text-sm text-zinc-500 line-clamp-2">{proyecto.resumen || 'Sin descripción'}</p>

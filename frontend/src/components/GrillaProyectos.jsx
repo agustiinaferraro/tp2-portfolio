@@ -1,20 +1,53 @@
 //grilla de proyectos (parte dinamica de la seccion)
 //se apoya en la capa de datos (api/proyectos.js) para obtener la informacion
 //maneja los estados: "cargando", "con datos", "sin datos" y "error"
+//si la url trae ?id=, en lugar de la grilla muestra el detalle de ese proyecto
 import { useEffect, useState } from 'react';
 import { obtenerProyectos } from '../api/proyectos.js';
+import ProyectoDetalle from './ProyectoDetalle.jsx';
 
 export default function GrillaProyectos() {
   const [proyectos, setProyectos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [detalleId, setDetalleId] = useState(null);
 
+  //se lee la url del lado del cliente (en el server no existe window)
+  useEffect(() => {
+    setDetalleId(new URLSearchParams(window.location.search).get('id'));
+  }, []);
+
+  //se cargan los proyectos
   useEffect(() => {
     obtenerProyectos()
       .then((datos) => setProyectos(datos))
       .catch((e) => setError(e.message))
       .finally(() => setCargando(false));
   }, []);
+
+  //si el usuario usa el boton "atras" del navegador, se re-sincroniza con la url
+  useEffect(() => {
+    const alVolverPagina = () => {
+      setDetalleId(new URLSearchParams(window.location.search).get('id'));
+    };
+    window.addEventListener('popstate', alVolverPagina);
+    return () => window.removeEventListener('popstate', alVolverPagina);
+  }, []);
+
+  //estado: detalle de un proyecto (al llegar con ?id= o al tocar una tarjeta)
+  if (detalleId) {
+    const yaCargado = proyectos.find((p) => p._id === detalleId);
+    return (
+      <ProyectoDetalle
+        id={detalleId}
+        proyectoInicial={yaCargado ?? null}
+        alVolver={() => {
+          setDetalleId(null);
+          window.history.replaceState({}, '', window.location.pathname);
+        }}
+      />
+    );
+  }
 
   //estado: error
   if (error) {
@@ -40,23 +73,30 @@ export default function GrillaProyectos() {
   }
 
   //estado: con datos
+  //cada tarjeta lleva a la pagina de detalle con ?id=
   return (
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {proyectos.map((proyecto) => (
         <li key={proyecto._id}>
           <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
-            {/*imagen si la tiene*/}
+            {/*imagen si la tiene, clickeable hacia el detalle*/}
             {proyecto.imagen && (
               <figure className="m-0">
-                <img
-                  src={proyecto.imagen}
-                  alt={`Imagen del proyecto ${proyecto.titulo}`}
-                  className="w-full h-44 object-cover"
-                />
+                <a href={`/proyectos/?id=${proyecto._id}`}>
+                  <img
+                    src={proyecto.imagen}
+                    alt={`Imagen del proyecto ${proyecto.titulo}`}
+                    className="w-full h-44 object-cover hover:opacity-90 transition-opacity"
+                  />
+                </a>
               </figure>
             )}
             <div className="p-6 flex flex-col gap-3 flex-1">
-              <h3 className="text-xl font-bold text-white">{proyecto.titulo}</h3>
+              <h3 className="text-xl font-bold text-white">
+                <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
+                  {proyecto.titulo}
+                </a>
+              </h3>
               {/*tags / roles aplicados*/}
               {proyecto.tags?.length > 0 && (
                 <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
