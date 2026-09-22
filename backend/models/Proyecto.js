@@ -25,9 +25,14 @@ const proyectoSchema = new mongoose.Schema(
       default: '',
     },
     imagen: {
-      //imagen en base64 que se sube desde el panel admin
+      //imagen de portada en base64 que se sube desde el panel admin
       type: String,
       default: '',
+    },
+    imagenes: {
+      //galeria extra del proyecto en base64 (la portada queda en "imagen")
+      type: [String],
+      default: [],
     },
     link: {
       //url al proyecto publicado o repositorio

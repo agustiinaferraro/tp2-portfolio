@@ -11,8 +11,9 @@ import {
 } from '../api/proyectos.js';
 import { obtenerServicios, crearServicio } from '../api/servicios.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
-import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
+import { OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
+import SelectorImagenes from './SelectorImagenes.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
 //mensaje de error para saber si el problema fue la clave (401) o algo mas
@@ -48,7 +49,7 @@ export default function AdminProyectos() {
   const [servicio, setServicio] = useState('');
   const [nuevaNombre, setNuevaNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
-  const [imagen, setImagen] = useState('');
+  const [imagenes, setImagenes] = useState([]);
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
@@ -113,7 +114,7 @@ export default function AdminProyectos() {
     setServicio('');
     setNuevaNombre('');
     setNuevaDescripcion('');
-    setImagen('');
+    setImagenes([]);
     setEditandoId(null);
   }
 
@@ -124,13 +125,9 @@ export default function AdminProyectos() {
     setServicio(proyecto.servicio ?? '');
     setNuevaNombre('');
     setNuevaDescripcion('');
-    setImagen(proyecto.imagen ?? '');
+    setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
     setMensaje(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function quitarImagen() {
-    setImagen('');
   }
 
   async function guardarProyecto(evento) {
@@ -155,8 +152,14 @@ export default function AdminProyectos() {
         .then((lista) => setListaServicios(juntarServicios(lista)))
         .catch(() => {});
     }
-    const datos = { titulo: titulo.trim(), resumen: resumen.trim(), servicio: slugServicio };
-    if (imagen) datos.imagen = imagen;
+    //la primera imagen del formulario es la portada y el resto la galeria del detalle
+    const datos = {
+      titulo: titulo.trim(),
+      resumen: resumen.trim(),
+      servicio: slugServicio,
+      imagen: imagenes[0] ?? '',
+      imagenes: imagenes.slice(1),
+    };
     try {
       if (editandoId) {
         await actualizarProyecto(editandoId, datos, clave);
@@ -194,30 +197,6 @@ export default function AdminProyectos() {
       } else {
         mostrarMensaje(error.message, 'error');
       }
-    }
-  }
-
-  async function alElegirImagen(evento) {
-    const archivo = evento.target.files?.[0];
-    if (!archivo) return;
-    //se limita el tamaño para que entre en la base de datos sin problemas
-    if (archivo.size > 8 * 1024 * 1024) {
-      mostrarMensaje('La imagen pesa más de 8 MB. Probá con otra más liviana.', 'error');
-      evento.target.value = '';
-      return;
-    }
-    try {
-      const lista = await comprimirImagen(archivo);
-      if (lista.length > 1.5 * 1024 * 1024) {
-        mostrarMensaje('La imagen sigue pesando demasiado. Probá con otra más liviana.', 'error');
-        evento.target.value = '';
-        return;
-      }
-      setImagen(lista);
-      mostrarMensaje(null);
-    } catch (error) {
-      mostrarMensaje(error.message, 'error');
-      evento.target.value = '';
     }
   }
 
@@ -374,30 +353,10 @@ export default function AdminProyectos() {
 
         <div className="space-y-1">
           <label htmlFor="admin-imagen" className="block text-sm text-zinc-300">
-            Imagen del proyecto
+            Imágenes del proyecto
           </label>
-          <input
-            id="admin-imagen"
-            type="file"
-            accept="image/*"
-            onChange={alElegirImagen}
-            className="block w-full text-sm text-zinc-400 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-violet-600 file:text-white file:font-medium file:cursor-pointer hover:file:bg-violet-500 file:transition-colors"
-          />
-          <p className="text-xs text-zinc-600">Máximo 8 MB. Se comprime sola para que entre en la base de datos.</p>
+          <SelectorImagenes imagenes={imagenes} alCambiar={setImagenes} mostrarMensaje={mostrarMensaje} />
         </div>
-
-        {imagen && (
-          <div className="space-y-2">
-            <img
-              src={imagen}
-              alt="Vista previa de la imagen del proyecto"
-              className="h-40 object-contain rounded-lg border border-zinc-800 bg-zinc-950"
-            />
-            <button type="button" onClick={quitarImagen} className="text-xs text-red-400 hover:text-red-300 transition-colors">
-              Quitar imagen
-            </button>
-          </div>
-        )}
 
         <div className="flex gap-3">
           <button
@@ -435,9 +394,9 @@ export default function AdminProyectos() {
                 key={proyecto._id}
                 className="flex items-center gap-4 p-3 rounded-xl bg-zinc-900 border border-zinc-800"
               >
-                {proyecto.imagen ? (
+                {(proyecto.imagen || proyecto.imagenes?.[0]) ? (
                   <img
-                    src={proyecto.imagen}
+                    src={proyecto.imagen || proyecto.imagenes[0]}
                     alt=""
                     className="w-16 h-16 object-cover rounded-lg shrink-0"
                   />

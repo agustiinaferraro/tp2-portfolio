@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { obtenerProyectoPorId, actualizarProyecto, verificarClave } from '../api/proyectos.js';
 import { obtenerServicios, crearServicio } from '../api/servicios.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
-import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
+import { OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
+import SelectorImagenes from './SelectorImagenes.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
 //junta los servicios de la base con la lista estatica para que nunca quede vacia
@@ -35,6 +36,9 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
 
+  //imagen elegida en la galeria del detalle
+  const [indiceGaleria, setIndiceGaleria] = useState(0);
+
   //formulario de edicion
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
@@ -43,7 +47,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   const [servicio, setServicio] = useState('');
   const [nuevaNombre, setNuevaNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
-  const [imagen, setImagen] = useState('');
+  const [imagenes, setImagenes] = useState([]);
 
   //login inline si no hay sesion guardada
   const [usuarioLogin, setUsuarioLogin] = useState('');
@@ -74,6 +78,11 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     }
   }, [id]);
 
+  //al ver otro proyecto la galeria vuelve a arrancar desde la primera imagen
+  useEffect(() => {
+    setIndiceGaleria(0);
+  }, [proyecto?._id]);
+
   function abrirEditor() {
     if (!proyecto) return;
     setTitulo(proyecto.titulo ?? '');
@@ -83,7 +92,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     setServicio(proyecto.servicio ?? '');
     setNuevaNombre('');
     setNuevaDescripcion('');
-    setImagen(proyecto.imagen ?? '');
+    setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
     setMensaje(null);
     setEditando(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -116,33 +125,6 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     setMensaje(null);
   }
 
-  function quitarImagen() {
-    setImagen('');
-  }
-
-  async function alElegirImagen(evento) {
-    const archivo = evento.target.files?.[0];
-    if (!archivo) return;
-    if (archivo.size > 8 * 1024 * 1024) {
-      mostrarMensaje('La imagen pesa más de 8 MB. Probá con otra más liviana.', 'error');
-      evento.target.value = '';
-      return;
-    }
-    try {
-      const lista = await comprimirImagen(archivo);
-      if (lista.length > 1.5 * 1024 * 1024) {
-        mostrarMensaje('La imagen sigue pesando demasiado. Probá con otra más liviana.', 'error');
-        evento.target.value = '';
-        return;
-      }
-      setImagen(lista);
-      setMensaje(null);
-    } catch (e) {
-      mostrarMensaje(e.message, 'error');
-      evento.target.value = '';
-    }
-  }
-
   async function guardarCambios(evento) {
     evento.preventDefault();
     if (!titulo.trim()) {
@@ -173,8 +155,10 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
         link: link.trim(),
         tags: tagsTexto.split(',').map((t) => t.trim()).filter(Boolean),
         servicio: slugServicio,
+        //la primera imagen del formulario es la portada y el resto la galeria
+        imagen: imagenes[0] ?? '',
+        imagenes: imagenes.slice(1),
       };
-      if (imagen) datos.imagen = imagen;
 
       const actualizado = await actualizarProyecto(id, datos, clave);
       setProyecto(actualizado.datos);
@@ -243,6 +227,9 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
 
   const nombreCategoria =
     servicios.find((s) => s.slug === proyecto.servicio)?.nombre ?? (proyecto.servicio ? proyecto.servicio : '');
+
+  //todas las imagenes del proyecto: la portada primero y la galeria extra despues
+  const galeria = [proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean);
 
   return (
     <section className="max-w-3xl mx-auto px-4 py-16">
@@ -318,10 +305,27 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
         </p>
       )}
 
-      {proyecto.imagen && (
-        <figure className="mt-8">
+      {galeria.length > 0 && (
+        <figure className="mt-8 space-y-3">
+          {galeria.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {galeria.map((img, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setIndiceGaleria(i)}
+                  className={`shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-colors cursor-pointer ${
+                    i === indiceGaleria ? 'border-violet-500' : 'border-zinc-800 hover:border-zinc-600'
+                  }`}
+                  aria-label={`Ver imagen ${i + 1}`}
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
           <img
-            src={proyecto.imagen}
+            src={galeria[Math.min(indiceGaleria, galeria.length - 1)]}
             alt={`Imagen del proyecto ${proyecto.titulo}`}
             className="w-full rounded-2xl border border-zinc-800"
           />
@@ -491,30 +495,10 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
 
           <div className="space-y-1">
             <label htmlFor="det-imagen" className="block text-sm text-zinc-300">
-              Imagen del proyecto
+              Imágenes del proyecto
             </label>
-            <input
-              id="det-imagen"
-              type="file"
-              accept="image/*"
-              onChange={alElegirImagen}
-              className="block w-full text-sm text-zinc-400 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-violet-600 file:text-white file:font-medium file:cursor-pointer hover:file:bg-violet-500 file:transition-colors"
-            />
-            <p className="text-xs text-zinc-600">Máximo 8 MB. Se comprime sola para que entre en la base de datos.</p>
+            <SelectorImagenes imagenes={imagenes} alCambiar={setImagenes} mostrarMensaje={mostrarMensaje} />
           </div>
-
-          {imagen && (
-            <div className="space-y-2">
-              <img
-                src={imagen}
-                alt="Vista previa de la imagen del proyecto"
-                className="h-40 object-contain rounded-lg border border-zinc-800 bg-zinc-950"
-              />
-              <button type="button" onClick={quitarImagen} className="text-xs text-red-400 hover:text-red-300 transition-colors">
-                Quitar imagen
-              </button>
-            </div>
-          )}
 
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={guardando} className={`${claseBoton} bg-violet-600 hover:bg-violet-500 text-white`}>

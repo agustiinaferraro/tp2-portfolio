@@ -43,20 +43,24 @@ router.get('/:id', async (req, res) => {
 });
 
 //post a /api/proyectos (solo admin)
-//crea un proyecto nuevo con titulo (obligatorio), y resumen, imagen y servicio opcionales
+//crea un proyecto nuevo con titulo (obligatorio), y resumen, imagenes, imagen y servicio opcionales
 router.post('/', esAdmin, async (req, res) => {
   try {
-    const { titulo, resumen, imagen, servicio } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio } = req.body ?? {};
 
     //validacion: el titulo es obligatorio
     if (!titulo || !titulo.trim()) {
       return res.status(400).json({ mensaje: 'El titulo es obligatorio' });
     }
 
+    //las imagenes extra se guardan sin vacias ni espacios de mas
+    const galeria = (imagenes ?? []).map((i) => (typeof i === 'string' ? i.trim() : '')).filter(Boolean);
+
     const nuevoProyecto = await Proyecto.create({
       titulo: titulo.trim(),
       resumen: resumen ?? '',
       imagen: imagen ?? '',
+      imagenes: galeria,
       servicio: servicio ?? '',
       tags: [],
       link: '',
@@ -70,17 +74,20 @@ router.post('/', esAdmin, async (req, res) => {
 });
 
 //put a /api/proyectos/:id (solo admin)
-//actualiza los campos que lleguen (titulo, resumen, imagen o servicio)
+//actualiza los campos que lleguen (titulo, resumen, imagenes, imagen o servicio)
 router.put('/:id', esAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, resumen, imagen, servicio } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio } = req.body ?? {};
 
     //se arma un objeto solo con los campos que vinieron en la peticion
     const cambios = {};
     if (titulo !== undefined) cambios.titulo = titulo;
     if (resumen !== undefined) cambios.resumen = resumen;
     if (imagen !== undefined) cambios.imagen = imagen;
+    if (imagenes !== undefined) {
+      cambios.imagenes = (imagenes ?? []).map((i) => (typeof i === 'string' ? i.trim() : '')).filter(Boolean);
+    }
     if (servicio !== undefined) cambios.servicio = servicio;
 
     const actualizado = await Proyecto.findByIdAndUpdate(id, cambios, {

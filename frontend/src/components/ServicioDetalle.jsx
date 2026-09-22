@@ -73,11 +73,12 @@ export default function ServicioDetalle({ slug }) {
             {proyectos.map((proyecto) => (
               <li key={proyecto._id}>
                 <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
-                  {proyecto.imagen && (
+                  {/*la portada es la imagen principal o la primera de la galeria, clickeable hacia el detalle*/}
+                  {(proyecto.imagen || proyecto.imagenes?.[0]) && (
                     <figure className="m-0">
                       <a href={`/proyectos/?id=${proyecto._id}`}>
                         <img
-                          src={proyecto.imagen}
+                          src={proyecto.imagen || proyecto.imagenes[0]}
                           alt={`Imagen del proyecto ${proyecto.titulo}`}
                           className="w-full h-40 object-cover hover:opacity-90 transition-opacity"
                         />
