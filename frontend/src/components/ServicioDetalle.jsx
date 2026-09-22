@@ -1,20 +1,27 @@
 //detalle de un servicio: pagina dinamica por slug
-//trae el contenido desde la api y maneja los estados cargando / error / vacio / datos
+//trae el contenido desde la api y los proyectos de esa categoria
 import { useEffect, useState } from 'react';
 import { obtenerServicioPorSlug } from '../api/servicios.js';
+import { obtenerProyectosPorServicio } from '../api/proyectos.js';
 import IconoServicio from './IconoServicio.jsx';
 
 export default function ServicioDetalle({ slug }) {
   const [servicio, setServicio] = useState(null);
+  const [proyectos, setProyectos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  //se pide el servicio cada vez que cambia el slug
+  //se pide el servicio y sus proyectos cada vez que cambia el slug
   useEffect(() => {
     setCargando(true);
     setError(null);
+    setProyectos([]);
     obtenerServicioPorSlug(slug)
-      .then((datos) => setServicio(datos))
+      .then((datos) => {
+        setServicio(datos);
+        return obtenerProyectosPorServicio(slug);
+      })
+      .then(setProyectos)
       .catch((e) => setError(e.message))
       .finally(() => setCargando(false));
   }, [slug]);
@@ -57,6 +64,46 @@ export default function ServicioDetalle({ slug }) {
       <p className="text-violet-400 font-medium tracking-widest uppercase text-sm">Servicio</p>
       <h1 className="text-4xl font-bold text-white mt-2">{servicio.nombre}</h1>
       <p className="text-lg text-zinc-400 leading-relaxed mt-6">{servicio.descripcion}</p>
+
+      {/*proyectos que entran en esta categoria*/}
+      {proyectos.length > 0 && (
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-white">Proyectos de {servicio.nombre}</h2>
+          <ul className="mt-6 grid gap-6 sm:grid-cols-2">
+            {proyectos.map((proyecto) => (
+              <li key={proyecto._id}>
+                <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
+                  {proyecto.imagen && (
+                    <figure className="m-0">
+                      <img
+                        src={proyecto.imagen}
+                        alt={`Imagen del proyecto ${proyecto.titulo}`}
+                        className="w-full h-40 object-cover"
+                      />
+                    </figure>
+                  )}
+                  <div className="p-6 flex flex-col gap-3 flex-1">
+                    <h3 className="text-xl font-bold text-white">{proyecto.titulo}</h3>
+                    <p className="text-zinc-400 text-sm leading-relaxed flex-1">{proyecto.resumen}</p>
+                    {proyecto.link && (
+                      <p className="mt-auto">
+                        <a
+                          href={proyecto.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
+                        >
+                          Ver proyecto <span aria-hidden="true">→</span>
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

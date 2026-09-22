@@ -10,10 +10,16 @@ import {
   borrarProyecto,
 } from '../api/proyectos.js';
 import AdminMensajes from './AdminMensajes.jsx';
+import { servicios } from '../data/servicios.js';
 
 //mensaje de error para saber si el problema fue la clave (401) o algo mas
 function claveIncorrecta(error) {
   return /401/.test(error.message);
+}
+
+//nombre del servicio a partir de su slug, para mostrar la categoría del proyecto
+function nombreServicio(slug) {
+  return servicios.find((s) => s.slug === slug)?.nombre ?? '';
 }
 
 export default function AdminProyectos() {
@@ -27,6 +33,7 @@ export default function AdminProyectos() {
 
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
+  const [servicio, setServicio] = useState('');
   const [imagen, setImagen] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [guardando, setGuardando] = useState(false);
@@ -72,6 +79,7 @@ export default function AdminProyectos() {
   function resetearFormulario() {
     setTitulo('');
     setResumen('');
+    setServicio('');
     setImagen('');
     setEditandoId(null);
   }
@@ -80,6 +88,7 @@ export default function AdminProyectos() {
     setEditandoId(proyecto._id);
     setTitulo(proyecto.titulo ?? '');
     setResumen(proyecto.resumen ?? '');
+    setServicio(proyecto.servicio ?? '');
     setImagen(proyecto.imagen ?? '');
     setMensaje(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,7 +106,7 @@ export default function AdminProyectos() {
     }
     setGuardando(true);
     setMensaje(null);
-    const datos = { titulo: titulo.trim(), resumen: resumen.trim() };
+    const datos = { titulo: titulo.trim(), resumen: resumen.trim(), servicio: servicio.trim() };
     if (imagen) datos.imagen = imagen;
     try {
       if (editandoId) {
@@ -293,6 +302,26 @@ export default function AdminProyectos() {
         </div>
 
         <div className="space-y-1">
+          <label htmlFor="admin-servicio" className="block text-sm text-zinc-300">
+            Categoría / servicio
+          </label>
+          <select
+            id="admin-servicio"
+            value={servicio}
+            onChange={(e) => setServicio(e.target.value)}
+            className={claseInput}
+          >
+            <option value="">Sin categoría</option>
+            {servicios.map((s) => (
+              <option key={s.slug} value={s.slug}>
+                {s.nombre}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-zinc-600">Elegí en qué servicio aparece este proyecto.</p>
+        </div>
+
+        <div className="space-y-1">
           <label htmlFor="admin-imagen" className="block text-sm text-zinc-300">
             Imagen del proyecto
           </label>
@@ -366,6 +395,11 @@ export default function AdminProyectos() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-white truncate">{proyecto.titulo}</p>
+                  {nombreServicio(proyecto.servicio) && (
+                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                      {nombreServicio(proyecto.servicio)}
+                    </span>
+                  )}
                   <p className="text-sm text-zinc-500 line-clamp-2">{proyecto.resumen || 'Sin descripción'}</p>
                 </div>
                 <div className="flex gap-2 shrink-0">

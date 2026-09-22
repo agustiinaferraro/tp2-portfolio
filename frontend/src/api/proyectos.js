@@ -16,6 +16,11 @@ export function obtenerProyectosLigeros() {
   return peticionGET('/api/proyectos?ligero=true');
 }
 
+//devuelve los proyectos de una categoria (slug del servicio, ej. diseno-grafico-identidad)
+export function obtenerProyectosPorServicio(slug) {
+  return peticionGET(`/api/proyectos?servicio=${encodeURIComponent(slug)}`);
+}
+
 //verifica si el usuario y la clave de administrador son correctos
 export function verificarClave(usuario, clave) {
   return peticionPOST('/api/admin/verificar', { usuario, clave });

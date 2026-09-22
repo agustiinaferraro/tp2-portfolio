@@ -18,6 +18,12 @@ const proyectoSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    servicio: {
+      //slug del servicio al que pertenece (ej. "diseno-grafico-identidad")
+      //vacio = sin categoria
+      type: String,
+      default: '',
+    },
     imagen: {
       //imagen en base64 que se sube desde el panel admin
       type: String,

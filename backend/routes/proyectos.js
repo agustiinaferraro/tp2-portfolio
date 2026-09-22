@@ -8,13 +8,15 @@ const router = Router();
 
 //get a /api/proyectos
 //devuelve la lista de todos los proyectos cargados en la base
-//soporta ?destacados=true (solo destacados) y ?ligero=true (sin imagenes, para el buscador)
+//soportan ?destacados=true (solo destacados), ?ligero=true (sin imagenes) y ?servicio=slug (solo esa categoria)
 router.get('/', async (req, res) => {
   try {
-    const { destacados, ligero } = req.query;
+    const { destacados, ligero, servicio } = req.query;
 
-    //filtro: si se pide destacado, se traen solo los destacados
-    const filtro = destacados === 'true' ? { destacado: true } : {};
+    //filtro: se arman las condiciones que lleguen (destacados y/o servicio)
+    const filtro = {};
+    if (destacados === 'true') filtro.destacado = true;
+    if (servicio) filtro.servicio = servicio;
 
     //proyeccion: el modo ligero no manda las imagenes (pesan bastante en base64)
     const proyeccion = ligero === 'true' ? { titulo: 1, resumen: 1, tags: 1 } : null;
@@ -27,10 +29,10 @@ router.get('/', async (req, res) => {
 });
 
 //post a /api/proyectos (solo admin)
-//crea un proyecto nuevo con titulo (obligatorio), descripcion e imagen opcionales
+//crea un proyecto nuevo con titulo (obligatorio), y resumen, imagen y servicio opcionales
 router.post('/', esAdmin, async (req, res) => {
   try {
-    const { titulo, resumen, imagen } = req.body ?? {};
+    const { titulo, resumen, imagen, servicio } = req.body ?? {};
 
     //validacion: el titulo es obligatorio
     if (!titulo || !titulo.trim()) {
@@ -41,6 +43,7 @@ router.post('/', esAdmin, async (req, res) => {
       titulo: titulo.trim(),
       resumen: resumen ?? '',
       imagen: imagen ?? '',
+      servicio: servicio ?? '',
       tags: [],
       link: '',
       destacado: false,
@@ -53,17 +56,18 @@ router.post('/', esAdmin, async (req, res) => {
 });
 
 //put a /api/proyectos/:id (solo admin)
-//actualiza los campos que lleguen (titulo, descripcion o imagen)
+//actualiza los campos que lleguen (titulo, resumen, imagen o servicio)
 router.put('/:id', esAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, resumen, imagen } = req.body ?? {};
+    const { titulo, resumen, imagen, servicio } = req.body ?? {};
 
     //se arma un objeto solo con los campos que vinieron en la peticion
     const cambios = {};
     if (titulo !== undefined) cambios.titulo = titulo;
     if (resumen !== undefined) cambios.resumen = resumen;
     if (imagen !== undefined) cambios.imagen = imagen;
+    if (servicio !== undefined) cambios.servicio = servicio;
 
     const actualizado = await Proyecto.findByIdAndUpdate(id, cambios, {
       new: true,
