@@ -2,6 +2,8 @@
 
 Portfolio personal desarrollado como trabajo final de la carrera **Tecnología Multimedia** (Universidad Maimónides).
 
+> **Consigna:** el enunciado del Examen Final de Programación Multimedial IV está en [`docs/consigna.md`](docs/consigna.md).
+
 El proyecto está organizado en dos partes independientes:
 
 ```
