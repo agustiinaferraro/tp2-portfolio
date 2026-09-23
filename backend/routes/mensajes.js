@@ -30,7 +30,8 @@ router.get('/conversaciones', esAdmin, async (req, res) => {
           _id: { $toLower: '$email' },
           nombre: { $first: '$nombre' },
           email: { $first: '$email' },
-          cantidad: { $sum: 1 },
+          //la cantidad cuenta solo los mensajes de la persona, no las respuestas del admin
+          cantidad: { $sum: { $cond: [{ $ifNull: ['$esRespuesta', false] }, 0, 1] } },
           ultimaFecha: { $first: '$createdAt' },
           mensajes: { $push: '$$ROOT' },
         },
@@ -41,6 +42,41 @@ router.get('/conversaciones', esAdmin, async (req, res) => {
     res.json(conversaciones);
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al obtener las conversaciones', error: error.message });
+  }
+});
+
+//post a /api/mensajes/conversaciones/:email/respuesta (solo admin)
+//guarda la respuesta del dueño del portfolio dentro del chat de esa persona
+router.post('/conversaciones/:email/respuesta', esAdmin, async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { respuesta, nombre } = req.body ?? {};
+
+    if (!respuesta || !String(respuesta).trim()) {
+      return res.status(400).json({ mensaje: 'La respuesta no puede estar vacía' });
+    }
+
+    const emailNormalizado = String(email).toLowerCase();
+    const nombreResponde = String(nombre).trim() || 'Agustina Ferraro';
+
+    //marca como respondido el mensaje mas nuevo de esa persona
+    await Mensaje.findOneAndUpdate(
+      { email: emailNormalizado, esRespuesta: false },
+      { respondido: true },
+      { sort: { createdAt: -1 } }
+    );
+
+    //la respuesta queda dentro del mismo chat (mismo email) y se ve como burbuja propia
+    const nuevaRespuesta = await Mensaje.create({
+      nombre: nombreResponde,
+      email: emailNormalizado,
+      mensaje: String(respuesta).trim(),
+      esRespuesta: true,
+    });
+
+    res.status(201).json({ mensaje: 'Respuesta enviada', datos: nuevaRespuesta });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al guardar la respuesta', error: error.message });
   }
 });
 

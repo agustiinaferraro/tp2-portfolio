@@ -1,5 +1,7 @@
 //modelo de un mensaje del formulario de contacto
 //"timestamps: true" agrega createdat y updatedat automaticamente
+//esrespuesta marca los mensajes que son respuestas del dueño del portfolio
+//respondido marca si el mensaje original ya tiene una respuesta guardada
 import mongoose from 'mongoose';
 
 const mensajeSchema = new mongoose.Schema(
@@ -15,6 +17,14 @@ const mensajeSchema = new mongoose.Schema(
     mensaje: {
       type: String,
       required: [true, 'El mensaje es obligatorio'],
+    },
+    esRespuesta: {
+      type: Boolean,
+      default: false,
+    },
+    respondido: {
+      type: Boolean,
+      default: false,
     },
   },
   {

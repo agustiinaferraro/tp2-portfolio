@@ -1260,7 +1260,7 @@ export default function AdminProyectos() {
           )}
 
           {vista === 'mensajes' && (
-            <AdminMensajes clave={clave} alCambiar={cargarCantidadConversaciones} />
+            <AdminMensajes clave={clave} nombre={perfil?.nombre} alCambiar={cargarCantidadConversaciones} />
           )}
         </div>
       </div>
