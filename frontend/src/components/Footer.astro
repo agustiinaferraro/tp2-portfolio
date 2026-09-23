@@ -1,34 +1,7 @@
 ---
 //pie de pagina: navegacion, redes y copyright
-const anio = new Date().getFullYear();
-
-const enlaces = [
-  {
-    texto: 'LinkedIn',
-    href: 'https://www.linkedin.com/feed/',
-    icono: '/img/li.png',
-  },
-  {
-    texto: 'Instagram',
-    href: 'https://www.instagram.com/multimediagus?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==',
-    icono: '/img/ig.png',
-  },
-  {
-    texto: 'Threads',
-    href: 'https://www.threads.net/@multimediagus',
-    icono: '/img/th.png',
-  },
-  {
-    texto: 'Behance',
-    href: 'https://www.behance.net/agustiinaferraro',
-    icono: '/img/be.png',
-  },
-  {
-    texto: 'WhatsApp',
-    href: 'https://wa.me/5491131166948',
-    icono: '/img/wh.png',
-  },
-];
+//las redes y el nombre salen del perfil de la api (componente cliente)
+import FooterRedes from './FooterRedes.jsx';
 ---
 
 <footer class="border-t border-zinc-800 bg-zinc-950">
@@ -37,30 +10,6 @@ const enlaces = [
       Contactate
     </p>
 
-    <ul class="flex flex-wrap justify-center items-center gap-6">
-      {
-        enlaces.map((enlace) => (
-          <li>
-            <a
-              href={enlace.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex flex-col items-center gap-1.5 text-xs text-zinc-400 hover:text-white hover:scale-110 active:scale-95 transition-all duration-200 p-1 group"
-            >
-              <img
-                src={enlace.icono}
-                alt=""
-                class="w-6 h-6 object-contain transition-transform duration-200"
-              />
-              <span>{enlace.texto}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-
-    <p class="text-sm text-zinc-500">
-      © {anio} Agustina Ferraro
-    </p>
+    <FooterRedes client:idle />
   </div>
 </footer>

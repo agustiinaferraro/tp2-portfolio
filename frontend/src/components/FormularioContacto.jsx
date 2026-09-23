@@ -1,21 +1,36 @@
 //formulario de contacto
 //muestra los estados: formulario - enviando - exito / error
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { enviarMensaje } from '../api/mensajes.js';
-
-//tu numero de whatsapp en formato internacional (pais 54 + celular sin 0)
-const TELEFONO_WHATSAPP = '5491131166948';
+import { obtenerPerfil } from '../api/perfil.js';
 
 //arma el link de whatsapp con el mensaje ya escrito
-function armarLinkWhatsApp({ nombre, email, mensaje }) {
+function armarLinkWhatsApp({ nombre, email, mensaje }, telefono) {
   const texto = `Hola! Soy ${nombre} (${email}). ${mensaje}`;
-  return `https://wa.me/${TELEFONO_WHATSAPP}?text=${encodeURIComponent(texto)}`;
+  return `https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`;
 }
 
 export default function FormularioContacto() {
   const [formulario, setFormulario] = useState({ nombre: '', email: '', mensaje: '' });
   const [estado, setEstado] = useState('idle'); //idle | enviando | exito | error
   const [error, setError] = useState('');
+  //numero de whatsapp actual: sale del perfil (ocupado desde el panel) con uno por defecto
+  const [telefonoWhatsapp, setTelefonoWhatsapp] = useState('5491131166948');
+
+  //al abrir se trae el perfil para usar el numero de whatsapp configurado
+  useEffect(() => {
+    const cargar = () => {
+      obtenerPerfil()
+        .then((perfil) => {
+          if (perfil.whatsapp) setTelefonoWhatsapp(perfil.whatsapp);
+        })
+        .catch(() => {});
+    };
+    cargar();
+    //si el perfil se guardo desde el panel, se actualiza el numero
+    window.addEventListener('perfil-actualizado', cargar);
+    return () => window.removeEventListener('perfil-actualizado', cargar);
+  }, []);
 
   //cada tecla que se escribe actualiza el campo correspondiente
   function manejarCambio(e) {
@@ -32,7 +47,7 @@ export default function FormularioContacto() {
     try {
       await enviarMensaje(formulario);
       //se abre whatsapp con el mensaje precargado (pestana nueva)
-      window.open(armarLinkWhatsApp(formulario), '_blank');
+      window.open(armarLinkWhatsApp(formulario, telefonoWhatsapp), '_blank');
       setEstado('exito');
       setFormulario({ nombre: '', email: '', mensaje: '' });
     } catch (err) {

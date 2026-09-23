@@ -1,4 +1,6 @@
 //panel de administracion: sirve para cargar, editar y borrar proyectos
+//y para editar el perfil publico (foto, nombre, contacto y redes)
+//tiene tres vistas: portada (tipo behance), proyecto (cargar/editar) y perfil
 //se pide usuario y clave al entrar y las modificaciones se envian con esa clave
 //la imagen se convierte a base64 y se guarda en la base junto al resto de los datos
 import { useEffect, useState, useRef } from 'react';
@@ -10,8 +12,9 @@ import {
   borrarProyecto,
 } from '../api/proyectos.js';
 import { obtenerServicios, crearServicio } from '../api/servicios.js';
+import { obtenerPerfil, actualizarPerfil } from '../api/perfil.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
-import { OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
+import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
 import SelectorImagenes from './SelectorImagenes.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
@@ -95,6 +98,54 @@ function nombreServicio(lista, slug) {
   return lista.find((s) => s.slug === slug)?.nombre ?? '';
 }
 
+//agrupa los proyectos por categoria para la portada del panel
+function agruparProyectos(lista, listaServicios) {
+  const grupos = [];
+  const indices = new Map();
+  for (const proyecto of lista) {
+    const slug = proyecto.servicio ?? '';
+    const nombre = nombreServicio(listaServicios, slug) || 'Sin categoría';
+    if (!indices.has(slug)) {
+      indices.set(slug, grupos.length);
+      grupos.push({ slug, nombre, proyectos: [] });
+    }
+    grupos[indices.get(slug)].proyectos.push(proyecto);
+  }
+  grupos.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  return grupos;
+}
+
+//silueta de persona para cuando el perfil no tiene foto cargada
+function SiluetaPersona({ className }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.4 0-8 2-8 4v2h16v-2c0-2-3.6-4-8-4z" />
+    </svg>
+  );
+}
+
+//icono de lapiz para editar (la foto del perfil o un proyecto)
+function IconoLapiz({ className }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  );
+}
+
+//icono de tacho para borrar
+function IconoTacho({ className }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <line x1="10" y1="11" x2="10" y2="17" />
+      <line x1="14" y1="11" x2="14" y2="17" />
+    </svg>
+  );
+}
+
 export default function AdminProyectos() {
   const [usuario, setUsuario] = useState('');
   const [clave, setClave] = useState('');
@@ -103,6 +154,9 @@ export default function AdminProyectos() {
   //marcan en rojo el campo del login que no coincide (usuario y/o clave)
   const [errorUsuario, setErrorUsuario] = useState(false);
   const [errorClave, setErrorClave] = useState(false);
+
+  //vista actual del panel: portada (tipo behance) | proyecto (cargar/editar) | perfil
+  const [vista, setVista] = useState('portada');
 
   const [proyectos, setProyectos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -119,6 +173,23 @@ export default function AdminProyectos() {
   //proyecto que espera confirmacion antes de borrarse (para el modal)
   const [proyectoAEliminar, setProyectoAEliminar] = useState(null);
 
+  //perfil publico (lo usa la portada del panel y los campos del formulario de perfil)
+  const [perfil, setPerfil] = useState(null);
+  const [pFoto, setPFoto] = useState('');
+  const [pNombre, setPNombre] = useState('');
+  const [pTitulo, setPTitulo] = useState('');
+  const [pSobreMi, setPSobreMi] = useState('');
+  const [pEmail, setPEmail] = useState('');
+  const [pTelefono, setPTelefono] = useState('');
+  const [pWhatsapp, setPWhatsapp] = useState('');
+  const [pLinkedin, setPLinkedin] = useState('');
+  const [pInstagram, setPInstagram] = useState('');
+  const [pThreads, setPThreads] = useState('');
+  const [pBehance, setPBehance] = useState('');
+  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
+  //input de foto oculto: lo disparan el lapiz del avatar y el del formulario de perfil
+  const fotoInputRef = useRef(null);
+
   const [listaServicios, setListaServicios] = useState(serviciosEstaticos);
   const [mensaje, setMensaje] = useState(null);
 
@@ -130,6 +201,7 @@ export default function AdminProyectos() {
       setClave(sesion.clave);
       setUsuario(sesion.usuario);
       cargarProyectos();
+      cargarPerfil();
     }
     obtenerServicios()
       .then((lista) => setListaServicios(juntarServicios(lista)))
@@ -148,6 +220,26 @@ export default function AdminProyectos() {
       .finally(() => setCargando(false));
   }
 
+  //trae el perfil y carga todos los campos del formulario de perfil
+  function cargarPerfil() {
+    obtenerPerfil()
+      .then((p) => {
+        setPerfil(p);
+        setPFoto(p.foto ?? '');
+        setPNombre(p.nombre ?? '');
+        setPTitulo(p.titulo ?? '');
+        setPSobreMi(p.sobreMi ?? '');
+        setPEmail(p.email ?? '');
+        setPTelefono(p.telefono ?? '');
+        setPWhatsapp(p.whatsapp ?? '');
+        setPLinkedin(p.redes?.linkedin ?? '');
+        setPInstagram(p.redes?.instagram ?? '');
+        setPThreads(p.redes?.threads ?? '');
+        setPBehance(p.redes?.behance ?? '');
+      })
+      .catch(() => {});
+  }
+
   async function iniciarSesion(evento) {
     evento.preventDefault();
     setCargandoSesion(true);
@@ -158,7 +250,9 @@ export default function AdminProyectos() {
       await verificarClave(usuario.trim(), clave.trim());
       guardarSesion(usuario.trim(), clave.trim());
       setSesion(true);
+      setVista('portada');
       cargarProyectos();
+      cargarPerfil();
     } catch (error) {
       //el servidor avisa cual de los dos campos no coincide para marcarlo en rojo
       setErrorUsuario(error.campos?.usuario === false);
@@ -176,6 +270,7 @@ export default function AdminProyectos() {
     setClave('');
     setProyectos([]);
     resetearFormulario();
+    setVista('portada');
     setMensaje(null);
   }
 
@@ -190,6 +285,15 @@ export default function AdminProyectos() {
     setEditandoId(null);
   }
 
+  //va a la vista de cargar/editar proyecto con el formulario vacio
+  function irAAgregarProyecto() {
+    resetearFormulario();
+    setMensaje(null);
+    setVista('proyecto');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  //llena el formulario con un proyecto existente y abre la vista de proyecto
   function editarProyecto(proyecto) {
     setEditandoId(proyecto._id);
     setTitulo(proyecto.titulo ?? '');
@@ -200,6 +304,7 @@ export default function AdminProyectos() {
     setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
     setDestacado(!!proyecto.destacado);
     setMensaje(null);
+    setVista('proyecto');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -244,6 +349,9 @@ export default function AdminProyectos() {
       }
       resetearFormulario();
       cargarProyectos();
+      //al terminar se vuelve a la portada con los proyectos actualizados
+      setVista('portada');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       if (claveIncorrecta(error)) {
         mostrarMensaje('La sesión expiró. Volvé a entrar.', 'error');
@@ -253,6 +361,86 @@ export default function AdminProyectos() {
       }
     } finally {
       setGuardando(false);
+    }
+  }
+
+  //abre el selector de archivos para cargar la foto de perfil
+  function abrirElegirFoto() {
+    fotoInputRef.current?.click();
+  }
+
+  //al elegir una imagen se comprime, se guarda en la base y se actualiza el perfil
+  async function cambiarFoto(evento) {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!archivo) return;
+    setGuardandoPerfil(true);
+    setMensaje(null);
+    try {
+      const base64 = await comprimirImagen(archivo);
+      const respuesta = await actualizarPerfil({ foto: base64 }, clave);
+      const datos = respuesta.datos ?? { ...(perfil ?? {}), foto: base64 };
+      setPerfil(datos);
+      setPFoto(datos.foto ?? '');
+      mostrarMensaje('Foto de perfil actualizada');
+      window.dispatchEvent(new CustomEvent('perfil-actualizado'));
+    } catch (error) {
+      if (claveIncorrecta(error)) {
+        mostrarMensaje('La sesión expiró. Volvé a entrar.', 'error');
+        salir();
+      } else {
+        mostrarMensaje(error.message, 'error');
+      }
+    } finally {
+      setGuardandoPerfil(false);
+    }
+  }
+
+  //entrar a la vista de editar perfil con los ultimos datos guardados
+  function irAEditarPerfil() {
+    setMensaje(null);
+    cargarPerfil();
+    setVista('perfil');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  //guarda todos los campos del formulario de perfil
+  async function guardarPerfil(evento) {
+    evento.preventDefault();
+    setGuardandoPerfil(true);
+    setMensaje(null);
+    const datos = {
+      nombre: pNombre.trim(),
+      titulo: pTitulo.trim(),
+      sobreMi: pSobreMi.trim(),
+      foto: pFoto,
+      email: pEmail.trim(),
+      telefono: pTelefono.trim(),
+      whatsapp: pWhatsapp.trim(),
+      redes: {
+        linkedin: pLinkedin.trim(),
+        instagram: pInstagram.trim(),
+        threads: pThreads.trim(),
+        behance: pBehance.trim(),
+      },
+    };
+    try {
+      const respuesta = await actualizarPerfil(datos, clave);
+      setPerfil(respuesta.datos ?? null);
+      setPFoto(respuesta.datos?.foto ?? '');
+      mostrarMensaje('Perfil actualizado');
+      window.dispatchEvent(new CustomEvent('perfil-actualizado'));
+      setVista('portada');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      if (claveIncorrecta(error)) {
+        mostrarMensaje('La sesión expiró. Volvé a entrar.', 'error');
+        salir();
+      } else {
+        mostrarMensaje(error.message, 'error');
+      }
+    } finally {
+      setGuardandoPerfil(false);
     }
   }
 
@@ -284,13 +472,16 @@ export default function AdminProyectos() {
     'w-full px-4 py-2 bg-zinc-900 border border-red-500 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all';
   const claseBoton =
     'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+  const claseBotonPrimario = `${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`;
+  const claseBotonSecundario = `${claseBoton} bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700`;
 
+  //entrada al panel: pide usuario y clave
   if (!sesion) {
     return (
       <div className="max-w-md mx-auto px-4 py-16">
         <form onSubmit={iniciarSesion} className="space-y-4 p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
           <h1 className="text-2xl font-bold text-white">Panel de administración</h1>
-          <p className="text-sm text-zinc-400">Ingresá tu usuario y contraseña para gestionar los proyectos.</p>
+          <p className="text-sm text-zinc-400">Ingresá tu usuario y contraseña para gestionar tus proyectos y tu perfil.</p>
           <input
             type="text"
             value={usuario}
@@ -320,7 +511,7 @@ export default function AdminProyectos() {
           <button
             type="submit"
             disabled={cargandoSesion || !usuario.trim() || !clave.trim()}
-            className={`${claseBoton} w-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] disabled:bg-zinc-800`}
+            className={`${claseBotonPrimario} w-full disabled:bg-zinc-800`}
           >
             {cargandoSesion ? 'Verificando...' : 'Entrar'}
           </button>
@@ -329,19 +520,26 @@ export default function AdminProyectos() {
     );
   }
 
+  const grupos = agruparProyectos(proyectos, listaServicios);
+  const fotoPerfil = perfil?.foto;
+
   return (
-    <section aria-label="Administración de proyectos" className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Mis proyectos</h1>
-        <button type="button" onClick={salir} className="text-sm text-zinc-400 hover:text-white transition-colors">
-          Salir
-        </button>
-      </div>
+    <section aria-label="Administración" className="max-w-6xl mx-auto px-4 py-8">
+      {/*input de foto oculto: lo abre el lapiz del avatar o del formulario de perfil*/}
+      <input
+        ref={fotoInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={cambiarFoto}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
 
       {mensaje && (
         <p
           role={mensaje.tipo === 'error' ? 'alert' : 'status'}
-          className={`text-sm px-4 py-2 rounded-lg border ${
+          className={`mb-6 text-sm px-4 py-2 rounded-lg border ${
             mensaje.tipo === 'error'
               ? 'text-red-400 border-red-500/30 bg-red-500/10'
               : 'text-green-400 border-green-500/30 bg-green-500/10'
@@ -351,201 +549,543 @@ export default function AdminProyectos() {
         </p>
       )}
 
-      <form onSubmit={guardarProyecto} className="space-y-4 p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
-        <h2 className="text-lg font-semibold text-white">
-          {editandoId ? 'Editar proyecto' : 'Cargar un proyecto nuevo'}
-        </h2>
-
-        <div className="space-y-1">
-          <label htmlFor="admin-titulo" className="block text-sm text-zinc-300">
-            Título *
-          </label>
-          <input
-            id="admin-titulo"
-            type="text"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Nombre del proyecto"
-            className={claseInput}
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label htmlFor="admin-resumen" className="block text-sm text-zinc-300">
-            Descripción (opcional)
-          </label>
-          <textarea
-            id="admin-resumen"
-            value={resumen}
-            onChange={(e) => setResumen(e.target.value)}
-            placeholder="Contá de qué se trata el proyecto..."
-            rows={4}
-            className={`${claseInput} resize-y`}
-          />
-        </div>
-
-        <label htmlFor="admin-destacado" className="flex items-center gap-3 text-sm text-zinc-300 cursor-pointer">
-          <input
-            id="admin-destacado"
-            type="checkbox"
-            checked={destacado}
-            onChange={(e) => setDestacado(e.target.checked)}
-            className="w-4 h-4 accent-verde-app cursor-pointer"
-          />
-          Destacado en la portada
-        </label>
-
-        <div className="space-y-1">
-          <label htmlFor="admin-servicio" className="block text-sm text-zinc-300">
-            Categoría / servicio
-          </label>
-          <select
-            id="admin-servicio"
-            value={servicio}
-            onChange={(e) => setServicio(e.target.value)}
-            className={claseInput}
-          >
-            <option value="">Sin categoría</option>
-            {listaServicios.map((s) => (
-              <option key={s.slug} value={s.slug}>
-                {s.nombre}
-              </option>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/*menu lateral: navegacion entre las vistas del panel*/}
+        <aside className="lg:w-56 shrink-0" aria-label="Menú del panel">
+          <nav className="lg:sticky lg:top-24 space-y-1">
+            {[
+              {
+                etiqueta: 'Portada',
+                accion: () => setVista('portada'),
+                activo: vista === 'portada',
+                icono: (
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                ),
+              },
+              {
+                etiqueta: 'Agregar proyecto',
+                accion: irAAgregarProyecto,
+                activo: vista === 'proyecto' && !editandoId,
+                icono: (
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M5 12h14" />
+                    <path d="M12 5v14" />
+                  </svg>
+                ),
+              },
+              {
+                etiqueta: 'Editar perfil',
+                accion: irAEditarPerfil,
+                activo: vista === 'perfil',
+                icono: (
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                ),
+              },
+            ].map((item) => (
+              <button
+                key={item.etiqueta}
+                type="button"
+                onClick={item.accion}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
+                  item.activo
+                    ? 'bg-violeta-app text-[#1c1c21] font-medium'
+                    : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                }`}
+              >
+                {item.icono}
+                {item.etiqueta}
+              </button>
             ))}
-            <option value={OPCION_NUEVA_CATEGORIA}>+ Crear categoría nueva...</option>
-          </select>
-          <p className="text-xs text-zinc-600">Elegí en qué servicio aparece este proyecto.</p>
-        </div>
-
-        {servicio === OPCION_NUEVA_CATEGORIA && (
-          <div className="space-y-3 rounded-xl border border-verde-app/30 bg-verde-app/5 p-4">
-            <div className="space-y-1">
-              <label htmlFor="admin-nueva-nombre" className="block text-sm text-zinc-300">
-                Nombre de la categoría nueva *
-              </label>
-              <input
-                id="admin-nueva-nombre"
-                type="text"
-                value={nuevaNombre}
-                onChange={(e) => setNuevaNombre(e.target.value)}
-                placeholder="Ej: Fotografía"
-                className={claseInput}
-              />
+            <div className="pt-3 mt-3 border-t border-zinc-800">
+              <button
+                type="button"
+                onClick={salir}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+              >
+                <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" x2="9" y1="12" y2="12" />
+                </svg>
+                Salir
+              </button>
             </div>
-            <div className="space-y-1">
-              <label htmlFor="admin-nueva-desc" className="block text-sm text-zinc-300">
-                Descripción breve (opcional)
+          </nav>
+        </aside>
+
+        {/*vista seleccionada del panel*/}
+        <div className="flex-1 min-w-0 space-y-8">
+          {vista === 'portada' && (
+            <>
+              {/*portada tipo behance: cabecera con foto de perfil y boton para sumar proyectos*/}
+              <header className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900">
+                <div className="h-32 bg-gradient-to-r from-verde-app/20 via-violeta-app/20 to-zinc-800" aria-hidden="true" />
+                <div className="flex items-end justify-between px-4 sm:px-6 -mt-12 pb-4">
+                  <div className="flex items-end gap-3 sm:gap-4 min-w-0">
+                    <div className="relative shrink-0">
+                      <div className="w-20 sm:w-24 h-20 sm:h-24 rounded-full overflow-hidden bg-zinc-800 border-4 border-zinc-950 flex items-center justify-center text-zinc-500">
+                        {fotoPerfil ? (
+                          <img src={fotoPerfil} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <SiluetaPersona className="w-10 h-10 sm:w-12 sm:h-12" />
+                        )}
+                      </div>
+                      {/*lapiz sobre el avatar: cambia la foto de perfil al instante*/}
+                      <button
+                        type="button"
+                        onClick={abrirElegirFoto}
+                        disabled={guardandoPerfil}
+                        aria-label="Cambiar foto de perfil"
+                        title="Cambiar foto de perfil"
+                        className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-[#1c1c21] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <IconoLapiz className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="min-w-0 pb-1">
+                      <h1 className="text-xl sm:text-2xl font-bold text-white truncate">
+                        {perfil?.nombre || 'Agustina Ferraro'}
+                      </h1>
+                      <p className="text-sm text-zinc-400 truncate">
+                        {perfil?.titulo || 'Diseñadora Multimedia & Desarrolladora Full Stack'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={irAAgregarProyecto}
+                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M5 12h14" />
+                      <path d="M12 5v14" />
+                    </svg>
+                    Agregar proyecto
+                  </button>
+                </div>
+              </header>
+
+              {/*btn de agregar proyecto en pantallas chicas (el de arriba se oculta) */}
+              <button
+                type="button"
+                onClick={irAAgregarProyecto}
+                className="sm:hidden w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium transition-colors cursor-pointer"
+              >
+                <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
+                Agregar proyecto
+              </button>
+
+              {/*proyectos agrupados por categoria, como en la portada de behance*/}
+              <div className="space-y-8">
+                {cargando ? (
+                  <p className="text-zinc-400">Cargando proyectos...</p>
+                ) : proyectos.length === 0 ? (
+                  <div className="p-10 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-4">
+                    <p className="text-zinc-400">Todavía no cargaste ningún proyecto.</p>
+                    <button
+                      type="button"
+                      onClick={irAAgregarProyecto}
+                      className={`${claseBotonPrimario} inline-flex items-center gap-2`}
+                    >
+                      <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                      Agregar el primero
+                    </button>
+                  </div>
+                ) : (
+                  grupos.map((grupo) => (
+                    <section key={grupo.slug || 'sin-categoria'} aria-label={grupo.nombre}>
+                      <h2 className="text-lg font-semibold text-white mb-4">{grupo.nombre}</h2>
+                      <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {grupo.proyectos.map((proyecto) => (
+                          <li
+                            key={proyecto._id}
+                            className="group relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 focus-within:ring-2 focus-within:ring-verde-app"
+                          >
+                            {proyecto.imagen || proyecto.imagenes?.[0] ? (
+                              <img
+                                src={proyecto.imagen || proyecto.imagenes[0]}
+                                alt=""
+                                className="w-full aspect-[4/3] object-cover"
+                              />
+                            ) : (
+                              <div className="w-full aspect-[4/3] bg-zinc-800 flex items-center justify-center text-zinc-600 text-xs">
+                                Sin portada
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" />
+                            {(proyecto.imagen || proyecto.imagenes?.[0]) && (
+                              <div className="absolute bottom-0 inset-x-0 p-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                                <p className="text-sm font-medium text-white truncate">{proyecto.titulo}</p>
+                                <p className="text-xs text-verde-app truncate">{grupo.nombre}</p>
+                              </div>
+                            )}
+                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => editarProyecto(proyecto)}
+                                aria-label={`Editar ${proyecto.titulo}`}
+                                title="Editar"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-[#1c1c21] hover:bg-verde-app transition-colors cursor-pointer"
+                              >
+                                <IconoLapiz className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setProyectoAEliminar(proyecto)}
+                                aria-label={`Eliminar ${proyecto.titulo}`}
+                                title="Eliminar"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-red-400 hover:text-white hover:bg-red-600 transition-colors cursor-pointer"
+                              >
+                                <IconoTacho className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ))
+                )}
+              </div>
+
+              <AdminMensajes clave={clave} />
+            </>
+          )}
+
+          {vista === 'proyecto' && (
+            <form onSubmit={guardarProyecto} className="space-y-4 p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
+              <h2 className="text-lg font-semibold text-white">
+                {editandoId ? 'Editar proyecto' : 'Cargar un proyecto nuevo'}
+              </h2>
+
+              <div className="space-y-1">
+                <label htmlFor="admin-titulo" className="block text-sm text-zinc-300">
+                  Título *
+                </label>
+                <input
+                  id="admin-titulo"
+                  type="text"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  placeholder="Nombre del proyecto"
+                  className={claseInput}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="admin-resumen" className="block text-sm text-zinc-300">
+                  Descripción (opcional)
+                </label>
+                <textarea
+                  id="admin-resumen"
+                  value={resumen}
+                  onChange={(e) => setResumen(e.target.value)}
+                  placeholder="Contá de qué se trata el proyecto..."
+                  rows={4}
+                  className={`${claseInput} resize-y`}
+                />
+              </div>
+
+              <label htmlFor="admin-destacado" className="flex items-center gap-3 text-sm text-zinc-300 cursor-pointer">
+                <input
+                  id="admin-destacado"
+                  type="checkbox"
+                  checked={destacado}
+                  onChange={(e) => setDestacado(e.target.checked)}
+                  className="w-4 h-4 accent-verde-app cursor-pointer"
+                />
+                Destacado en la portada
               </label>
-              <input
-                id="admin-nueva-desc"
-                type="text"
-                value={nuevaDescripcion}
-                onChange={(e) => setNuevaDescripcion(e.target.value)}
-                placeholder="De qué se trata esta categoría"
-                className={claseInput}
-              />
-            </div>
-            <p className="text-xs text-zinc-500">
-              La categoría queda guardada y se puede usar en otros proyectos. Su página propia se suma con la próxima actualización de la web.
-            </p>
-          </div>
-        )}
 
-        <div className="space-y-1">
-          <label htmlFor="admin-imagen" className="block text-sm text-zinc-300">
-            Imágenes del proyecto
-          </label>
-          <SelectorImagenes imagenes={imagenes} alCambiar={setImagenes} mostrarMensaje={mostrarMensaje} />
-        </div>
+              <div className="space-y-1">
+                <label htmlFor="admin-servicio" className="block text-sm text-zinc-300">
+                  Categoría / servicio
+                </label>
+                <select
+                  id="admin-servicio"
+                  value={servicio}
+                  onChange={(e) => setServicio(e.target.value)}
+                  className={claseInput}
+                >
+                  <option value="">Sin categoría</option>
+                  {listaServicios.map((s) => (
+                    <option key={s.slug} value={s.slug}>
+                      {s.nombre}
+                    </option>
+                  ))}
+                  <option value={OPCION_NUEVA_CATEGORIA}>+ Crear categoría nueva...</option>
+                </select>
+                <p className="text-xs text-zinc-600">Elegí en qué servicio aparece este proyecto.</p>
+              </div>
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={guardando}
-            className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}
-          >
-            {guardando ? 'Guardando...' : editandoId ? 'Guardar cambios' : 'Guardar proyecto'}
-          </button>
-          {editandoId && (
-            <button
-              type="button"
-              onClick={() => {
-                resetearFormulario();
-                setMensaje(null);
-              }}
-              className={`${claseBoton} bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700`}
-            >
-              Cancelar edición
-            </button>
+              {servicio === OPCION_NUEVA_CATEGORIA && (
+                <div className="space-y-3 rounded-xl border border-verde-app/30 bg-verde-app/5 p-4">
+                  <div className="space-y-1">
+                    <label htmlFor="admin-nueva-nombre" className="block text-sm text-zinc-300">
+                      Nombre de la categoría nueva *
+                    </label>
+                    <input
+                      id="admin-nueva-nombre"
+                      type="text"
+                      value={nuevaNombre}
+                      onChange={(e) => setNuevaNombre(e.target.value)}
+                      placeholder="Ej: Fotografía"
+                      className={claseInput}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="admin-nueva-desc" className="block text-sm text-zinc-300">
+                      Descripción breve (opcional)
+                    </label>
+                    <input
+                      id="admin-nueva-desc"
+                      type="text"
+                      value={nuevaDescripcion}
+                      onChange={(e) => setNuevaDescripcion(e.target.value)}
+                      placeholder="De qué se trata esta categoría"
+                      className={claseInput}
+                    />
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    La categoría queda guardada y se puede usar en otros proyectos. Su página propia se suma con la próxima actualización de la web.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label htmlFor="admin-imagen" className="block text-sm text-zinc-300">
+                  Imágenes del proyecto
+                </label>
+                <SelectorImagenes imagenes={imagenes} alCambiar={setImagenes} mostrarMensaje={mostrarMensaje} />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className={claseBotonPrimario}
+                >
+                  {guardando ? 'Guardando...' : editandoId ? 'Guardar cambios' : 'Guardar proyecto'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetearFormulario();
+                    setMensaje(null);
+                    setVista('portada');
+                  }}
+                  className={claseBotonSecundario}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+
+          {vista === 'perfil' && (
+            <form onSubmit={guardarPerfil} className="space-y-4 p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Editar perfil</h2>
+                  <p className="text-sm text-zinc-500 mt-1">
+                    Los cambios se ven solos en la web (contacto, pie de página y avatar), no hace falta actualizar el código.
+                  </p>
+                </div>
+                <div className="relative shrink-0">
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500">
+                    {pFoto ? (
+                      <img src={pFoto} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <SiluetaPersona className="w-10 h-10" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={abrirElegirFoto}
+                    disabled={guardandoPerfil}
+                    aria-label="Cambiar foto de perfil"
+                    title="Cambiar foto de perfil"
+                    className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-[#1c1c21] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <IconoLapiz className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label htmlFor="admin-perfil-nombre" className="block text-sm text-zinc-300">
+                    Nombre
+                  </label>
+                  <input
+                    id="admin-perfil-nombre"
+                    type="text"
+                    value={pNombre}
+                    onChange={(e) => setPNombre(e.target.value)}
+                    placeholder="Tu nombre y apellido"
+                    className={claseInput}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label htmlFor="admin-perfil-titulo" className="block text-sm text-zinc-300">
+                    Título
+                  </label>
+                  <input
+                    id="admin-perfil-titulo"
+                    type="text"
+                    value={pTitulo}
+                    onChange={(e) => setPTitulo(e.target.value)}
+                    placeholder="Ej: Diseñadora Multimedia"
+                    className={claseInput}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="admin-perfil-sobre-mi" className="block text-sm text-zinc-300">
+                  Sobre mí
+                </label>
+                <textarea
+                  id="admin-perfil-sobre-mi"
+                  value={pSobreMi}
+                  onChange={(e) => setPSobreMi(e.target.value)}
+                  placeholder="Contá quién sos..."
+                  rows={4}
+                  className={`${claseInput} resize-y`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label htmlFor="admin-perfil-email" className="block text-sm text-zinc-300">
+                    Email
+                  </label>
+                  <input
+                    id="admin-perfil-email"
+                    type="email"
+                    value={pEmail}
+                    onChange={(e) => setPEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    className={claseInput}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label htmlFor="admin-perfil-telefono" className="block text-sm text-zinc-300">
+                    Teléfono (para mostrar)
+                  </label>
+                  <input
+                    id="admin-perfil-telefono"
+                    type="tel"
+                    value={pTelefono}
+                    onChange={(e) => setPTelefono(e.target.value)}
+                    placeholder="+54 9 11 3166-6948"
+                    className={claseInput}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="admin-perfil-whatsapp" className="block text-sm text-zinc-300">
+                  WhatsApp (número con código de país, para el link de wa.me)
+                </label>
+                <input
+                  id="admin-perfil-whatsapp"
+                  type="tel"
+                  value={pWhatsapp}
+                  onChange={(e) => setPWhatsapp(e.target.value)}
+                  placeholder="5491131166948"
+                  className={claseInput}
+                />
+                <p className="text-xs text-zinc-600">
+                  Se usa en el botón de WhatsApp del formulario de contacto y en el pie de página.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm text-zinc-300">Redes sociales (opcional, cada una aparece si tiene link)</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label htmlFor="admin-perfil-linkedin" className="block text-sm text-zinc-400">
+                      LinkedIn
+                    </label>
+                    <input
+                      id="admin-perfil-linkedin"
+                      type="url"
+                      value={pLinkedin}
+                      onChange={(e) => setPLinkedin(e.target.value)}
+                      placeholder="https://linkedin.com/in/..."
+                      className={claseInput}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="admin-perfil-instagram" className="block text-sm text-zinc-400">
+                      Instagram
+                    </label>
+                    <input
+                      id="admin-perfil-instagram"
+                      type="url"
+                      value={pInstagram}
+                      onChange={(e) => setPInstagram(e.target.value)}
+                      placeholder="https://instagram.com/..."
+                      className={claseInput}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="admin-perfil-threads" className="block text-sm text-zinc-400">
+                      Threads
+                    </label>
+                    <input
+                      id="admin-perfil-threads"
+                      type="url"
+                      value={pThreads}
+                      onChange={(e) => setPThreads(e.target.value)}
+                      placeholder="https://threads.net/@..."
+                      className={claseInput}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="admin-perfil-behance" className="block text-sm text-zinc-400">
+                      Behance
+                    </label>
+                    <input
+                      id="admin-perfil-behance"
+                      type="url"
+                      value={pBehance}
+                      onChange={(e) => setPBehance(e.target.value)}
+                      placeholder="https://behance.net/..."
+                      className={claseInput}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button type="submit" disabled={guardandoPerfil} className={claseBotonPrimario}>
+                  {guardandoPerfil ? 'Guardando...' : 'Guardar perfil'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVista('portada')}
+                  className={claseBotonSecundario}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
           )}
         </div>
-      </form>
-
-      <div className="border-t border-zinc-800 pt-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Proyectos cargados</h2>
-        {cargando ? (
-          <p className="text-zinc-400">Cargando...</p>
-        ) : proyectos.length === 0 ? (
-          <p className="text-zinc-400">Todavía no cargaste ningún proyecto.</p>
-        ) : (
-          <ul className="space-y-3">
-            {proyectos.map((proyecto) => (
-              <li
-                key={proyecto._id}
-                className="flex items-center gap-4 p-3 rounded-xl bg-zinc-900 border border-zinc-800"
-              >
-                {(proyecto.imagen || proyecto.imagenes?.[0]) ? (
-                  <img
-                    src={proyecto.imagen || proyecto.imagenes[0]}
-                    alt=""
-                    className="w-16 h-16 object-cover rounded-lg shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-lg bg-zinc-800 shrink-0" aria-hidden="true" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{proyecto.titulo}</p>
-                  {nombreServicio(listaServicios, proyecto.servicio) && (
-                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20">
-                      {nombreServicio(listaServicios, proyecto.servicio)}
-                    </span>
-                  )}
-                  <p className="text-sm text-zinc-500 line-clamp-2">{proyecto.resumen || 'Sin descripción'}</p>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => editarProyecto(proyecto)}
-                    aria-label={`Editar ${proyecto.titulo}`}
-                    title="Editar"
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-700 text-verde-app hover:text-[#1c1c21] hover:bg-verde-app hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProyectoAEliminar(proyecto)}
-                    aria-label={`Eliminar ${proyecto.titulo}`}
-                    title="Eliminar"
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-700 text-red-400 hover:text-white hover:bg-red-600 hover:border-red-600 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      <line x1="10" y1="11" x2="10" y2="17" />
-                      <line x1="14" y1="11" x2="14" y2="17" />
-                    </svg>
-                  </button>
-                </div>
-              </li>
-            ))}
-</ul>
-      )}
       </div>
-
-      <AdminMensajes clave={clave} />
 
       {proyectoAEliminar && (
         <ModalEliminar

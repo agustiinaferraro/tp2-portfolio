@@ -13,6 +13,7 @@ import proyectosRouter from './routes/proyectos.js';
 import serviciosRouter from './routes/servicios.js';
 import mensajesRouter from './routes/mensajes.js';
 import adminRouter from './routes/admin.js';
+import perfilRouter from './routes/perfil.js';
 
 //se cargan las variables de entorno del archivo .env (solo importa en local)
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/proyectos', proyectosRouter);
 app.use('/api/servicios', serviciosRouter);
 app.use('/api/mensajes', mensajesRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/perfil', perfilRouter);
 
 //ruta de prueba para saber que el servidor esta vivo
 app.get('/', (req, res) => {
