@@ -73,20 +73,12 @@ function TarjetaProyecto({ proyecto }) {
   );
 }
 
-//desplazamiento animado del carrusel: transicion suave tipo giro con easing
+//desplazamiento del carrusel: usa el scroll animado nativo del navegador, que es mas fluido
+//el snap de las tarjetas se aplica solo al final, sin pelear con la animacion
 function desplazarSuave(contenedor, dir) {
   if (!contenedor) return;
-  const inicio = contenedor.scrollLeft;
-  const meta = inicio + dir * Math.max(320, contenedor.clientWidth * 0.75);
-  const duracion = 500;
-  const tInicio = performance.now();
-  function paso(ahora) {
-    const progreso = Math.min((ahora - tInicio) / duracion, 1);
-    const ease = progreso < 0.5 ? 2 * progreso * progreso : -1 + (4 - 2 * progreso) * progreso;
-    contenedor.scrollLeft = inicio + (meta - inicio) * ease;
-    if (progreso < 1) requestAnimationFrame(paso);
-  }
-  requestAnimationFrame(paso);
+  const paso = Math.max(320, contenedor.clientWidth * 0.75);
+  contenedor.scrollTo({ left: contenedor.scrollLeft + dir * paso, behavior: 'smooth' });
 }
 
 //seccion con titulo y carrusel horizontal de proyectos
@@ -98,28 +90,30 @@ function SeccionCarrusel({ clave, nombre, items }) {
       <h2 id={`proyectos-seccion-${clave}`} className="text-2xl font-bold text-white mb-4">
         {nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({items.length})</span>
       </h2>
-      <div className="relative">
-        <ul ref={ref} className="flex gap-6 overflow-x-auto snap-x pb-3 carrusel-scroll">
-          {items.map((proyecto) => (
-            <li key={proyecto._id} className="shrink-0 snap-start w-72 h-[26rem]">
-              <TarjetaProyecto proyecto={proyecto} />
-            </li>
-          ))}
-        </ul>
-        {/*flechas de navegacion a los costados del carrusel*/}
+      <div className="flex items-center gap-2">
+        {/*flechas a los costados del carrusel (no tapan las tarjetas): crecen al hover y encogen al click*/}
         <button
           type="button"
           onClick={() => desplazarSuave(ref.current, -1)}
           aria-label={`Ver proyectos anteriores de ${nombre}`}
-          className="absolute top-1/2 -translate-y-1/2 left-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violeta-app hover:border-verde-app hover:text-[#1c1c21] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">←</span>
         </button>
+        <div className="flex-1 min-w-0">
+          <ul ref={ref} className="flex gap-6 overflow-x-auto snap-x pb-3 carrusel-scroll">
+            {items.map((proyecto) => (
+              <li key={proyecto._id} className="shrink-0 snap-start w-72 h-[26rem]">
+                <TarjetaProyecto proyecto={proyecto} />
+              </li>
+            ))}
+          </ul>
+        </div>
         <button
           type="button"
           onClick={() => desplazarSuave(ref.current, 1)}
           aria-label={`Ver más proyectos de ${nombre}`}
-          className="absolute top-1/2 -translate-y-1/2 right-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violeta-app hover:border-verde-app hover:text-[#1c1c21] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">→</span>
         </button>
