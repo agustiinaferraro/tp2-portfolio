@@ -23,7 +23,11 @@ export async function peticionPOST(ruta, datos) {
     body: JSON.stringify(datos),
   });
   if (!respuesta.ok) {
-    throw new Error(`Error al enviar a ${ruta}: ${respuesta.status}`);
+    //se aprovecha el mensaje del servidor (y datos extra como que campo fallo)
+    const cuerpo = await respuesta.json().catch(() => null);
+    const error = new Error(cuerpo?.mensaje ?? `Error al enviar a ${ruta}: ${respuesta.status}`);
+    error.campos = cuerpo;
+    throw error;
   }
   return respuesta.json();
 }

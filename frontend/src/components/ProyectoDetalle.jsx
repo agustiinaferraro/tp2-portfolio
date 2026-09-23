@@ -54,6 +54,9 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   const [usuarioLogin, setUsuarioLogin] = useState('');
   const [claveLogin, setClaveLogin] = useState('');
   const [verificando, setVerificando] = useState(false);
+  //marcan en rojo el campo que no coincide (usuario y/o clave)
+  const [errorUsuarioLogin, setErrorUsuarioLogin] = useState(false);
+  const [errorClaveLogin, setErrorClaveLogin] = useState(false);
 
   function mostrarMensaje(texto, tipo = 'ok') {
     setMensaje({ texto, tipo });
@@ -104,6 +107,8 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     evento.preventDefault();
     setVerificando(true);
     setMensaje(null);
+    setErrorUsuarioLogin(false);
+    setErrorClaveLogin(false);
     try {
       await verificarClave(usuarioLogin.trim(), claveLogin.trim());
       guardarSesion(usuarioLogin.trim(), claveLogin.trim());
@@ -113,7 +118,10 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
       setClaveLogin('');
       abrirEditor();
     } catch (e) {
-      mostrarMensaje('Usuario o contraseña incorrecta', 'error');
+      //el servidor avisa cual de los dos campos no coincide para marcarlo en rojo
+      setErrorUsuarioLogin(e.campos?.usuario === false);
+      setErrorClaveLogin(e.campos?.clave === false);
+      mostrarMensaje(e.message, 'error');
     } finally {
       setVerificando(false);
     }
@@ -184,6 +192,9 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     'w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-verde-app transition-all';
   const claseBoton =
     'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+  //igual que claseInput pero con el borde rojo para marcar el campo del login que fallo
+  const claseCampoLoginError =
+    'w-full px-4 py-2 bg-zinc-900 border border-red-500 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all';
 
   //boton para volver a la lista de proyectos
   const volver = alVolver ? (
@@ -272,18 +283,26 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           <input
             type="text"
             value={usuarioLogin}
-            onChange={(e) => setUsuarioLogin(e.target.value)}
+            onChange={(e) => {
+              setUsuarioLogin(e.target.value);
+              setErrorUsuarioLogin(false);
+            }}
             placeholder="Usuario"
             autoComplete="username"
-            className={claseInput}
+            aria-invalid={errorUsuarioLogin}
+            className={errorUsuarioLogin ? claseCampoLoginError : claseInput}
           />
           <input
             type="password"
             value={claveLogin}
-            onChange={(e) => setClaveLogin(e.target.value)}
+            onChange={(e) => {
+              setClaveLogin(e.target.value);
+              setErrorClaveLogin(false);
+            }}
             placeholder="Contraseña"
             autoComplete="current-password"
-            className={claseInput}
+            aria-invalid={errorClaveLogin}
+            className={errorClaveLogin ? claseCampoLoginError : claseInput}
           />
           <button
             type="submit"
