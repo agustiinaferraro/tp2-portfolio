@@ -37,10 +37,15 @@ const perfilSchema = new mongoose.Schema(
       default: '5491131166948',
     },
     redes: {
-      linkedin: { type: String, default: '' },
-      instagram: { type: String, default: '' },
-      threads: { type: String, default: '' },
-      behance: { type: String, default: '' },
+      //se guardan las urls reales por defecto para que el footer muestre todas las redes
+      linkedin: { type: String, default: 'https://www.linkedin.com/feed/' },
+      instagram: {
+        type: String,
+        default:
+          'https://www.instagram.com/multimediagus?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==',
+      },
+      threads: { type: String, default: 'https://www.threads.net/@multimediagus' },
+      behance: { type: String, default: 'https://www.behance.net/agustiinaferraro' },
     },
   },
   {
