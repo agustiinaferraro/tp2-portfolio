@@ -108,7 +108,7 @@ function agruparProyectos(lista, listaServicios) {
     const nombre = nombreServicio(listaServicios, slug) || 'Sin categoría';
     if (!indices.has(slug)) {
       indices.set(slug, grupos.length);
-      grupos.push({ slug, nombre, proyectos: [] });
+      grupos.push({ slug, clave: slug || '__sin__', nombre, proyectos: [] });
     }
     grupos[indices.get(slug)].proyectos.push(proyecto);
   }
@@ -147,12 +147,29 @@ function IconoTacho({ className }) {
   );
 }
 
-//desplazamiento del carrusel: usa el scroll animado nativo del navegador, que es mas fluido
-//el snap de las tarjetas se aplica solo al final, sin pelear con la animacion
+//desplazamiento del carrusel con animacion: mueve el scroll con easing suave
+//desactiva el snap mientras se mueve para que el cuadro no "pegue" ni corte el efecto
 function desplazarSuave(contenedor, dir) {
   if (!contenedor) return;
   const paso = Math.max(260, contenedor.clientWidth * 0.75);
-  contenedor.scrollTo({ left: contenedor.scrollLeft + dir * paso, behavior: 'smooth' });
+  const desde = contenedor.scrollLeft;
+  const hasta = desde + dir * paso;
+  const duracion = 550;
+  const snapPrevio = contenedor.style.scrollSnapType;
+  contenedor.style.scrollSnapType = 'none';
+  const inicio = performance.now();
+  function animar(ahora) {
+    const progreso = Math.min((ahora - inicio) / duracion, 1);
+    //ease-out cubico: arranca rapido y frena de a poco
+    const suavizado = 1 - Math.pow(1 - progreso, 3);
+    contenedor.scrollLeft = desde + (hasta - desde) * suavizado;
+    if (progreso < 1) {
+      requestAnimationFrame(animar);
+    } else {
+      contenedor.style.scrollSnapType = snapPrevio;
+    }
+  }
+  requestAnimationFrame(animar);
 }
 
 //tarjeta de un proyecto en el carrusel del panel: imagen, titulo, categoria y botones editar/borrar
@@ -259,6 +276,8 @@ export default function AdminProyectos() {
 
   //vista actual del panel: portada (tipo behance) | proyecto (cargar/editar) | perfil
   const [vista, setVista] = useState('portada');
+  //categoria elegida en el menu superior (clave del grupo); vacio = mostrar todas
+  const [categoriaActiva, setCategoriaActiva] = useState('');
   //cantidad de personas que escribieron, para el contador del icono de mensajes
   const [cantidadConversaciones, setCantidadConversaciones] = useState(0);
 
@@ -525,13 +544,20 @@ export default function AdminProyectos() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  //baja hasta el carrusel de una categoria (atajo del menu superior)
-  function irAGrupo(numero) {
-    const seccion = document.getElementById(`admin-grupo-${numero}`);
-    if (!seccion) return;
-    const tope = seccion.getBoundingClientRect().top + window.scrollY - 140;
-    window.scrollTo({ top: Math.max(0, tope), behavior: 'smooth' });
+  //filtra el menu superior: muestra solo los carruseles de esa categoria
+  //si ya estaba elegida se destilde y vuelve a mostrar todas
+  function elegirCategoria(clave) {
+    setCategoriaActiva((actual) => (actual === clave ? '' : clave));
   }
+
+  //deshace el filtro al actualizar los proyectos si la categoria ya no existe
+  useEffect(() => {
+    if (categoriaActiva && !grupos.some((g) => g.clave === categoriaActiva)) {
+      setCategoriaActiva('');
+    }
+    //grupos cambia en cada render, solo interesa la categoria
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proyectos]);
 
   //guarda todos los campos del formulario de perfil
   async function guardarPerfil(evento) {
@@ -603,6 +629,13 @@ export default function AdminProyectos() {
     'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
   const claseBotonPrimario = `${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`;
   const claseBotonSecundario = `${claseBoton} bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700`;
+  //chip del menu superior: el de la categoria elegida queda verde
+  const claseChip = (activo) =>
+    `px-3 py-1 rounded-full text-sm border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
+      activo
+        ? 'bg-verde-app text-[#1c1c21] border-verde-app'
+        : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-verde-app/50'
+    }`;
 
   //entrada al panel: pide usuario y clave
   if (!sesion) {
@@ -651,6 +684,11 @@ export default function AdminProyectos() {
 
   const grupos = agruparProyectos(proyectos, listaServicios);
   const fotoPerfil = perfil?.foto;
+
+  //si la categoria elegida ya no existe (por ejemplo se borro el ultimo proyecto), se muestra todo
+  const categoriaValida =
+    categoriaActiva && grupos.some((g) => g.clave === categoriaActiva) ? categoriaActiva : '';
+  const gruposVisibles = categoriaValida ? grupos.filter((g) => g.clave === categoriaValida) : grupos;
 
   return (
     <section aria-label="Administración" className="max-w-6xl mx-auto px-4 py-8">
@@ -817,16 +855,31 @@ export default function AdminProyectos() {
                 </div>
               </header>
 
-              {/*menu superior como en behance: atajos a cada categoria para no bajar tanto*/}
+              {/*menu superior: chips para filtrar por categoria (solo aparece la categoria elegida)*/}
               {!cargando && proyectos.length > 0 && (
                 <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
-                  <ul className="flex gap-2 overflow-x-auto carrusel-scroll pb-1" aria-label="Atajos a las categorías">
-                    {grupos.map((grupo, numero) => (
-                      <li key={grupo.slug || 'sin-categoria'} className="shrink-0">
+                  <ul
+                    className="flex gap-2 overflow-x-auto carrusel-scroll pb-1"
+                    aria-label="Filtrar proyectos por categoría"
+                    role="group"
+                  >
+                    <li className="shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setCategoriaActiva('')}
+                        aria-pressed={categoriaValida === ''}
+                        className={claseChip(categoriaValida === '')}
+                      >
+                        Todas <span className="opacity-70">({proyectos.length})</span>
+                      </button>
+                    </li>
+                    {grupos.map((grupo) => (
+                      <li key={grupo.clave} className="shrink-0">
                         <button
                           type="button"
-                          onClick={() => irAGrupo(numero)}
-                          className="px-3 py-1 rounded-full text-sm border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                          onClick={() => elegirCategoria(grupo.clave)}
+                          aria-pressed={categoriaValida === grupo.clave}
+                          className={claseChip(categoriaValida === grupo.clave)}
                         >
                           {grupo.nombre} <span className="opacity-70">({grupo.proyectos.length})</span>
                         </button>
@@ -849,8 +902,9 @@ export default function AdminProyectos() {
                 Agregar proyecto
               </button>
 
-              {/*proyectos como carruseles horizontales por categoria (similar a behance) */}
-              <div className="space-y-10">
+              {/*proyectos como carruseles horizontales por categoria (similar a behance)
+                  con filtro: si hay una categoria elegida solo aparece esa*/}
+              <div key={categoriaValida || 'todas'} className="space-y-10 animacion-aparecer">
                 {cargando ? (
                   <p className="text-zinc-400">Cargando proyectos...</p>
                 ) : proyectos.length === 0 ? (
@@ -869,9 +923,9 @@ export default function AdminProyectos() {
                     </button>
                   </div>
                 ) : (
-                  grupos.map((grupo, numero) => (
+                  gruposVisibles.map((grupo, numero) => (
                     <CarruselAdmin
-                      key={grupo.slug || 'sin-categoria'}
+                      key={grupo.clave}
                       grupo={grupo}
                       numero={numero}
                       alEditar={editarProyecto}
