@@ -8,7 +8,7 @@ Portfolio web personal e interactivo desarrollado como **Examen Final de Program
 
 Un portfolio personal que presenta a Agustina Ferraro como diseñadora multimedia y desarrolladora full stack. Combina una página institucional (inicio, sobre mí, servicios, contacto) con una **sección de proyectos dinámica y administrable**: los proyectos viven en una base de datos, se cargan con un panel propio con clave, se filtran por categoría, y cada uno abre un **detalle tipo Behance** con galería de imágenes.
 
-La propuesta busca comunicar identidad (paleta violeta/zinc, tipografía limpia, microanimaciones) y a la vez demostrar un recorrido técnico completo: sitio estático con Astro + componentes React interactivos, una API REST propia y una base remota. El público es tanto alguien que visita el portfolio como quien evalúa el trabajo: se puede recorrer la web como visitante o entrar al panel `/admin` para gestionar el contenido.
+La propuesta busca comunicar identidad (paleta oscura con violeta en los botones y verde en los detalles de texto, tipografía limpia, microanimaciones) y a la vez demostrar un recorrido técnico completo: sitio estático con Astro + componentes React interactivos, una API REST propia y una base remota. El público es tanto alguien que visita el portfolio como quien evalúa el trabajo: se puede recorrer la web como visitante o entrar al panel `/admin` para gestionar el contenido.
 
 ## Sitios publicados
 
@@ -100,7 +100,7 @@ Como **otra fuente externa**, los **trabajos de programación desplegados en Ver
 ## Responsive y accesibilidad
 
 - **Responsive:** navegación de escritorio con links y búsqueda; menú hamburguesa con panel desplegable en móvil; grillas que pasan de 1/2/3 columnas según el ancho; imágenes con `object-cover` para no deformarse. Se probó en tamaños de escritorio, tablet y móvil (ver evidencia de proceso).
-- **Accesibilidad:** link "saltar al contenido" para navegación por teclado; **foco visible** en todos los elementos interactivos (`:focus-visible`); textos alternativos descriptivos en todas las imágenes; `aria-label` en botones iconográficos (menú, filtros, panel); `aria-pressed` en los chips de filtro; `aria-live`/`role="alert"` para mensajes de estado; contraste de paleta (zinc sobre zinc-950) pensado para legibilidad; el tema es oscuro por decisión de identidad con los acentos violeta.
+- **Accesibilidad:** link "saltar al contenido" para navegación por teclado; **foco visible** en todos los elementos interactivos (`:focus-visible`); textos alternativos descriptivos en todas las imágenes; `aria-label` en botones iconográficos (menú, filtros, panel); `aria-pressed` en los chips de filtro; `aria-live`/`role="alert"` para mensajes de estado; contraste de paleta (zinc sobre zinc-950) pensado para legibilidad; el tema es oscuro por decisión de identidad con acentos violeta (#B884E7) solo en los botones y verde (#69F5CC) en los detalles de texto.
 
 ## Limitaciones conocidas y líneas de mejora
 

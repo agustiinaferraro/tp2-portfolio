@@ -64,7 +64,7 @@ export default function Buscador() {
 
   return (
     <div ref={contenedor} className="relative">
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 focus-within:border-violet-500 transition-colors">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 focus-within:border-verde-app transition-colors">
         <svg aria-hidden="true" className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
         </svg>

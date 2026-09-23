@@ -58,10 +58,10 @@ export default function ServicioDetalle({ slug }) {
   //estado: con datos
   return (
     <section className="max-w-3xl mx-auto px-4 py-24">
-      <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 mb-6">
+      <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-verde-app/10 border border-verde-app/20 text-verde-app mb-6">
         <IconoServicio slug={servicio.slug} className="w-8 h-8" />
       </span>
-      <p className="text-violet-400 font-medium tracking-widest uppercase text-sm">Servicio</p>
+      <p className="text-verde-app font-medium tracking-widest uppercase text-sm">Servicio</p>
       <h1 className="text-4xl font-bold text-white mt-2">{servicio.nombre}</h1>
       <p className="text-lg text-zinc-400 leading-relaxed mt-6">{servicio.descripcion}</p>
 
@@ -72,7 +72,7 @@ export default function ServicioDetalle({ slug }) {
           <ul className="mt-6 grid gap-6 sm:grid-cols-2">
             {proyectos.map((proyecto) => (
               <li key={proyecto._id}>
-                <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
+                <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-verde-app/50 transition-colors">
                   {/*la portada es la imagen principal o la primera de la galeria, clickeable hacia el detalle*/}
                   {(proyecto.imagen || proyecto.imagenes?.[0]) && (
                     <figure className="m-0">
@@ -87,7 +87,7 @@ export default function ServicioDetalle({ slug }) {
                   )}
                   <div className="p-6 flex flex-col gap-3 flex-1">
                     <h3 className="text-xl font-bold text-white">
-                      <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
+                      <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-verde-app/80 transition-colors">
                         {proyecto.titulo}
                       </a>
                     </h3>
@@ -98,7 +98,7 @@ export default function ServicioDetalle({ slug }) {
                           href={proyecto.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
+                          className="text-sm font-medium text-verde-app hover:text-verde-app/80 transition-colors inline-flex items-center gap-1"
                         >
                           Ver proyecto <span aria-hidden="true">→</span>
                         </a>

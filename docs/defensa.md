@@ -7,7 +7,7 @@ Preparación para la instancia de **Examen Final — Programación Multimedial I
 ## 1. Discurso de apertura (30–60 segundos)
 
 1. **Qué es:** un portfolio personal que presenta a Agustina como diseñadora multimedia y desarrolladora full stack.
-2. **La idea:** una web con identidad propia (oscuro + violeta) que además demuestra un recorrido técnico completo: sitio estático con Astro, componentes React interactivos, una API REST propia y una base MongoDB.
+2. **La idea:** una web con identidad propia (oscuro, violeta en los botones, verde en los detalles de texto) que además demuestra un recorrido técnico completo: sitio estático con Astro, componentes React interactivos, una API REST propia y una base MongoDB.
 3. **El recorrido del visitante:** inicio (conocés quién soy y qué destaco) → sobre mí → proyectos (dinámicos, filtrables, con detalle tipo Behance) → servicios (páginas propias por categoría) → contacto (formulario que guarda en la base). Y al final del todo, el panel `/admin` con clave: la persona puede gestionar TODO el contenido.
 4. **Decisión clave de arquitectura:** el sitio es estático (Astro) y la interactividad viene de consumir mi propia API (`agustinaportfolio-api.vercel.app`), que lee MongoDB Atlas. Cada push a `main` redespliega frontend y backend en Vercel.
 

@@ -205,7 +205,7 @@ export default function AdminProyectos() {
   }
 
   const claseInput =
-    'w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all';
+    'w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-verde-app transition-all';
   const claseBoton =
     'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
@@ -236,7 +236,7 @@ export default function AdminProyectos() {
           <button
             type="submit"
             disabled={cargandoSesion || !usuario.trim() || !clave.trim()}
-            className={`${claseBoton} w-full bg-violet-600 hover:bg-violet-500 text-white disabled:bg-zinc-800`}
+            className={`${claseBoton} w-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] disabled:bg-zinc-800`}
           >
             {cargandoSesion ? 'Verificando...' : 'Entrar'}
           </button>
@@ -306,7 +306,7 @@ export default function AdminProyectos() {
             type="checkbox"
             checked={destacado}
             onChange={(e) => setDestacado(e.target.checked)}
-            className="w-4 h-4 accent-violet-500 cursor-pointer"
+            className="w-4 h-4 accent-verde-app cursor-pointer"
           />
           Destacado en la portada
         </label>
@@ -333,7 +333,7 @@ export default function AdminProyectos() {
         </div>
 
         {servicio === OPCION_NUEVA_CATEGORIA && (
-          <div className="space-y-3 rounded-xl border border-violet-500/30 bg-violet-500/5 p-4">
+          <div className="space-y-3 rounded-xl border border-verde-app/30 bg-verde-app/5 p-4">
             <div className="space-y-1">
               <label htmlFor="admin-nueva-nombre" className="block text-sm text-zinc-300">
                 Nombre de la categoría nueva *
@@ -377,7 +377,7 @@ export default function AdminProyectos() {
           <button
             type="submit"
             disabled={guardando}
-            className={`${claseBoton} bg-violet-600 hover:bg-violet-500 text-white`}
+            className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}
           >
             {guardando ? 'Guardando...' : editandoId ? 'Guardar cambios' : 'Guardar proyecto'}
           </button>
@@ -421,7 +421,7 @@ export default function AdminProyectos() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-white truncate">{proyecto.titulo}</p>
                   {nombreServicio(listaServicios, proyecto.servicio) && (
-                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20">
                       {nombreServicio(listaServicios, proyecto.servicio)}
                     </span>
                   )}
@@ -431,7 +431,7 @@ export default function AdminProyectos() {
                   <button
                     type="button"
                     onClick={() => editarProyecto(proyecto)}
-                    className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+                    className="text-sm text-verde-app hover:text-verde-app/80 transition-colors"
                   >
                     Editar
                   </button>

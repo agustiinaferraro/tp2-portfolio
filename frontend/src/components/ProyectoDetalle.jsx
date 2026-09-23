@@ -181,17 +181,17 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   }
 
   const claseInput =
-    'w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all';
+    'w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-verde-app transition-all';
   const claseBoton =
     'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
   //boton para volver a la lista de proyectos
   const volver = alVolver ? (
-    <button type="button" onClick={alVolver} className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1">
+    <button type="button" onClick={alVolver} className="text-sm font-medium text-verde-app hover:text-verde-app/80 transition-colors inline-flex items-center gap-1">
       <span aria-hidden="true">←</span> Volver a los proyectos
     </button>
   ) : (
-    <a href="/proyectos" className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1">
+    <a href="/proyectos" className="text-sm font-medium text-verde-app hover:text-verde-app/80 transition-colors inline-flex items-center gap-1">
       <span aria-hidden="true">←</span> Volver a los proyectos
     </a>
   );
@@ -239,13 +239,13 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
       <div className="space-y-2">
         {volver}
         <div className="flex items-center justify-between">
-          <p className="text-violet-400 font-medium tracking-widest uppercase text-sm mt-4">Proyecto</p>
+          <p className="text-verde-app font-medium tracking-widest uppercase text-sm mt-4">Proyecto</p>
           {admin ? (
             <div className="flex items-center gap-4 mt-4">
               <button
                 type="button"
                 onClick={editando ? () => setEditando(false) : abrirEditor}
-                className={`${claseBoton} bg-violet-600 hover:bg-violet-500 text-white`}
+                className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}
               >
                 {editando ? 'Cancelar edición' : 'Editar'}
               </button>
@@ -257,7 +257,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
             <button
               type="button"
               onClick={abrirEditor}
-              className={`${claseBoton} bg-violet-600 hover:bg-violet-500 text-white mt-4`}
+              className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] mt-4`}
             >
               Editar
             </button>
@@ -288,7 +288,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           <button
             type="submit"
             disabled={verificando || !usuarioLogin.trim() || !claveLogin.trim()}
-            className={`${claseBoton} w-full bg-violet-600 hover:bg-violet-500 text-white`}
+            className={`${claseBoton} w-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}
           >
             {verificando ? 'Verificando...' : 'Entrar'}
           </button>
@@ -318,7 +318,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
                   type="button"
                   onClick={() => setIndiceGaleria(i)}
                   className={`shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-colors cursor-pointer ${
-                    i === indiceGaleria ? 'border-violet-500' : 'border-zinc-800 hover:border-zinc-600'
+                    i === indiceGaleria ? 'border-verde-app' : 'border-zinc-800 hover:border-zinc-600'
                   }`}
                   aria-label={`Ver imagen ${i + 1}`}
                 >
@@ -343,12 +343,12 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
             {esCategoriaConocida(proyecto.servicio) ? (
               <a
                 href={`/servicios/${proyecto.servicio}`}
-                className="text-xs px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20 hover:bg-violet-500/20 transition-colors"
+                className="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20 hover:bg-verde-app/20 transition-colors"
               >
                 {nombreCategoria}
               </a>
             ) : (
-              <span className="text-xs px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
+              <span className="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20">
                 {nombreCategoria}
               </span>
             )}
@@ -374,7 +374,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
             href={proyecto.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] font-medium transition-colors"
           >
             Visitar proyecto <span aria-hidden="true">↗</span>
           </a>
@@ -434,7 +434,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
               type="checkbox"
               checked={destacado}
               onChange={(e) => setDestacado(e.target.checked)}
-              className="w-4 h-4 accent-violet-500 cursor-pointer"
+              className="w-4 h-4 accent-verde-app cursor-pointer"
             />
             Destacado en la portada
           </label>
@@ -474,7 +474,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           </div>
 
           {servicio === OPCION_NUEVA_CATEGORIA && (
-            <div className="space-y-3 rounded-xl border border-violet-500/30 bg-violet-500/5 p-4">
+            <div className="space-y-3 rounded-xl border border-verde-app/30 bg-verde-app/5 p-4">
               <div className="space-y-1">
                 <label htmlFor="det-nueva-nombre" className="block text-sm text-zinc-300">
                   Nombre de la categoría nueva *
@@ -515,7 +515,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={guardando} className={`${claseBoton} bg-violet-600 hover:bg-violet-500 text-white`}>
+            <button type="submit" disabled={guardando} className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}>
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
             <button

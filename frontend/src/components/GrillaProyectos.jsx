@@ -23,7 +23,7 @@ function juntarServicios(listaApi) {
 //tarjeta de un proyecto que se reusa en cada seccion
 function TarjetaProyecto({ proyecto }) {
   return (
-    <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
+    <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-verde-app/50 transition-colors">
       {/*portada: la principal o la primera de la galeria, clickeable hacia el detalle*/}
       {(proyecto.imagen || proyecto.imagenes?.[0]) && (
         <figure className="m-0">
@@ -38,7 +38,7 @@ function TarjetaProyecto({ proyecto }) {
       )}
       <div className="p-6 flex flex-col gap-3 flex-1 min-h-0">
         <h3 className="text-xl font-bold text-white line-clamp-2">
-          <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
+          <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-verde-app/80 transition-colors">
             {proyecto.titulo}
           </a>
         </h3>
@@ -48,7 +48,7 @@ function TarjetaProyecto({ proyecto }) {
             {proyecto.tags.map((tag) => (
               <li
                 key={tag}
-                className="text-xs px-2 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20"
+                className="text-xs px-2 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20"
               >
                 {tag}
               </li>
@@ -62,7 +62,7 @@ function TarjetaProyecto({ proyecto }) {
               href={proyecto.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
+              className="text-sm font-medium text-verde-app hover:text-verde-app/80 transition-colors inline-flex items-center gap-1"
             >
               {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
             </a>
@@ -111,7 +111,7 @@ function SeccionCarrusel({ clave, nombre, items }) {
           type="button"
           onClick={() => desplazarSuave(ref.current, -1)}
           aria-label={`Ver proyectos anteriores de ${nombre}`}
-          className="absolute top-1/2 -translate-y-1/2 left-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violet-600 hover:border-violet-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+          className="absolute top-1/2 -translate-y-1/2 left-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violeta-app hover:border-verde-app hover:text-[#1c1c21] hover:scale-110 active:scale-95 transition-all cursor-pointer"
         >
           <span aria-hidden="true">←</span>
         </button>
@@ -119,7 +119,7 @@ function SeccionCarrusel({ clave, nombre, items }) {
           type="button"
           onClick={() => desplazarSuave(ref.current, 1)}
           aria-label={`Ver más proyectos de ${nombre}`}
-          className="absolute top-1/2 -translate-y-1/2 right-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violet-600 hover:border-violet-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+          className="absolute top-1/2 -translate-y-1/2 right-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violeta-app hover:border-verde-app hover:text-[#1c1c21] hover:scale-110 active:scale-95 transition-all cursor-pointer"
         >
           <span aria-hidden="true">→</span>
         </button>
@@ -250,8 +250,8 @@ export default function GrillaProyectos() {
                 aria-pressed={categoria === c.slug}
                 className={`px-3 py-1 rounded-full text-sm border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
                   categoria === c.slug
-                    ? 'bg-violet-600 text-white border-violet-600'
-                    : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-violet-500/50'
+                    ? 'bg-violeta-app text-[#1c1c21] border-violeta-app'
+                    : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-verde-app/50'
                 }`}
               >
                 {c.nombre}

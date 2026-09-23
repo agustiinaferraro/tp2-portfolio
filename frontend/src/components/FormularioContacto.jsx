@@ -75,7 +75,7 @@ export default function FormularioContacto() {
           value={formulario.nombre}
           onChange={manejarCambio}
           placeholder="Tu nombre"
-          className="w-full px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500"
+          className="w-full px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-verde-app"
         />
       </div>
       <div>
@@ -90,7 +90,7 @@ export default function FormularioContacto() {
           value={formulario.email}
           onChange={manejarCambio}
           placeholder="tu@email.com"
-          className="w-full px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500"
+          className="w-full px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-verde-app"
         />
       </div>
       <div>
@@ -105,7 +105,7 @@ export default function FormularioContacto() {
           value={formulario.mensaje}
           onChange={manejarCambio}
           placeholder="Contame sobre tu proyecto..."
-          className="w-full px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 resize-none"
+          className="w-full px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-verde-app resize-none"
         />
       </div>
       {estado === 'error' && (
@@ -114,7 +114,7 @@ export default function FormularioContacto() {
       <button
         type="submit"
         disabled={estado === 'enviando'}
-        className="w-full px-6 py-3 rounded-full bg-violet-600 hover:bg-violet-500 hover:scale-105 active:scale-95 active:bg-violet-400 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full px-6 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 hover:scale-105 active:scale-95 active:bg-violeta-app/80 transition-all duration-200 font-medium text-[#1c1c21] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {estado === 'enviando' ? 'Enviando...' : 'Enviar mensaje'}
       </button>

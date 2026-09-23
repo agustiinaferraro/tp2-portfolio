@@ -71,7 +71,7 @@ export default function AdminMensajes({ clave }) {
                   <p className="font-medium text-white">{mensaje.nombre}</p>
                   <a
                     href={`mailto:${mensaje.email}`}
-                    className="text-sm text-violet-400 hover:text-violet-300 transition-colors break-all"
+                    className="text-sm text-verde-app hover:text-verde-app/80 transition-colors break-all"
                   >
                     {mensaje.email}
                   </a>

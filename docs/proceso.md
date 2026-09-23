@@ -31,7 +31,7 @@ Se partió de una estructura clásica de portfolio (inicio, sobre mí, servicios
 6. **Galería:** varias imágenes por proyecto con miniaturas en el detalle.
 7. **Contenido:** importación desde el feed RSS de Behance para poblar la base sin carga manual.
 
-Decisión de identidad sostenida desde el inicio: **tema oscuro** (zinc-950) con acentos **violeta**, tipografía limpia, microanimaciones de hover y una marca gráfica consistente (logo circular, "Contactate", FAB "¡Hablemos!").
+Decisión de identidad sostenida desde el inicio: **tema oscuro** (zinc-950) con **violeta (#B884E7) solo en los botones** y **verde (#69F5CC) en los detalles de texto**, tipografía limpia, microanimaciones de hover y una marca gráfica consistente (logo circular, "Contactate", FAB "¡Hablemos!").
 
 ## Pruebas realizadas
 
@@ -82,7 +82,7 @@ Tal como pide la consigna, se registra el uso de herramientas de IA (asistente d
 - Algunas soluciones propuestas por la IA se descartaron por no ajustarse a la identidad o al alcance elegido.
 
 **Decisiones tomadas por la autora (no por la IA)**
-- La identidad visual (tema oscuro + violeta) y el tono de los textos.
+- La identidad visual (tema oscuro + violeta en los botones y verde en los detalles de texto) y el tono de los textos.
 - Elegir usuario y clave del panel.
 - Preferir la página `/admin` dedicada al login modal.
 - Elegir "importar desde Behance y mostrar en la app" en lugar de redirigir.

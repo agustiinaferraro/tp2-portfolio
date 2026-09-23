@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/*paleta de la identidad: violeta solo en botones, verde en detalles de texto*/
+@theme {
+  --color-violeta-app: #b884e7;
+  --color-verde-app: #69f5cc;
+}
+
 /*todos los botones y el desplegable de servicios muestran la manito al pasar el mouse*/
 button,
 summary {
@@ -82,7 +88,7 @@ main section[id] {
 
 /*accesibilidad: el foco del teclado siempre se ve, sin importar el mouse*/
 :focus-visible {
-  outline: 2px solid #a78bfa;
+  outline: 2px solid #69f5cc;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -99,8 +105,8 @@ main section[id] {
   left: 1rem;
   top: 1rem;
   padding: 0.5rem 1rem;
-  background: #4c1d95;
-  color: #fff;
+  background: #b884e7;
+  color: #1c1c21;
   font-weight: 600;
   border-radius: 8px;
 }

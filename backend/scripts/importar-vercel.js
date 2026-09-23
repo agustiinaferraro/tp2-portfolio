@@ -18,13 +18,13 @@ function generarPortada(titulo) {
   const fuente = texto.length <= 18 ? 44 : texto.length <= 30 ? 34 : 26;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">` +
     `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
-    `<stop offset="0" stop-color="#18181b"/><stop offset="0.55" stop-color="#3b1472"/><stop offset="1" stop-color="#7c3aed"/>` +
+    `<stop offset="0" stop-color="#18181b"/><stop offset="0.55" stop-color="#10312a"/><stop offset="1" stop-color="#14594c"/>` +
     `</linearGradient></defs>` +
     `<rect width="800" height="450" fill="url(#g)"/>` +
-    `<circle cx="700" cy="70" r="140" fill="#8b5cf6" opacity="0.25"/>` +
-    `<circle cx="100" cy="410" r="180" fill="#4c1d95" opacity="0.35"/>` +
+    `<circle cx="700" cy="70" r="140" fill="#69f5cc" opacity="0.18"/>` +
+    `<circle cx="100" cy="410" r="180" fill="#34d399" opacity="0.15"/>` +
     `<text x="45" y="245" font-family="Arial, Helvetica, sans-serif" font-size="${fuente}" font-weight="bold" fill="#ffffff" opacity="0.95">${texto}</text>` +
-    `<text x="47" y="288" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#c4b5fd">Programación · Desplegado en Vercel</text>` +
+    `<text x="47" y="288" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#69f5cc">Programación · Desplegado en Vercel</text>` +
     `</svg>`;
   return 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
 }
