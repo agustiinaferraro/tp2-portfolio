@@ -104,3 +104,22 @@ main section[id] {
   font-weight: 600;
   border-radius: 8px;
 }
+
+/*carruseles: barra de scroll fina y discreta*/
+.carrusel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+
+.carrusel-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.carrusel-scroll::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+.carrusel-scroll::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
