@@ -12,6 +12,11 @@ export function obtenerMensajes(clave) {
   return peticionAdmin('GET', '/api/mensajes', undefined, clave);
 }
 
+//devuelve los mensajes agrupados por persona (como chats, solo admin)
+export function obtenerConversaciones(clave) {
+  return peticionAdmin('GET', '/api/mensajes/conversaciones', undefined, clave);
+}
+
 //borra un mensaje (solo admin)
 export function borrarMensaje(id, clave) {
   return peticionAdmin('DELETE', `/api/mensajes/${id}`, undefined, clave);

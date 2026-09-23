@@ -17,6 +17,33 @@ router.get('/', esAdmin, async (req, res) => {
   }
 });
 
+//get a /api/mensajes/conversaciones (solo admin)
+//agrupa los mensajes por persona (mismo email) para verlos como chats
+//cada conversacion trae nombre, cantidad, fecha del ultimo y todos sus mensajes
+router.get('/conversaciones', esAdmin, async (req, res) => {
+  try {
+    const conversaciones = await Mensaje.aggregate([
+      //los nuevos primero para que el primer mensaje de cada grupo sea el ultimo
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: { $toLower: '$email' },
+          nombre: { $first: '$nombre' },
+          email: { $first: '$email' },
+          cantidad: { $sum: 1 },
+          ultimaFecha: { $first: '$createdAt' },
+          mensajes: { $push: '$$ROOT' },
+        },
+      },
+      //las conversaciones con actividad mas reciente quedan arriba
+      { $sort: { ultimaFecha: -1 } },
+    ]);
+    res.json(conversaciones);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener las conversaciones', error: error.message });
+  }
+});
+
 //post a /api/mensajes
 //recibe los datos del formulario de contacto y los guarda en la base
 router.post('/', async (req, res) => {

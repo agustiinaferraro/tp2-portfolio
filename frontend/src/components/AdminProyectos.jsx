@@ -13,6 +13,7 @@ import {
 } from '../api/proyectos.js';
 import { obtenerServicios, crearServicio } from '../api/servicios.js';
 import { obtenerPerfil, actualizarPerfil } from '../api/perfil.js';
+import { obtenerConversaciones } from '../api/mensajes.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
 import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
@@ -146,6 +147,107 @@ function IconoTacho({ className }) {
   );
 }
 
+//desplazamiento del carrusel: usa el scroll animado nativo del navegador, que es mas fluido
+//el snap de las tarjetas se aplica solo al final, sin pelear con la animacion
+function desplazarSuave(contenedor, dir) {
+  if (!contenedor) return;
+  const paso = Math.max(260, contenedor.clientWidth * 0.75);
+  contenedor.scrollTo({ left: contenedor.scrollLeft + dir * paso, behavior: 'smooth' });
+}
+
+//tarjeta de un proyecto en el carrusel del panel: imagen, titulo, categoria y botones editar/borrar
+function TarjetaAdmin({ proyecto, grupoNombre, alEditar, alEliminar }) {
+  const tieneImagen = !!(proyecto.imagen || proyecto.imagenes?.[0]);
+  return (
+    <article className="group relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 focus-within:ring-2 focus-within:ring-verde-app">
+      {tieneImagen ? (
+        <img
+          src={proyecto.imagen || proyecto.imagenes[0]}
+          alt=""
+          className="w-full aspect-[4/3] object-cover"
+        />
+      ) : (
+        <div className="w-full aspect-[4/3] bg-zinc-800 flex items-center justify-center text-zinc-600 text-xs">
+          Sin portada
+        </div>
+      )}
+      <div className="p-3">
+        <p className="text-sm font-medium text-white truncate">{proyecto.titulo}</p>
+        <p className="text-xs text-verde-app truncate">{grupoNombre}</p>
+      </div>
+      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={() => alEditar(proyecto)}
+          aria-label={`Editar ${proyecto.titulo}`}
+          title="Editar"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-[#1c1c21] hover:bg-verde-app transition-colors cursor-pointer"
+        >
+          <IconoLapiz className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => alEliminar(proyecto)}
+          aria-label={`Eliminar ${proyecto.titulo}`}
+          title="Eliminar"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-red-400 hover:text-white hover:bg-red-600 transition-colors cursor-pointer"
+        >
+          <IconoTacho className="w-4 h-4" />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+//carrusel horizontal de una categoria con sus proyectos (flechas a los costados)
+function CarruselAdmin({ grupo, numero, alEditar, alEliminar }) {
+  const ref = useRef(null);
+  return (
+    <section
+      id={`admin-grupo-${numero}`}
+      aria-labelledby={`admin-grupo-titulo-${numero}`}
+      className="scroll-mt-36"
+    >
+      <h2 id={`admin-grupo-titulo-${numero}`} className="text-lg font-semibold text-white mb-4">
+        {grupo.nombre}{' '}
+        <span className="ml-1 text-sm font-normal text-zinc-500">({grupo.proyectos.length})</span>
+      </h2>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => desplazarSuave(ref.current, -1)}
+          aria-label={`Ver proyectos anteriores de ${grupo.nombre}`}
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+        <div className="flex-1 min-w-0">
+          <ul ref={ref} className="flex gap-4 overflow-x-auto snap-x pb-3 carrusel-scroll">
+            {grupo.proyectos.map((proyecto) => (
+              <li key={proyecto._id} className="shrink-0 snap-start w-60">
+                <TarjetaAdmin
+                  proyecto={proyecto}
+                  grupoNombre={grupo.nombre}
+                  alEditar={alEditar}
+                  alEliminar={alEliminar}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+        <button
+          type="button"
+          onClick={() => desplazarSuave(ref.current, 1)}
+          aria-label={`Ver más proyectos de ${grupo.nombre}`}
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
+        >
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export default function AdminProyectos() {
   const [usuario, setUsuario] = useState('');
   const [clave, setClave] = useState('');
@@ -157,6 +259,8 @@ export default function AdminProyectos() {
 
   //vista actual del panel: portada (tipo behance) | proyecto (cargar/editar) | perfil
   const [vista, setVista] = useState('portada');
+  //cantidad de personas que escribieron, para el contador del icono de mensajes
+  const [cantidadConversaciones, setCantidadConversaciones] = useState(0);
 
   const [proyectos, setProyectos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -202,6 +306,7 @@ export default function AdminProyectos() {
       setUsuario(sesion.usuario);
       cargarProyectos();
       cargarPerfil();
+      cargarCantidadConversaciones();
     }
     obtenerServicios()
       .then((lista) => setListaServicios(juntarServicios(lista)))
@@ -210,6 +315,13 @@ export default function AdminProyectos() {
 
   function mostrarMensaje(texto, tipo = 'ok') {
     setMensaje({ texto, tipo });
+  }
+
+  //trae cuantas personas escribieron, para el contador del icono de mensajes
+  function cargarCantidadConversaciones() {
+    obtenerConversaciones(clave)
+      .then((lista) => setCantidadConversaciones(lista.length))
+      .catch(() => {});
   }
 
   function cargarProyectos() {
@@ -253,6 +365,7 @@ export default function AdminProyectos() {
       setVista('portada');
       cargarProyectos();
       cargarPerfil();
+      cargarCantidadConversaciones();
     } catch (error) {
       //el servidor avisa cual de los dos campos no coincide para marcarlo en rojo
       setErrorUsuario(error.campos?.usuario === false);
@@ -402,6 +515,22 @@ export default function AdminProyectos() {
     cargarPerfil();
     setVista('perfil');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  //entrar a la vista de mensajes y refrescar el contador del icono
+  function irAMensajes() {
+    setMensaje(null);
+    setVista('mensajes');
+    cargarCantidadConversaciones();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  //baja hasta el carrusel de una categoria (atajo del menu superior)
+  function irAGrupo(numero) {
+    const seccion = document.getElementById(`admin-grupo-${numero}`);
+    if (!seccion) return;
+    const tope = seccion.getBoundingClientRect().top + window.scrollY - 140;
+    window.scrollTo({ top: Math.max(0, tope), behavior: 'smooth' });
   }
 
   //guarda todos los campos del formulario de perfil
@@ -587,6 +716,18 @@ export default function AdminProyectos() {
                   </svg>
                 ),
               },
+              {
+                etiqueta: 'Mensajes',
+                accion: irAMensajes,
+                activo: vista === 'mensajes',
+                cantidad: cantidadConversaciones,
+                icono: (
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
+                  </svg>
+                ),
+              },
             ].map((item) => (
               <button
                 key={item.etiqueta}
@@ -599,7 +740,12 @@ export default function AdminProyectos() {
                 }`}
               >
                 {item.icono}
-                {item.etiqueta}
+                <span className="flex-1 text-left">{item.etiqueta}</span>
+                {item.cantidad > 0 && (
+                  <span className="shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-verde-app text-[#1c1c21]">
+                    {item.cantidad}
+                  </span>
+                )}
               </button>
             ))}
             <div className="pt-3 mt-3 border-t border-zinc-800">
@@ -671,6 +817,25 @@ export default function AdminProyectos() {
                 </div>
               </header>
 
+              {/*menu superior como en behance: atajos a cada categoria para no bajar tanto*/}
+              {!cargando && proyectos.length > 0 && (
+                <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
+                  <ul className="flex gap-2 overflow-x-auto carrusel-scroll pb-1" aria-label="Atajos a las categorías">
+                    {grupos.map((grupo, numero) => (
+                      <li key={grupo.slug || 'sin-categoria'} className="shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => irAGrupo(numero)}
+                          className="px-3 py-1 rounded-full text-sm border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        >
+                          {grupo.nombre} <span className="opacity-70">({grupo.proyectos.length})</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/*btn de agregar proyecto en pantallas chicas (el de arriba se oculta) */}
               <button
                 type="button"
@@ -684,8 +849,8 @@ export default function AdminProyectos() {
                 Agregar proyecto
               </button>
 
-              {/*proyectos agrupados por categoria, como en la portada de behance*/}
-              <div className="space-y-8">
+              {/*proyectos como carruseles horizontales por categoria (similar a behance) */}
+              <div className="space-y-10">
                 {cargando ? (
                   <p className="text-zinc-400">Cargando proyectos...</p>
                 ) : proyectos.length === 0 ? (
@@ -704,62 +869,17 @@ export default function AdminProyectos() {
                     </button>
                   </div>
                 ) : (
-                  grupos.map((grupo) => (
-                    <section key={grupo.slug || 'sin-categoria'} aria-label={grupo.nombre}>
-                      <h2 className="text-lg font-semibold text-white mb-4">{grupo.nombre}</h2>
-                      <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        {grupo.proyectos.map((proyecto) => (
-                          <li
-                            key={proyecto._id}
-                            className="group relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 focus-within:ring-2 focus-within:ring-verde-app"
-                          >
-                            {proyecto.imagen || proyecto.imagenes?.[0] ? (
-                              <img
-                                src={proyecto.imagen || proyecto.imagenes[0]}
-                                alt=""
-                                className="w-full aspect-[4/3] object-cover"
-                              />
-                            ) : (
-                              <div className="w-full aspect-[4/3] bg-zinc-800 flex items-center justify-center text-zinc-600 text-xs">
-                                Sin portada
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" />
-                            {(proyecto.imagen || proyecto.imagenes?.[0]) && (
-                              <div className="absolute bottom-0 inset-x-0 p-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                                <p className="text-sm font-medium text-white truncate">{proyecto.titulo}</p>
-                                <p className="text-xs text-verde-app truncate">{grupo.nombre}</p>
-                              </div>
-                            )}
-                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                              <button
-                                type="button"
-                                onClick={() => editarProyecto(proyecto)}
-                                aria-label={`Editar ${proyecto.titulo}`}
-                                title="Editar"
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-[#1c1c21] hover:bg-verde-app transition-colors cursor-pointer"
-                              >
-                                <IconoLapiz className="w-4 h-4" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setProyectoAEliminar(proyecto)}
-                                aria-label={`Eliminar ${proyecto.titulo}`}
-                                title="Eliminar"
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-red-400 hover:text-white hover:bg-red-600 transition-colors cursor-pointer"
-                              >
-                                <IconoTacho className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
+                  grupos.map((grupo, numero) => (
+                    <CarruselAdmin
+                      key={grupo.slug || 'sin-categoria'}
+                      grupo={grupo}
+                      numero={numero}
+                      alEditar={editarProyecto}
+                      alEliminar={setProyectoAEliminar}
+                    />
                   ))
                 )}
               </div>
-
-              <AdminMensajes clave={clave} />
             </>
           )}
 
@@ -1083,6 +1203,10 @@ export default function AdminProyectos() {
                 </button>
               </div>
             </form>
+          )}
+
+          {vista === 'mensajes' && (
+            <AdminMensajes clave={clave} alCambiar={cargarCantidadConversaciones} />
           )}
         </div>
       </div>
