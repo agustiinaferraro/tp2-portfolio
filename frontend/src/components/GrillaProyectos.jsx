@@ -36,8 +36,8 @@ function TarjetaProyecto({ proyecto }) {
           </a>
         </figure>
       )}
-      <div className="p-6 flex flex-col gap-3 flex-1">
-        <h3 className="text-xl font-bold text-white">
+      <div className="p-6 flex flex-col gap-3 flex-1 min-h-0">
+        <h3 className="text-xl font-bold text-white line-clamp-2">
           <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
             {proyecto.titulo}
           </a>
@@ -55,7 +55,7 @@ function TarjetaProyecto({ proyecto }) {
             ))}
           </ul>
         )}
-        <p className="text-zinc-400 text-sm leading-relaxed flex-1">{proyecto.resumen}</p>
+        <p className="text-zinc-400 text-sm leading-relaxed flex-1 min-h-0 line-clamp-3">{proyecto.resumen}</p>
         {proyecto.link && (
           <p className="mt-auto">
             <a
@@ -73,52 +73,57 @@ function TarjetaProyecto({ proyecto }) {
   );
 }
 
+//desplazamiento animado del carrusel: transicion suave tipo giro con easing
+function desplazarSuave(contenedor, dir) {
+  if (!contenedor) return;
+  const inicio = contenedor.scrollLeft;
+  const meta = inicio + dir * Math.max(320, contenedor.clientWidth * 0.75);
+  const duracion = 500;
+  const tInicio = performance.now();
+  function paso(ahora) {
+    const progreso = Math.min((ahora - tInicio) / duracion, 1);
+    const ease = progreso < 0.5 ? 2 * progreso * progreso : -1 + (4 - 2 * progreso) * progreso;
+    contenedor.scrollLeft = inicio + (meta - inicio) * ease;
+    if (progreso < 1) requestAnimationFrame(paso);
+  }
+  requestAnimationFrame(paso);
+}
+
 //seccion con titulo y carrusel horizontal de proyectos
 function SeccionCarrusel({ clave, nombre, items }) {
   const ref = useRef(null);
 
-  function desplazar(dir) {
-    const contenedor = ref.current;
-    if (!contenedor) return;
-    const salto = Math.max(320, contenedor.clientWidth * 0.7);
-    contenedor.scrollBy({ left: dir * salto, behavior: 'smooth' });
-  }
-
   return (
     <section aria-labelledby={`proyectos-seccion-${clave}`}>
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <h2 id={`proyectos-seccion-${clave}`} className="text-2xl font-bold text-white">
-          {nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({items.length})</span>
-        </h2>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => desplazar(-1)}
-            aria-label={`Ver proyectos anteriores de ${nombre}`}
-            className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-300 hover:border-violet-500/50 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span aria-hidden="true">←</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => desplazar(1)}
-            aria-label={`Ver más proyectos de ${nombre}`}
-            className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-300 hover:border-violet-500/50 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
+      <h2 id={`proyectos-seccion-${clave}`} className="text-2xl font-bold text-white mb-4">
+        {nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({items.length})</span>
+      </h2>
+      <div className="relative">
+        <ul ref={ref} className="flex gap-6 overflow-x-auto snap-x pb-3 carrusel-scroll">
+          {items.map((proyecto) => (
+            <li key={proyecto._id} className="shrink-0 snap-start w-72 h-[26rem]">
+              <TarjetaProyecto proyecto={proyecto} />
+            </li>
+          ))}
+        </ul>
+        {/*flechas de navegacion a los costados del carrusel*/}
+        <button
+          type="button"
+          onClick={() => desplazarSuave(ref.current, -1)}
+          aria-label={`Ver proyectos anteriores de ${nombre}`}
+          className="absolute top-1/2 -translate-y-1/2 left-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violet-600 hover:border-violet-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => desplazarSuave(ref.current, 1)}
+          aria-label={`Ver más proyectos de ${nombre}`}
+          className="absolute top-1/2 -translate-y-1/2 right-1 z-10 w-10 h-10 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:bg-violet-600 hover:border-violet-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+        >
+          <span aria-hidden="true">→</span>
+        </button>
       </div>
-      <ul
-        ref={ref}
-        className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-3 carrusel-scroll"
-      >
-        {items.map((proyecto) => (
-          <li key={proyecto._id} className="shrink-0 snap-start w-72">
-            <TarjetaProyecto proyecto={proyecto} />
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
