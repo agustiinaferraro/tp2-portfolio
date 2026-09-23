@@ -24,13 +24,14 @@ router.get('/', async (req, res) => {
 //actualiza el perfil (o lo crea si no existe) con los campos que lleguen
 router.put('/', esAdmin, async (req, res) => {
   try {
-    const { nombre, titulo, sobreMi, foto, email, telefono, whatsapp, redes } = req.body ?? {};
+    const { nombre, titulo, sobreMi, foto, portada, email, telefono, whatsapp, redes } = req.body ?? {};
 
     const cambios = {};
     if (nombre !== undefined) cambios.nombre = String(nombre).trim() || 'Agustina Ferraro';
     if (titulo !== undefined) cambios.titulo = String(titulo).trim();
     if (sobreMi !== undefined) cambios.sobreMi = String(sobreMi).trim();
     if (foto !== undefined) cambios.foto = String(foto).trim();
+    if (portada !== undefined) cambios.portada = String(portada).trim();
     if (email !== undefined) cambios.email = String(email).trim();
     if (telefono !== undefined) cambios.telefono = String(telefono).trim();
     if (whatsapp !== undefined) cambios.whatsapp = String(whatsapp).trim();

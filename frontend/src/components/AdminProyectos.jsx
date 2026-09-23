@@ -135,6 +135,17 @@ function IconoLapiz({ className }) {
   );
 }
 
+//icono de imagen para cambiar la foto de portada del banner
+function IconoImagen({ className }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+    </svg>
+  );
+}
+
 //icono de tacho para borrar
 function IconoTacho({ className }) {
   return (
@@ -312,6 +323,7 @@ export default function AdminProyectos() {
   const [guardandoPerfil, setGuardandoPerfil] = useState(false);
   //input de foto oculto: lo disparan el lapiz del avatar y el del formulario de perfil
   const fotoInputRef = useRef(null);
+  const portadaInputRef = useRef(null);
 
   const [listaServicios, setListaServicios] = useState(serviciosEstaticos);
   const [mensaje, setMensaje] = useState(null);
@@ -528,6 +540,37 @@ export default function AdminProyectos() {
     }
   }
 
+  //abre el selector de archivos para cargar la foto de portada del banner
+  function abrirElegirPortada() {
+    portadaInputRef.current?.click();
+  }
+
+  //al elegir una imagen se comprime, se guarda en la base y se actualiza el banner
+  async function cambiarPortada(evento) {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!archivo) return;
+    setGuardandoPerfil(true);
+    setMensaje(null);
+    try {
+      const base64 = await comprimirImagen(archivo);
+      const respuesta = await actualizarPerfil({ portada: base64 }, clave);
+      const datos = respuesta.datos ?? { ...(perfil ?? {}), portada: base64 };
+      setPerfil(datos);
+      mostrarMensaje('Foto de portada actualizada');
+      window.dispatchEvent(new CustomEvent('perfil-actualizado'));
+    } catch (error) {
+      if (claveIncorrecta(error)) {
+        mostrarMensaje('La sesión expiró. Volvé a entrar.', 'error');
+        salir();
+      } else {
+        mostrarMensaje(error.message, 'error');
+      }
+    } finally {
+      setGuardandoPerfil(false);
+    }
+  }
+
   //entrar a la vista de editar perfil con los ultimos datos guardados
   function irAEditarPerfil() {
     setMensaje(null);
@@ -684,6 +727,7 @@ export default function AdminProyectos() {
 
   const grupos = agruparProyectos(proyectos, listaServicios);
   const fotoPerfil = perfil?.foto;
+  const fotoPortada = perfil?.portada;
 
   //si la categoria elegida ya no existe (por ejemplo se borro el ultimo proyecto), se muestra todo
   const categoriaValida =
@@ -699,6 +743,16 @@ export default function AdminProyectos() {
         accept="image/*"
         className="hidden"
         onChange={cambiarFoto}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      {/*input de portada oculto: lo abre el boton del banner*/}
+      <input
+        ref={portadaInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={cambiarPortada}
         tabIndex={-1}
         aria-hidden="true"
       />
@@ -809,7 +863,27 @@ export default function AdminProyectos() {
             <>
               {/*portada tipo behance: cabecera con foto de perfil y boton para sumar proyectos*/}
               <header className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900">
-                <div className="h-32 bg-gradient-to-r from-verde-app/20 via-violeta-app/20 to-zinc-800" aria-hidden="true" />
+                <div className="relative h-32">
+                  {fotoPortada ? (
+                    <img src={fotoPortada} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div
+                      className="w-full h-full bg-gradient-to-r from-verde-app/20 via-violeta-app/20 to-zinc-800"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {/*boton para cambiar la foto de portada del banner*/}
+                  <button
+                    type="button"
+                    onClick={abrirElegirPortada}
+                    disabled={guardandoPerfil}
+                    aria-label="Cambiar foto de portada"
+                    title="Cambiar foto de portada"
+                    className="absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-950/70 backdrop-blur-md border border-zinc-700 text-zinc-300 hover:text-white hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <IconoImagen className="w-4 h-4" />
+                  </button>
+                </div>
                 <div className="flex items-end justify-between px-4 sm:px-6 -mt-12 pb-4">
                   <div className="flex items-end gap-3 sm:gap-4 min-w-0">
                     <div className="relative shrink-0">
@@ -841,10 +915,48 @@ export default function AdminProyectos() {
                       </p>
                     </div>
                   </div>
+                </div>
+              </header>
+
+              {/*menu superior: chips para filtrar por categoria (solo aparece la categoria elegida)*/}
+              {!cargando && proyectos.length > 0 && (
+                <div className="space-y-3">
+                  <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
+                    <ul
+                      className="flex gap-2 overflow-x-auto carrusel-scroll pb-1"
+                      aria-label="Filtrar proyectos por categoría"
+                      role="group"
+                    >
+                      <li className="shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setCategoriaActiva('')}
+                          aria-pressed={categoriaValida === ''}
+                          className={claseChip(categoriaValida === '')}
+                        >
+                          Todas <span className="opacity-70">({proyectos.length})</span>
+                        </button>
+                      </li>
+                      {grupos.map((grupo) => (
+                        <li key={grupo.clave} className="shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => elegirCategoria(grupo.clave)}
+                            aria-pressed={categoriaValida === grupo.clave}
+                            className={claseChip(categoriaValida === grupo.clave)}
+                          >
+                            {grupo.nombre} <span className="opacity-70">({grupo.proyectos.length})</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/*btn de agregar proyecto justo debajo del menu de filtros*/}
                   <button
                     type="button"
                     onClick={irAAgregarProyecto}
-                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium hover:scale-[1.01] active:scale-100 transition-all cursor-pointer"
                   >
                     <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                       <path d="M5 12h14" />
@@ -853,54 +965,7 @@ export default function AdminProyectos() {
                     Agregar proyecto
                   </button>
                 </div>
-              </header>
-
-              {/*menu superior: chips para filtrar por categoria (solo aparece la categoria elegida)*/}
-              {!cargando && proyectos.length > 0 && (
-                <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
-                  <ul
-                    className="flex gap-2 overflow-x-auto carrusel-scroll pb-1"
-                    aria-label="Filtrar proyectos por categoría"
-                    role="group"
-                  >
-                    <li className="shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setCategoriaActiva('')}
-                        aria-pressed={categoriaValida === ''}
-                        className={claseChip(categoriaValida === '')}
-                      >
-                        Todas <span className="opacity-70">({proyectos.length})</span>
-                      </button>
-                    </li>
-                    {grupos.map((grupo) => (
-                      <li key={grupo.clave} className="shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => elegirCategoria(grupo.clave)}
-                          aria-pressed={categoriaValida === grupo.clave}
-                          className={claseChip(categoriaValida === grupo.clave)}
-                        >
-                          {grupo.nombre} <span className="opacity-70">({grupo.proyectos.length})</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               )}
-
-              {/*btn de agregar proyecto en pantallas chicas (el de arriba se oculta) */}
-              <button
-                type="button"
-                onClick={irAAgregarProyecto}
-                className="sm:hidden w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium transition-colors cursor-pointer"
-              >
-                <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M5 12h14" />
-                  <path d="M12 5v14" />
-                </svg>
-                Agregar proyecto
-              </button>
 
               {/*proyectos como carruseles horizontales por categoria (similar a behance)
                   con filtro: si hay una categoria elegida solo aparece esa*/}

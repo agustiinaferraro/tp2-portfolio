@@ -22,6 +22,11 @@ const perfilSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    portada: {
+      //foto de portada del banner del panel en base64
+      type: String,
+      default: '',
+    },
     email: {
       type: String,
       default: '',
