@@ -49,6 +49,8 @@ node scripts/importar-behance.js
 
 De esta forma el portfolio queda poblado sin cargar los proyectos a mano, pero la web **siempre lee de la base de datos** (no redirige a Behance: cada tarjeta abre el detalle propio del sitio). Las miniaturas que trae el feed se usan como portada; para imágenes de mejor calidad se cargan desde el panel de administración.
 
+**Sincronización automática:** el workflow de **GitHub Actions** `.github/workflows/importar-behance.yml` corre el script **cada 6 horas** y se puede ejecutar a mano desde la pestaña *Actions* del repositorio. Al re-correr, crea los proyectos **nuevos** y **actualiza** título, descripción y miniatura de los que ya existen (si cambiaron en Behance), sin pisar categoría, destacado ni imágenes propias cargadas desde el panel. Requiere el secret `MONGODB_URI` configurado en el repositorio (Settings → Secrets and variables → Actions).
+
 ## Deploy
 
 Deployado en Vercel como función serverless: https://agustinaportfolio-api.vercel.app

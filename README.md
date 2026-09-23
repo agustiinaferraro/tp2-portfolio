@@ -91,6 +91,8 @@ El frontend consume la **propia API REST** (`https://agustinaportfolio-api.verce
 
 Como **fuente externa**, el script `backend/scripts/importar-behance.js` consume el **feed RSS público de Behance** (`https://www.behance.net/agustiinaferraro.rss`) para poblar la base con títulos, descripciones, links y miniaturas de los proyectos publicados en Behance. El sitio no depende de Behance en runtime: solo se importa una vez y la web siempre lee de MongoDB.
 
+**Sincronización automática:** un workflow de **GitHub Actions** (`.github/workflows/importar-behance.yml`) corre ese script **cada 6 horas** (y se puede ejecutar a mano desde la pestaña *Actions* del repo). Cuando se publica un proyecto nuevo en Behance, aparece solo en el portfolio; si se edita, el título/descripción/miniatura se actualizan. No pisa categoría, destacado ni imágenes cargadas desde el panel. Requiere el secret `MONGODB_URI` en el repositorio.
+
 **Manejo de errores y límites:** cada componente muestra su estado de carga, error y vacío (por ejemplo, si la API no responde se muestra "Verificá que el backend esté corriendo"). El script de importación avisa si el feed no se puede descargar y nunca repite proyectos (deduplica por link). El panel avisa al usuario si una imagen pesa demasiado o si la galería completa excede el límite para no fallar el guardado.
 
 ## Responsive y accesibilidad

@@ -1,5 +1,6 @@
 //script de importacion de proyectos desde el feed rss de behance
 //se corre una sola vez (o varias, porque no repite proyectos) para poblar la base sin cargar a mano
+//tambien actualiza titulo/resumen/imagen de proyectos que ya existan por link (si cambiaron en behance)
 //uso: node scripts/importar-behance.js
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -47,9 +48,14 @@ async function importar() {
 
   const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].map((m) => m[1]);
   console.log('proyectos encontrados en el feed:', items.length);
+  if (items.length === 0) {
+    console.error('El feed llego vacio (posible bloqueo de behance). No se hace ningun cambio.');
+    process.exit(1);
+  }
 
-  let nuevos = 0;
-  let repetidos = 0;
+  let creados = 0;
+  let actualizados = 0;
+  let aldia = 0;
   const importados = [];
 
   for (const item of items) {
@@ -60,8 +66,19 @@ async function importar() {
     const imagen = obtenerPortada(descripcion);
 
     if (!titulo || !link) continue;
-    if (await Proyecto.exists({ link })) {
-      repetidos++;
+
+    const existente = await Proyecto.findOne({ link });
+    if (existente) {
+      const cambios = {};
+      if (existente.titulo !== titulo) cambios.titulo = titulo;
+      if (existente.resumen !== resumen) cambios.resumen = resumen;
+      if (existente.imagen !== imagen) cambios.imagen = imagen;
+      if (Object.keys(cambios).length) {
+        await Proyecto.updateOne({ _id: existente._id }, cambios);
+        actualizados++;
+      } else {
+        aldia++;
+      }
       continue;
     }
 
@@ -75,12 +92,13 @@ async function importar() {
       tags: [],
       destacado: false,
     });
-    nuevos++;
+    creados++;
     importados.push(creado);
   }
 
-  console.log(`creados: ${nuevos}`);
-  console.log(`ya existian (no se repiten): ${repetidos}`);
+  console.log(`creados nuevos: ${creados}`);
+  console.log(`actualizados por cambios en behance: ${actualizados}`);
+  console.log(`ya estaban al dia: ${aldia}`);
   for (const p of importados) {
     console.log(`- ${p.titulo} | ${p.link}`);
   }
