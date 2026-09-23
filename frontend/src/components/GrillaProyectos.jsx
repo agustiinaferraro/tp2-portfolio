@@ -20,6 +20,61 @@ function juntarServicios(listaApi) {
   return [...porSlug.values()];
 }
 
+//tarjeta de un proyecto que se reusa en cada seccion
+function TarjetaProyecto({ proyecto }) {
+  return (
+    <li>
+      <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
+        {/*portada: la principal o la primera de la galeria, clickeable hacia el detalle*/}
+        {(proyecto.imagen || proyecto.imagenes?.[0]) && (
+          <figure className="m-0">
+            <a href={`/proyectos/?id=${proyecto._id}`}>
+              <img
+                src={proyecto.imagen || proyecto.imagenes[0]}
+                alt={`Imagen del proyecto ${proyecto.titulo}`}
+                className="w-full h-44 object-cover hover:opacity-90 transition-opacity"
+              />
+            </a>
+          </figure>
+        )}
+        <div className="p-6 flex flex-col gap-3 flex-1">
+          <h3 className="text-xl font-bold text-white">
+            <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
+              {proyecto.titulo}
+            </a>
+          </h3>
+          {/*tags / roles aplicados*/}
+          {proyecto.tags?.length > 0 && (
+            <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
+              {proyecto.tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="text-xs px-2 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-zinc-400 text-sm leading-relaxed flex-1">{proyecto.resumen}</p>
+          {proyecto.link && (
+            <p className="mt-auto">
+              <a
+                href={proyecto.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
+              >
+                {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
+              </a>
+            </p>
+          )}
+        </div>
+      </article>
+    </li>
+  );
+}
+
 export default function GrillaProyectos() {
   const [proyectos, setProyectos] = useState([]);
   const [servicios, setServicios] = useState(serviciosEstaticos);
@@ -70,6 +125,24 @@ export default function GrillaProyectos() {
     categoria === ''
       ? proyectos
       : proyectos.filter((p) => (categoria === SIN_CATEGORIA ? !p.servicio : p.servicio === categoria));
+
+  //los proyectos visibles se agrupan por categoria para mostrar titulos de seccion
+  const grupos = [];
+  const ordenCategorias = categorias.map((c) => c.slug).filter((slug) => slug && slug !== SIN_CATEGORIA);
+  for (const slug of ordenCategorias) {
+    const items = visibles.filter((p) => p.servicio === slug);
+    if (items.length) {
+      grupos.push({
+        clave: slug,
+        nombre: servicios.find((s) => s.slug === slug)?.nombre ?? slug,
+        items,
+      });
+    }
+  }
+  const sinCategoria = visibles.filter((p) => !p.servicio);
+  if (sinCategoria.length) {
+    grupos.push({ clave: 'sincategoria', nombre: 'Sin categoría', items: sinCategoria });
+  }
 
   //estado: detalle de un proyecto (al llegar con ?id= o al tocar una tarjeta)
   if (detalleId) {
@@ -138,61 +211,20 @@ export default function GrillaProyectos() {
       {visibles.length === 0 ? (
         <p className="text-zinc-400 text-center">No hay proyectos en esta categoría todavía.</p>
       ) : (
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visibles.map((proyecto) => (
-            <li key={proyecto._id}>
-              <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-violet-500/50 transition-colors">
-                {/*portada: la principal o la primera de la galeria, clickeable hacia el detalle*/}
-                {(proyecto.imagen || proyecto.imagenes?.[0]) && (
-                  <figure className="m-0">
-                    <a href={`/proyectos/?id=${proyecto._id}`}>
-                      <img
-                        src={proyecto.imagen || proyecto.imagenes[0]}
-                        alt={`Imagen del proyecto ${proyecto.titulo}`}
-                        className="w-full h-44 object-cover hover:opacity-90 transition-opacity"
-                      />
-                    </a>
-                  </figure>
-                )}
-                <div className="p-6 flex flex-col gap-3 flex-1">
-                  <h3 className="text-xl font-bold text-white">
-                    <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-violet-300 transition-colors">
-                      {proyecto.titulo}
-                    </a>
-                  </h3>
-                  {/*tags / roles aplicados*/}
-                  {proyecto.tags?.length > 0 && (
-                    <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
-                      {proyecto.tags.map((tag) => (
-                        <li
-                          key={tag}
-                          className="text-xs px-2 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20"
-                        >
-                          {tag}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <p className="text-zinc-400 text-sm leading-relaxed flex-1">
-                    {proyecto.resumen}
-                  </p>
-                  {proyecto.link && (
-                    <p className="mt-auto">
-                      <a
-                        href={proyecto.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
-                      >
-                        {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
-                      </a>
-                    </p>
-                  )}
-                </div>
-              </article>
-            </li>
+        <div className="space-y-12">
+          {grupos.map((g) => (
+            <section key={g.clave} aria-labelledby={`proyectos-seccion-${g.clave}`}>
+              <h2 id={`proyectos-seccion-${g.clave}`} className="text-2xl font-bold text-white mb-4">
+                {g.nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({g.items.length})</span>
+              </h2>
+              <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {g.items.map((proyecto) => (
+                  <TarjetaProyecto key={proyecto._id} proyecto={proyecto} />
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
