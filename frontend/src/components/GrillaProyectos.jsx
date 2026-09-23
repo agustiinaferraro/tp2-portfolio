@@ -184,7 +184,7 @@ export default function GrillaProyectos() {
                         rel="noopener noreferrer"
                         className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors inline-flex items-center gap-1"
                       >
-                        Ver en Behance <span aria-hidden="true">→</span>
+                        {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
                       </a>
                     </p>
                   )}

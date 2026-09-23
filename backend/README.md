@@ -51,6 +51,10 @@ De esta forma el portfolio queda poblado sin cargar los proyectos a mano, pero l
 
 **Sincronización automática:** el workflow de **GitHub Actions** `.github/workflows/importar-behance.yml` corre el script **cada 6 horas** y se puede ejecutar a mano desde la pestaña *Actions* del repositorio. Al re-correr, crea los proyectos **nuevos** y **actualiza** título, descripción y miniatura de los que ya existen (si cambiaron en Behance), sin pisar categoría, destacado ni imágenes propias cargadas desde el panel. Requiere el secret `MONGODB_URI` configurado en el repositorio (Settings → Secrets and variables → Actions).
 
+## Importar proyectos desde Vercel (trabajos de programación)
+
+El script `scripts/importar-vercel.js` lee la **API de Vercel** con un token (`VERCEL_TOKEN`), lista los proyectos de la cuenta, toma el **link de producción** de cada uno (el front) y los crea o actualiza en MongoDB en la categoría **Desarrollo Full Stack**. La portada es una imagen SVG generada (se puede reemplazar desde el panel; si el usuario sube una imagen propia, el script no la pisa). El workflow `.github/workflows/importar-vercel.yml` lo corre cada 6 horas (o manual desde *Actions*) con los secrets `VERCEL_TOKEN` y `MONGODB_URI`. No incluye el portfolio propio (`agustinaportfolio*`) y deduplica proyectos repetidos de Vercel.
+
 ## Deploy
 
 Deployado en Vercel como función serverless: https://agustinaportfolio-api.vercel.app

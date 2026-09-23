@@ -93,6 +93,8 @@ Como **fuente externa**, el script `backend/scripts/importar-behance.js` consume
 
 **Sincronización automática:** un workflow de **GitHub Actions** (`.github/workflows/importar-behance.yml`) corre ese script **cada 6 horas** (y se puede ejecutar a mano desde la pestaña *Actions* del repo). Cuando se publica un proyecto nuevo en Behance, aparece solo en el portfolio; si se edita, el título/descripción/miniatura se actualizan. No pisa categoría, destacado ni imágenes cargadas desde el panel. Requiere el secret `MONGODB_URI` en el repositorio.
 
+Como **otra fuente externa**, los **trabajos de programación desplegados en Vercel** se sincronizan con el script `backend/scripts/importar-vercel.js` (workflow `.github/workflows/importar-vercel.yml`, también cada 6 horas): lee la API de Vercel, toma el **link de producción** de cada proyecto y lo publica en el portfolio bajo la categoría **Desarrollo Full Stack** (la portada es una imagen generada; el botón de la tarjeta abre la web del proyecto). Requiere los secrets `VERCEL_TOKEN` y `MONGODB_URI`.
+
 **Manejo de errores y límites:** cada componente muestra su estado de carga, error y vacío (por ejemplo, si la API no responde se muestra "Verificá que el backend esté corriendo"). El script de importación avisa si el feed no se puede descargar y nunca repite proyectos (deduplica por link). El panel avisa al usuario si una imagen pesa demasiado o si la galería completa excede el límite para no fallar el guardado.
 
 ## Responsive y accesibilidad
