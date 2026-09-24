@@ -6,6 +6,19 @@
   --color-verde-app: #69f5cc;
   --color-black: #0e0e0e;
   --color-white: #fffbfb;
+  /*tipografia: segoe ui (recta) para el cuerpo y plus jakarta sans (curva) para los titulos*/
+  --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-titulo: "Plus Jakarta Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/*titulos siempre con la fuente curva, el resto (parrafos, botones) con la recta*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-titulo);
 }
 
 /*todos los botones y el desplegable de servicios muestran la manito al pasar el mouse*/
