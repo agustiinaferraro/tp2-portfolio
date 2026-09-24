@@ -39,6 +39,15 @@ const recorrido = [
       'Mi formación principal: diseño, programación, video y UX/UI conviviendo en un mismo plan. Hoy estoy en 4º año.',
   },
   {
+    periodo: 'Mar 2022 – Abr 2026',
+    tipo: 'logro',
+    titulo: 'Técnica en Comunicación Interactiva y Diseño Multimedial',
+    lugar: 'Universidad Maimónides',
+    insignia: 'Título obtenido',
+    texto:
+      'Primera etapa terminada: ya soy técnica en comunicación interactiva y diseño multimedial.',
+  },
+  {
     periodo: 'Mar 2022 – Actualidad',
     tipo: 'trabajo',
     titulo: 'Diseñadora multimedial',
@@ -153,7 +162,7 @@ const colores = {
 
 <section class="animacion-aparecer">
   {/*presentacion y numero que resumen el trayecto*/}
-  <div class="px-4 pt-10 pb-4 max-w-3xl mx-auto space-y-8">
+  <div class="px-4 pt-10 pb-4 max-w-4xl mx-auto space-y-8">
     <div class="space-y-4">
       <h1 class="text-4xl md:text-5xl font-bold text-white text-left leading-tight">
         Un recorrido entre el <span class="text-verde-app">diseño</span>, la{' '}
@@ -161,11 +170,11 @@ const colores = {
         <span class="text-verde-app">enseñanza</span>.
       </h1>
       <p class="text-zinc-300 leading-relaxed text-lg text-left">
-        Soy diseñadora multimedial con experiencia en diseño gráfico, video, animación,
-        programación y UX/UI. Estudio 4º año de la Licenciatura en Tecnología Multimedial
-        en la Universidad Maimónides y soy ayudante de cátedra en UX/UI, Negocios Digitales
-        y Marketing Digital. En la universidad también me encargué del diseño institucional:
-        creé los certificados de Illustrator y Photoshop, y uno fue elegido{' '}
+        Soy <span class="font-bold text-white">técnica en comunicación interactiva y diseño multimedial</span>{' '}
+        y estudio 4º año de la Licenciatura en Tecnología Multimedial en la Universidad
+        Maimónides. Además, soy ayudante de cátedra en UX/UI, Negocios Digitales y Marketing
+        Digital. En la universidad también me encargué del diseño institucional: creé los
+        certificados de Illustrator y Photoshop, y uno fue elegido{' '}
         <span class="font-bold text-amber-300">ganador en una competencia por votación</span>.
       </p>
     </div>
@@ -186,7 +195,7 @@ const colores = {
 
   {/*el recorrido en linea de tiempo: alterna las tarjetas a los lados en pantallas grandes*/}
   <div class="px-4 py-14 max-w-4xl mx-auto">
-    <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-12">
+    <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-8">
       <svg aria-hidden="true" class="w-8 h-8 text-violeta-app" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
@@ -228,6 +237,13 @@ const colores = {
                       </span>
                     )
                   }
+                  {
+                    paso.insignia && (
+                      <span class={`text-xs px-3 py-1 rounded-full border font-bold ${color.pildora}`}>
+                        {paso.insignia}
+                      </span>
+                    )
+                  }
                 </div>
                 <h3 class="text-xl font-bold text-white">{paso.titulo}</h3>
                 <p class="text-sm text-violeta-app mt-1">{paso.lugar}</p>
@@ -250,7 +266,7 @@ const colores = {
   {/*habilidades agrupadas por area*/}
   <div class="px-4 pb-14 max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-8">
-      <svg aria-hidden="true" class="w-8 h-8 text-verde-app" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <svg aria-hidden="true" class="w-8 h-8 text-violeta-app" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <polyline points="20 6 9 17 4 12" />
       </svg>
       Lo que manejo
@@ -317,7 +333,7 @@ const colores = {
   </div>
 
   {/*certificaciones*/}
-  <div class="px-4 pb-16 max-w-3xl mx-auto">
+  <div class="px-4 pb-16 max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-8">
       <svg aria-hidden="true" class="w-8 h-8 text-violeta-app" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z" />

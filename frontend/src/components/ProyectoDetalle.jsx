@@ -8,6 +8,7 @@ import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
 import { OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import SelectorImagenes from './SelectorImagenes.jsx';
 import Loading from './Loading.jsx';
+import Comentarios from './Comentarios.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
 //junta los servicios de la base con la lista estatica para que nunca quede vacia
@@ -400,6 +401,9 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           </a>
         </p>
       )}
+
+      {/*comentarios: cualquiera lee, para comentar hay que registrarse o entrar*/}
+      <Comentarios proyectoId={proyecto._id} />
 
       {/*formulario de edicion, solo para admin*/}
       {admin && editando && (

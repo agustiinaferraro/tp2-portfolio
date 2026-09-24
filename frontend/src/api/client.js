@@ -32,6 +32,26 @@ export async function peticionPOST(ruta, datos) {
   return respuesta.json();
 }
 
+//funcion generica para enviar datos a la api como usuario logueado (post)
+//manda el token de sesion en el header authorization para que el backend valide
+export async function peticionConToken(ruta, datos, token) {
+  const respuesta = await fetch(`${API_BASE}${ruta}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(datos),
+  });
+  if (!respuesta.ok) {
+    const cuerpo = await respuesta.json().catch(() => null);
+    const error = new Error(cuerpo?.mensaje ?? `Error al enviar a ${ruta}: ${respuesta.status}`);
+    error.campos = cuerpo;
+    throw error;
+  }
+  return respuesta.json();
+}
+
 //funcion generica para modificar datos del panel de admin (post, put o delete)
 //manda la clave de administrador en el header x-admin-clave para que el backend valide
 export async function peticionAdmin(metodo, ruta, datos, clave) {

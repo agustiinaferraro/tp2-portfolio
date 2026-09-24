@@ -1,10 +1,10 @@
 //chat del visitante: muestra su conversacion con la admin y permite seguir mandando mensajes
-//esta mostrando el lado del visitante: sus mensajes a la izquierda y las respuestas de agustina a la derecha
+//el header va estilo chat de red social: el nombre de agustina arriba con la flecha de volver al lado
 import { useEffect, useState } from 'react';
 import { enviarMensaje, obtenerMensajesPublicos } from '../api/mensajes.js';
 import Loading from './Loading.jsx';
 
-export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver }) {
+export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver, nombreAdmin = 'Agustina Ferraro' }) {
   const [mensajes, setMensajes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -86,15 +86,31 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
 
   return (
     <div className="p-6 rounded-2xl bg-zinc-950/60 border border-zinc-800 space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-bold text-zinc-100">Tu chat con Agustina</p>
+      {/*header tipo redes: flecha de volver al lado del nombre de agustina*/}
+      <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
         <button
           type="button"
           onClick={onVolver}
-          className="text-sm text-violeta-app hover:text-violeta-app/80 underline transition-colors"
+          aria-label="Volver"
+          title="Volver"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-zinc-900/70 border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-all duration-200 hover:scale-105 active:scale-95"
         >
-          Volver
+          <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-violeta-app/20 border border-violeta-app/30 text-violeta-app font-bold text-lg">
+            {nombreAdmin.charAt(0).toUpperCase()}
+          </span>
+          <div className="leading-tight">
+            <p className="font-bold text-zinc-100">{nombreAdmin}</p>
+            <p className="text-xs text-emerald-400 flex items-center gap-1">
+              <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              En línea
+            </p>
+          </div>
+        </div>
       </div>
 
       {contenido}
