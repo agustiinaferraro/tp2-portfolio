@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { obtenerProyectos } from '../api/proyectos.js';
 import { obtenerServicios } from '../api/servicios.js';
 import ProyectoDetalle from './ProyectoDetalle.jsx';
+import Loading from './Loading.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
 //marca interna para el chip "sin categoria"
@@ -217,7 +218,7 @@ export default function GrillaProyectos() {
 
   //estado: cargando
   if (cargando) {
-    return <p className="text-zinc-400 text-center">Cargando proyectos...</p>;
+    return <Loading claseContenedor="h-48" />;
   }
 
   //estado: sin datos

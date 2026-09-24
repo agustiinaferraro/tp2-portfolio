@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { obtenerServicios } from '../api/servicios.js';
 import IconoServicio from './IconoServicio.jsx';
+import Loading from './Loading.jsx';
 
 export default function GrillaServicios() {
   const [servicios, setServicios] = useState([]); //lista de servicios
@@ -29,7 +30,7 @@ export default function GrillaServicios() {
 
   //estado: cargando
   if (cargando) {
-    return <p className="text-zinc-400 text-center">Cargando servicios...</p>;
+    return <Loading claseContenedor="h-48" />;
   }
 
   //estado: sin datos

@@ -17,6 +17,7 @@ import { obtenerConversaciones } from '../api/mensajes.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
 import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
+import Loading from './Loading.jsx';
 import SelectorImagenes from './SelectorImagenes.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
@@ -971,7 +972,7 @@ export default function AdminProyectos() {
                   con filtro: si hay una categoria elegida solo aparece esa*/}
               <div key={categoriaValida || 'todas'} className="space-y-10 animacion-aparecer">
                 {cargando ? (
-                  <p className="text-zinc-400">Cargando proyectos...</p>
+                  <Loading claseContenedor="h-48" />
                 ) : proyectos.length === 0 ? (
                   <div className="p-10 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-4">
                     <p className="text-zinc-400">Todavía no cargaste ningún proyecto.</p>

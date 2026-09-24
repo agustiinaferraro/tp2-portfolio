@@ -7,6 +7,7 @@ import { obtenerServicios, crearServicio } from '../api/servicios.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
 import { OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import SelectorImagenes from './SelectorImagenes.jsx';
+import Loading from './Loading.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
 //junta los servicios de la base con la lista estatica para que nunca quede vacia
@@ -224,7 +225,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     return (
       <section className="max-w-3xl mx-auto px-4 py-16">
         {volver}
-        <p className="text-zinc-400 mt-6">Cargando proyecto...</p>
+        <Loading claseContenedor="h-48" />
       </section>
     );
   }

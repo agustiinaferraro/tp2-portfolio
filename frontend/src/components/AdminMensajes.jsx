@@ -9,6 +9,7 @@ import {
   borrarMensaje,
   responderConversacion,
 } from '../api/mensajes.js';
+import Loading from './Loading.jsx';
 
 //mensaje de error para saber si el problema fue la clave (401) o algo mas
 function claveIncorrecta(error) {
@@ -289,7 +290,7 @@ export default function AdminMensajes({ clave, nombre = 'Agustina Ferraro', alCa
       )}
 
       {cargando ? (
-        <p className="text-zinc-400">Cargando...</p>
+        <Loading claseContenedor="h-48" />
       ) : conversaciones.length === 0 ? (
         <div className="p-10 rounded-2xl bg-zinc-900 border border-zinc-800 text-center">
           <p className="text-zinc-400">Todavía no recibiste ningún mensaje.</p>

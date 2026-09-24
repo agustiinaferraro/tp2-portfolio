@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { obtenerServicioPorSlug } from '../api/servicios.js';
 import { obtenerProyectosPorServicio } from '../api/proyectos.js';
 import IconoServicio from './IconoServicio.jsx';
+import Loading from './Loading.jsx';
 
 export default function ServicioDetalle({ slug }) {
   const [servicio, setServicio] = useState(null);
@@ -40,8 +41,8 @@ export default function ServicioDetalle({ slug }) {
   //estado: cargando
   if (cargando) {
     return (
-      <section className="max-w-3xl mx-auto px-4 py-24 text-center">
-        <p className="text-zinc-400">Cargando servicio...</p>
+      <section className="max-w-3xl mx-auto px-4 py-24">
+        <Loading claseContenedor="h-48" />
       </section>
     );
   }
