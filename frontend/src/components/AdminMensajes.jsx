@@ -57,7 +57,7 @@ function AvatarInicial({ nombre, className }) {
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex items-center justify-center rounded-full bg-violeta-app text-[#1c1c21] font-bold ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-violeta-app text-black font-bold ${className}`}
     >
       {inicial}
     </span>
@@ -169,7 +169,7 @@ export default function AdminMensajes({ clave, nombre = 'Agustina Ferraro', alCa
           <button
             type="button"
             onClick={volverAlista}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-verde-app text-verde-app hover:bg-verde-app hover:text-[#1c1c21] transition-all duration-200 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-verde-app text-verde-app hover:bg-verde-app hover:text-black transition-all duration-200 cursor-pointer"
           >
             <FlechaAtras className="w-4 h-4" />
             Chats
@@ -258,7 +258,7 @@ export default function AdminMensajes({ clave, nombre = 'Agustina Ferraro', alCa
             <button
               type="submit"
               disabled={!respuesta.trim()}
-              className="px-4 py-2 rounded-lg font-medium bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg font-medium bg-violeta-app hover:bg-violeta-app/90 text-black transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Enviar respuesta
             </button>
@@ -315,7 +315,7 @@ export default function AdminMensajes({ clave, nombre = 'Agustina Ferraro', alCa
                     </span>
                     <span className="flex items-center justify-between gap-3">
                       <span className="text-sm text-zinc-400 truncate">{textoUltimo}</span>
-                      <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-violeta-app text-[#1c1c21] font-medium">
+                      <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-violeta-app text-black font-medium">
                         {conversacion.cantidad}
                       </span>
                     </span>

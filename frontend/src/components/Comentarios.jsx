@@ -190,7 +190,7 @@ export default function Comentarios({ proyectoId }) {
               <button
                 type="submit"
                 disabled={enviando || !texto.trim()}
-                className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+                className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 {enviando ? 'Publicando...' : 'Comentar'}
               </button>
@@ -212,7 +212,7 @@ export default function Comentarios({ proyectoId }) {
                 <button
                   type="button"
                   onClick={() => setModo('registro')}
-                  className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Crear cuenta
                 </button>
@@ -256,7 +256,7 @@ export default function Comentarios({ proyectoId }) {
                   <button
                     type="submit"
                     disabled={enviandoAuth}
-                    className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+                    className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     {enviandoAuth ? 'Esperá...' : modo === 'registro' ? 'Crear cuenta' : 'Entrar'}
                   </button>

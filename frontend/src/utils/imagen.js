@@ -21,7 +21,7 @@ export function comprimirImagen(archivo) {
         canvas.height = alto;
         const contexto = canvas.getContext('2d');
         //se rellena de blanco para que el jpg no quede con fondo transparente
-        contexto.fillStyle = '#fff';
+        contexto.fillStyle = '#FFFBFB';
         contexto.fillRect(0, 0, ancho, alto);
         contexto.drawImage(img, 0, 0, ancho, alto);
         resolver(canvas.toDataURL('image/jpeg', 0.8));

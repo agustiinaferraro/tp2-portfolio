@@ -4,6 +4,8 @@
 @theme {
   --color-violeta-app: #b884e7;
   --color-verde-app: #69f5cc;
+  --color-black: #0e0e0e;
+  --color-white: #fffbfb;
 }
 
 /*todos los botones y el desplegable de servicios muestran la manito al pasar el mouse*/
@@ -73,7 +75,7 @@ header[data-activo="sobre-mi"] a[data-link="sobre-mi"],
 header[data-activo="proyectos"] a[data-link="proyectos"],
 header[data-activo="servicios"] a[data-link="servicios"],
 header[data-activo="contacto"] a[data-link="contacto"] {
-  color: #fff;
+  color: #fffbfb;
   font-weight: 700;
 }
 
@@ -106,7 +108,7 @@ main section[id] {
   top: 1rem;
   padding: 0.5rem 1rem;
   background: #b884e7;
-  color: #1c1c21;
+  color: #0e0e0e;
   font-weight: 600;
   border-radius: 8px;
 }

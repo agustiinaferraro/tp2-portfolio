@@ -258,7 +258,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
               <button
                 type="button"
                 onClick={editando ? () => setEditando(false) : abrirEditor}
-                className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}
+                className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-black`}
               >
                 {editando ? 'Cancelar edición' : 'Editar'}
               </button>
@@ -270,7 +270,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
             <button
               type="button"
               onClick={abrirEditor}
-              className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] mt-4`}
+              className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-black mt-4`}
             >
               Editar
             </button>
@@ -309,7 +309,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           <button
             type="submit"
             disabled={verificando || !usuarioLogin.trim() || !claveLogin.trim()}
-            className={`${claseBoton} w-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}
+            className={`${claseBoton} w-full bg-violeta-app hover:bg-violeta-app/90 text-black`}
           >
             {verificando ? 'Verificando...' : 'Entrar'}
           </button>
@@ -395,7 +395,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
             href={proyecto.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-black font-medium transition-colors"
           >
             Visitar proyecto <span aria-hidden="true">↗</span>
           </a>
@@ -539,7 +539,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={guardando} className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`}>
+            <button type="submit" disabled={guardando} className={`${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-black`}>
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
             <button

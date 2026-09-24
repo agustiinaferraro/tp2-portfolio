@@ -97,7 +97,7 @@ function SeccionCarrusel({ clave, nombre, items }) {
           type="button"
           onClick={() => desplazarSuave(ref.current, -1)}
           aria-label={`Ver proyectos anteriores de ${nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">←</span>
         </button>
@@ -114,7 +114,7 @@ function SeccionCarrusel({ clave, nombre, items }) {
           type="button"
           onClick={() => desplazarSuave(ref.current, 1)}
           aria-label={`Ver más proyectos de ${nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">→</span>
         </button>
@@ -245,7 +245,7 @@ export default function GrillaProyectos() {
                 aria-pressed={categoria === c.slug}
                 className={`px-3 py-1 rounded-full text-sm border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
                   categoria === c.slug
-                    ? 'bg-violeta-app text-[#1c1c21] border-violeta-app'
+                    ? 'bg-violeta-app text-black border-violeta-app'
                     : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-verde-app/50'
                 }`}
               >

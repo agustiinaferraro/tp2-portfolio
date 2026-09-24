@@ -40,7 +40,7 @@ export default function Saludo() {
           />
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-violeta-app hover:bg-violeta-app/90 font-medium text-[#1c1c21] rounded-lg transition-colors shadow-lg shadow-violeta-app/20 cursor-pointer"
+            className="w-full py-2 px-4 bg-violeta-app hover:bg-violeta-app/90 font-medium text-black rounded-lg transition-colors shadow-lg shadow-violeta-app/20 cursor-pointer"
           >
             Guardar
           </button>

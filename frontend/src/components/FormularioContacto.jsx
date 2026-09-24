@@ -114,7 +114,7 @@ export default function FormularioContacto() {
             <button
               type="button"
               onClick={() => setVerChat(true)}
-              className="px-4 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+              className="px-4 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
             >
               Ver chat
             </button>
@@ -184,7 +184,7 @@ export default function FormularioContacto() {
       <button
         type="submit"
         disabled={estado === 'enviando'}
-        className="w-full px-6 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 hover:scale-105 active:scale-95 active:bg-violeta-app/80 transition-all duration-200 font-medium text-[#1c1c21] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full px-6 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 hover:scale-105 active:scale-95 active:bg-violeta-app/80 transition-all duration-200 font-medium text-black disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {estado === 'enviando' ? 'Enviando...' : 'Enviar mensaje'}
       </button>

@@ -210,7 +210,7 @@ function TarjetaAdmin({ proyecto, grupoNombre, alEditar, alEliminar }) {
           onClick={() => alEditar(proyecto)}
           aria-label={`Editar ${proyecto.titulo}`}
           title="Editar"
-          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-[#1c1c21] hover:bg-verde-app transition-colors cursor-pointer"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-black hover:bg-verde-app transition-colors cursor-pointer"
         >
           <IconoLapiz className="w-4 h-4" />
         </button>
@@ -246,7 +246,7 @@ function CarruselAdmin({ grupo, numero, alEditar, alEliminar }) {
           type="button"
           onClick={() => desplazarSuave(ref.current, -1)}
           aria-label={`Ver proyectos anteriores de ${grupo.nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">←</span>
         </button>
@@ -268,7 +268,7 @@ function CarruselAdmin({ grupo, numero, alEditar, alEliminar }) {
           type="button"
           onClick={() => desplazarSuave(ref.current, 1)}
           aria-label={`Ver más proyectos de ${grupo.nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-zinc-950/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-[#1c1c21] hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-[#1c1c21] active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">→</span>
         </button>
@@ -671,13 +671,13 @@ export default function AdminProyectos() {
     'w-full px-4 py-2 bg-zinc-900 border border-red-500 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all';
   const claseBoton =
     'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
-  const claseBotonPrimario = `${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21]`;
+  const claseBotonPrimario = `${claseBoton} bg-violeta-app hover:bg-violeta-app/90 text-black`;
   const claseBotonSecundario = `${claseBoton} bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700`;
   //chip del menu superior: el de la categoria elegida queda verde
   const claseChip = (activo) =>
     `px-3 py-1 rounded-full text-sm border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
       activo
-        ? 'bg-verde-app text-[#1c1c21] border-verde-app'
+        ? 'bg-verde-app text-black border-verde-app'
         : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-verde-app/50'
     }`;
 
@@ -828,14 +828,14 @@ export default function AdminProyectos() {
                 onClick={item.accion}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                   item.activo
-                    ? 'bg-violeta-app text-[#1c1c21] font-medium'
+                    ? 'bg-violeta-app text-black font-medium'
                     : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
                 {item.icono}
                 <span className="flex-1 text-left">{item.etiqueta}</span>
                 {item.cantidad > 0 && (
-                  <span className="shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-verde-app text-[#1c1c21]">
+                  <span className="shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-verde-app text-black">
                     {item.cantidad}
                   </span>
                 )}
@@ -880,7 +880,7 @@ export default function AdminProyectos() {
                     disabled={guardandoPerfil}
                     aria-label="Cambiar foto de portada"
                     title="Cambiar foto de portada"
-                    className="absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-zinc-950/70 backdrop-blur-md border border-zinc-700 text-zinc-300 hover:text-white hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    className="absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/70 backdrop-blur-md border border-zinc-700 text-zinc-300 hover:text-white hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                   >
                     <IconoImagen className="w-4 h-4" />
                   </button>
@@ -888,7 +888,7 @@ export default function AdminProyectos() {
                 <div className="flex items-end justify-between px-4 sm:px-6 -mt-12 pb-4">
                   <div className="flex items-end gap-3 sm:gap-4 min-w-0">
                     <div className="relative shrink-0">
-                      <div className="w-20 sm:w-24 h-20 sm:h-24 rounded-full overflow-hidden bg-zinc-800 border-4 border-zinc-950 flex items-center justify-center text-zinc-500">
+                      <div className="w-20 sm:w-24 h-20 sm:h-24 rounded-full overflow-hidden bg-zinc-800 border-4 border-black flex items-center justify-center text-zinc-500">
                         {fotoPerfil ? (
                           <img src={fotoPerfil} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -902,7 +902,7 @@ export default function AdminProyectos() {
                         disabled={guardandoPerfil}
                         aria-label="Cambiar foto de perfil"
                         title="Cambiar foto de perfil"
-                        className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-[#1c1c21] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-black hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                       >
                         <IconoLapiz className="w-4 h-4" />
                       </button>
@@ -922,7 +922,7 @@ export default function AdminProyectos() {
               {/*menu superior: chips para filtrar por categoria (solo aparece la categoria elegida)*/}
               {!cargando && proyectos.length > 0 && (
                 <div className="space-y-3">
-                  <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
+                  <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-black/90 backdrop-blur-md border-b border-zinc-800">
                     <ul
                       className="flex gap-2 overflow-x-auto carrusel-scroll py-2"
                       aria-label="Filtrar proyectos por categoría"
@@ -960,7 +960,7 @@ export default function AdminProyectos() {
                       onClick={irAAgregarProyecto}
                       aria-label="Agregar proyecto"
                       title="Agregar proyecto"
-                      className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                      className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black hover:scale-105 active:scale-95 transition-all cursor-pointer"
                     >
                       <svg aria-hidden="true" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                         <path d="M5 12h14" />
@@ -1159,7 +1159,7 @@ export default function AdminProyectos() {
                     disabled={guardandoPerfil}
                     aria-label="Cambiar foto de perfil"
                     title="Cambiar foto de perfil"
-                    className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-[#1c1c21] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-black hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                   >
                     <IconoLapiz className="w-4 h-4" />
                   </button>

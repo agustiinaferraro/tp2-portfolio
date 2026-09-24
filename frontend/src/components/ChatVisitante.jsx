@@ -85,7 +85,7 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
   }
 
   return (
-    <div className="p-6 rounded-2xl bg-zinc-950/60 border border-zinc-800 space-y-4">
+    <div className="p-6 rounded-2xl bg-black/60 border border-zinc-800 space-y-4">
       {/*header tipo redes: flecha de volver al lado del nombre de agustina*/}
       <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
         <button
@@ -130,7 +130,7 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
         <button
           type="submit"
           disabled={enviando || !texto.trim()}
-          className="px-4 py-2 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="px-4 py-2 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           Enviar
         </button>

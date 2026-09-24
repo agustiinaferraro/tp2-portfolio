@@ -19,7 +19,7 @@ const enlaces = [
 ];
 ---
 
-<header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800" data-activo={seccionActiva}>
+<header class="fixed top-0 inset-x-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800" data-activo={seccionActiva}>
   <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4" aria-label="Principal">
    <a href="/#inicio" class="flex items-center gap-2 font-bold text-verde-app hover:text-verde-app/80 transition-colors">
       <img src="/img/logo.png" alt="Logo" class="w-15 h-15 object-cover rounded-full"/>
@@ -59,7 +59,7 @@ const enlaces = [
   </nav>
 
   <!--menu movil (oculto, se muestra con el boton)-->
-  <div class="md:hidden hidden border-t border-zinc-800 bg-zinc-950 px-4 py-4" data-menu>
+  <div class="md:hidden hidden border-t border-zinc-800 bg-black px-4 py-4" data-menu>
     <ul class="space-y-1">
       <li class="pb-3">
         <Buscador client:idle />
