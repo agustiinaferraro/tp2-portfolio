@@ -26,6 +26,11 @@ const mensajeSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    token: {
+      //clave secreta de la conversacion: la usa el visitante para ver su propio chat
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

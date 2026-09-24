@@ -12,6 +12,14 @@ export function obtenerMensajes(clave) {
   return peticionAdmin('GET', '/api/mensajes', undefined, clave);
 }
 
+//devuelve la conversacion publica del visitante (sus mensajes y las respuestas del admin)
+//usa el token secreto que se genero al enviar el primer mensaje
+export function obtenerMensajesPublicos(email, token) {
+  return peticionGET(
+    `/api/mensajes/publico/${encodeURIComponent(email)}?token=${encodeURIComponent(token)}`
+  );
+}
+
 //devuelve los mensajes agrupados por persona (como chats, solo admin)
 export function obtenerConversaciones(clave) {
   return peticionAdmin('GET', '/api/mensajes/conversaciones', undefined, clave);

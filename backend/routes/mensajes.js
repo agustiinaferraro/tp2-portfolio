@@ -1,5 +1,6 @@
 //rutas de la api de mensajes
 //el post es publico (el formulario de contacto lo usa), la lectura y el borrado piden clave de admin
+import crypto from 'node:crypto';
 import { Router } from 'express';
 import Mensaje from '../models/Mensaje.js';
 import esAdmin from '../middlewares/esAdmin.js';
@@ -45,6 +46,33 @@ router.get('/conversaciones', esAdmin, async (req, res) => {
   }
 });
 
+//get a /api/mensajes/publico/:email (publico pero con token)
+//devuelve los mensajes de la conversacion del visitante (los suyos y las respuestas del admin)
+//el token se genera al enviar el primer mensaje y solo lo conoce esa persona
+router.get('/publico/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { token } = req.query;
+
+    if (!token || !String(token).trim()) {
+      return res.status(400).json({ mensaje: 'Falta el token de la conversación' });
+    }
+
+    const mensajes = await Mensaje.find({ email: String(email).toLowerCase(), token: String(token) })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    if (mensajes.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontró esa conversación' });
+    }
+
+    //no se devuelve el token: sigue siendo secreto
+    res.json(mensajes.map(({ token: omitido, ...resto }) => resto));
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener la conversación', error: error.message });
+  }
+});
+
 //post a /api/mensajes/conversaciones/:email/respuesta (solo admin)
 //guarda la respuesta del dueño del portfolio dentro del chat de esa persona
 router.post('/conversaciones/:email/respuesta', esAdmin, async (req, res) => {
@@ -66,12 +94,17 @@ router.post('/conversaciones/:email/respuesta', esAdmin, async (req, res) => {
       { sort: { createdAt: -1 } }
     );
 
+    //la respuesta hereda el token de la conversacion para que el visitante la vea en su chat
+    const ultimo = await Mensaje.findOne({ email: emailNormalizado }).sort({ createdAt: -1 }).lean();
+    const token = ultimo?.token ?? '';
+
     //la respuesta queda dentro del mismo chat (mismo email) y se ve como burbuja propia
     const nuevaRespuesta = await Mensaje.create({
       nombre: nombreResponde,
       email: emailNormalizado,
       mensaje: String(respuesta).trim(),
       esRespuesta: true,
+      token,
     });
 
     res.status(201).json({ mensaje: 'Respuesta enviada', datos: nuevaRespuesta });
@@ -82,6 +115,7 @@ router.post('/conversaciones/:email/respuesta', esAdmin, async (req, res) => {
 
 //post a /api/mensajes
 //recibe los datos del formulario de contacto y los guarda en la base
+//si es el primer mensaje de esa persona genera un token secreto para su conversacion
 router.post('/', async (req, res) => {
   try {
     const { nombre, email, mensaje } = req.body ?? {};
@@ -93,9 +127,24 @@ router.post('/', async (req, res) => {
       });
     }
 
-    //se guarda el mensaje y se responde 201 (recurso creado)
-    const nuevoMensaje = await Mensaje.create({ nombre, email, mensaje });
-    res.status(201).json({ mensaje: 'Mensaje recibido', datos: nuevoMensaje });
+    const emailNormalizado = String(email).trim().toLowerCase();
+    const existente = await Mensaje.findOne({ email: emailNormalizado }).sort({ createdAt: -1 }).lean();
+
+    //los mensajes de una misma persona comparten el token (su conversacion)
+    //si la conversacion vieja no tenia token (o es la primera), se genera uno nuevo
+    const tokenExistente = existente?.token ?? '';
+    const generoToken = !tokenExistente;
+    const token = tokenExistente || crypto.randomBytes(24).toString('hex');
+
+    const nuevoMensaje = await Mensaje.create({ nombre, email, mensaje, token });
+
+    const datos = nuevoMensaje.toObject();
+    //si la conversacion ya existia con token no se revela (solo se muestra al crearla)
+    res.status(201).json({
+      mensaje: 'Mensaje recibido',
+      datos,
+      token: generoToken ? token : undefined,
+    });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al guardar el mensaje', error: error.message });
   }

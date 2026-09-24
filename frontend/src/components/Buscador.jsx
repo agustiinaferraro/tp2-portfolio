@@ -33,7 +33,8 @@ export default function Buscador() {
     ...proyectos.map((proyecto) => ({
       titulo: proyecto.titulo ?? "",
       tipo: "proyecto",
-      href: "/proyectos",
+      //cada proyecto lleva a su propio detalle, no a la grilla completa
+      href: `/proyectos/?id=${proyecto._id}`,
       textoExtra: `${proyecto.resumen ?? ""} ${(proyecto.tags ?? []).join(" ")}`,
     })),
   ];

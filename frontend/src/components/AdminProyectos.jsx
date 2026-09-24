@@ -924,7 +924,7 @@ export default function AdminProyectos() {
                 <div className="space-y-3">
                   <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
                     <ul
-                      className="flex gap-2 overflow-x-auto carrusel-scroll pb-1"
+                      className="flex gap-2 overflow-x-auto carrusel-scroll py-2"
                       aria-label="Filtrar proyectos por categoría"
                       role="group"
                     >
@@ -953,18 +953,21 @@ export default function AdminProyectos() {
                     </ul>
                   </div>
 
-                  {/*btn de agregar proyecto justo debajo del menu de filtros*/}
-                  <button
-                    type="button"
-                    onClick={irAAgregarProyecto}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] text-sm font-medium hover:scale-[1.01] active:scale-100 transition-all cursor-pointer"
-                  >
-                    <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <path d="M5 12h14" />
-                      <path d="M12 5v14" />
-                    </svg>
-                    Agregar proyecto
-                  </button>
+                  {/*btn de agregar proyecto justo debajo del menu de filtros, redondo*/}
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={irAAgregarProyecto}
+                      aria-label="Agregar proyecto"
+                      title="Agregar proyecto"
+                      className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-[#1c1c21] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <svg aria-hidden="true" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               )}
 
