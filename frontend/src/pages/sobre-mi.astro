@@ -1,10 +1,10 @@
 ---
-//pagina "sobre mi": reusa la seccion del home
+//pagina "sobre mi": presenta el recorrido completo (linea de tiempo del cv)
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import BackButton from '../components/BackButton.astro';
-import SeccionSobreMi from '../components/SeccionSobreMi.astro';
+import RecorridoSobreMi from '../components/RecorridoSobreMi.astro';
 ---
 
 <Layout title="Sobre mí | Agustina Ferraro">
@@ -13,7 +13,7 @@ import SeccionSobreMi from '../components/SeccionSobreMi.astro';
     <div class="max-w-6xl mx-auto px-4 pt-8">
       <BackButton href="/" />
     </div>
-    <SeccionSobreMi />
+    <RecorridoSobreMi />
   </main>
   <Footer />
 </Layout>
