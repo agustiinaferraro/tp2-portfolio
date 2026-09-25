@@ -13,12 +13,14 @@ export function leerSesion() {
   }
 }
 
-//guarda la sesion activa
+//guarda la sesion activa y avisa al resto del sitio (ej. el avatar del nav)
 export function guardarSesion(usuario, clave) {
   sessionStorage.setItem(LLAVE, JSON.stringify({ usuario, clave }));
+  window.dispatchEvent(new CustomEvent('sesion-admin'));
 }
 
-//borra la sesion activa
+//borra la sesion activa y avisa al resto del sitio
 export function borrarSesion() {
   sessionStorage.removeItem(LLAVE);
+  window.dispatchEvent(new CustomEvent('sesion-admin'));
 }

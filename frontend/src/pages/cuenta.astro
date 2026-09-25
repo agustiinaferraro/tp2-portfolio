@@ -1,0 +1,20 @@
+---
+//pagina "mi cuenta": registro y login del usuario visitante
+//desde aca se entra o se crea la cuenta para comentar en los proyectos
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import BackButton from '../components/BackButton.astro';
+import CuentaUsuario from '../components/CuentaUsuario.jsx';
+---
+
+<Layout title="Mi cuenta | Agustina Ferraro">
+  <Navbar seccionActiva="cuenta" />
+  <main id="contenido" class="pt-16">
+    <div class="max-w-6xl mx-auto px-4 pt-8">
+      <BackButton href="/" />
+    </div>
+    <CuentaUsuario client:load />
+  </main>
+  <Footer />
+</Layout>

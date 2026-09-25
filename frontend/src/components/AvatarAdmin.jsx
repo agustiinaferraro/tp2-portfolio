@@ -3,11 +3,21 @@
 //la foto se sube desde el panel con el lapiz y aparece sola aca
 import { useEffect, useState } from 'react';
 import { obtenerPerfil } from '../api/perfil.js';
+import { leerSesion } from '../api/sesionAdmin.js';
 
 //prop "texto" opcional: si viene, se muestra el avatar junto a un texto (menu movil)
 export default function AvatarAdmin({ texto }) {
+  //el logo aparece solo si hay una sesion de administrador iniciada
+  const [logueado, setLogueado] = useState(() => leerSesion() !== null);
   const [foto, setFoto] = useState('');
   const [nombre, setNombre] = useState('');
+
+  //se entera de los cambios de sesion para mostrar o esconder el logo
+  useEffect(() => {
+    const actualizarSesion = () => setLogueado(leerSesion() !== null);
+    window.addEventListener('sesion-admin', actualizarSesion);
+    return () => window.removeEventListener('sesion-admin', actualizarSesion);
+  }, []);
 
   useEffect(() => {
     const cargar = () => {
@@ -24,10 +34,11 @@ export default function AvatarAdmin({ texto }) {
     return () => window.removeEventListener('perfil-actualizado', cargar);
   }, []);
 
-  const nombreAccesible = nombre ? `Panel de administración (${nombre})` : 'Panel de administración';
+  const nombreAccesible =
+    logueado && nombre ? `Panel de administración (${nombre})` : 'Panel de administración';
 
-  //si no hay foto se muestra una silueta de persona en el circulo
-  const contenido = foto ? (
+  //si no hay sesion iniciada o no hay foto, se muestra una silueta de persona en el circulo
+  const contenido = logueado && foto ? (
     <img src={foto} alt="" className="w-full h-full object-cover" />
   ) : (
     <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
