@@ -1,7 +1,8 @@
 //pagina "mi cuenta": registro y login del usuario visitante
 //las cuentas se crean en firebase authentication y la sesion se guarda en el navegador
 //la misma sesion se usa para comentar en los proyectos
-import { useState } from 'react';
+//si la cuenta es de la dueña, tambien se le ofrece entrar al panel de administracion
+import { useEffect, useState } from 'react';
 import {
   registrarUsuario,
   iniciarSesion,
@@ -10,6 +11,7 @@ import {
   guardarSesion,
   borrarSesion,
   cuentaConfigurada,
+  obtenerEmailDueno,
 } from '../api/usuarios.js';
 
 const claseInput =
@@ -45,6 +47,17 @@ export default function CuentaUsuario() {
   const [form, setForm] = useState({ nombre: '', email: '', clave: '' });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
+  //email de la dueña del sitio, para ofrecerle el panel de administracion
+  const [emailDueno, setEmailDueno] = useState('');
+
+  //solo deja ver el panel si la cuenta logueada es de la dueña
+  const esDueno = !!sesion && sesion.email?.toLowerCase() === emailDueno.toLowerCase();
+
+  useEffect(() => {
+    obtenerEmailDueno()
+      .then((email) => setEmailDueno(email ?? ''))
+      .catch(() => {});
+  }, []);
 
   //guarda la sesion devuelta por firebase y actualiza la pantalla
   function aplicarSesion(respuesta) {
@@ -118,6 +131,14 @@ export default function CuentaUsuario() {
             <p className="text-zinc-400 text-sm">{sesion.email}</p>
           </div>
           <div className="space-y-3 pt-2">
+            {esDueno && (
+              <a
+                href="/admin"
+                className="block w-full px-5 py-2.5 rounded-full bg-verde-app hover:bg-verde-app/90 text-black text-sm font-medium text-center transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                Gestionar mis proyectos
+              </a>
+            )}
             <a
               href="/proyectos"
               className="block w-full px-5 py-2.5 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium text-center transition-all duration-200 hover:scale-105 active:scale-95"

@@ -54,13 +54,20 @@ export async function peticionConToken(ruta, datos, token) {
 
 //funcion generica para modificar datos del panel de admin (post, put o delete)
 //manda la clave de administrador en el header x-admin-clave para que el backend valide
+//si no se pasa clave, la dueña entra con su cuenta de "mi cuenta" y se usa su token de firebase
 export async function peticionAdmin(metodo, ruta, datos, clave) {
+  const cabeceras = { 'Content-Type': 'application/json' };
+  if (clave) {
+    cabeceras['x-admin-clave'] = clave;
+  } else {
+    try {
+      const sesion = JSON.parse(localStorage.getItem('sesion-usuario') ?? 'null');
+      if (sesion?.token) cabeceras.Authorization = `Bearer ${sesion.token}`;
+    } catch {}
+  }
   const respuesta = await fetch(`${API_BASE}${ruta}`, {
     method: metodo,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-admin-clave': clave,
-    },
+    headers: cabeceras,
     body: datos ? JSON.stringify(datos) : undefined,
   });
   if (!respuesta.ok) {

@@ -1,5 +1,5 @@
 //avatar del navbar: muestra la foto de perfil (o una silueta si todavia no hay)
-//y es el acceso al panel de administracion
+//y es el acceso a "mi cuenta" (donde la dueña tambien entra al panel de administracion)
 //la foto se sube desde el panel con el lapiz y aparece sola aca
 import { useEffect, useState } from 'react';
 import { obtenerPerfil } from '../api/perfil.js';
@@ -7,7 +7,7 @@ import { leerSesion } from '../api/sesionAdmin.js';
 
 //prop "texto" opcional: si viene, se muestra el avatar junto a un texto (menu movil)
 export default function AvatarAdmin({ texto }) {
-  //el logo aparece solo si hay una sesion de administrador iniciada
+  //se muestra la sesion de administrador iniciada para armar el texto accesible
   const [logueado, setLogueado] = useState(() => leerSesion() !== null);
   const [foto, setFoto] = useState('');
   const [nombre, setNombre] = useState('');
@@ -35,7 +35,7 @@ export default function AvatarAdmin({ texto }) {
   }, []);
 
   const nombreAccesible =
-    logueado && nombre ? `Panel de administración (${nombre})` : 'Panel de administración';
+    logueado && nombre ? `Mi cuenta (${nombre})` : 'Mi cuenta';
 
   //si no hay sesion iniciada o no hay foto, se muestra una silueta de persona en el circulo
   const contenido = logueado && foto ? (
@@ -49,7 +49,7 @@ export default function AvatarAdmin({ texto }) {
   if (texto) {
     return (
       <a
-        href="/admin"
+        href="/cuenta"
         aria-label={nombreAccesible}
         className="w-full flex items-center gap-3 py-2 text-left text-zinc-300 hover:text-white transition-colors"
       >
@@ -63,9 +63,9 @@ export default function AvatarAdmin({ texto }) {
 
   return (
     <a
-      href="/admin"
+      href="/cuenta"
       aria-label={nombreAccesible}
-      title="Panel de administración"
+      title="Mi cuenta"
       className="inline-flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border border-zinc-700 bg-zinc-800 text-zinc-300 hover:text-white hover:border-verde-app hover:scale-105 transition-all duration-200"
     >
       {contenido}

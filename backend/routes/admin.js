@@ -3,6 +3,13 @@ import { Router } from 'express';
 
 const router = Router();
 
+//get a /api/admin/dueno
+//es publico: dice en que cuenta de firebase esta la dueña del sitio,
+//para que "mi cuenta" pueda ofrecerle la entrada al panel
+router.get('/dueno', (req, res) => {
+  res.json({ email: process.env.ADMIN_EMAIL ?? 'ferraroagustina19@gmail.com' });
+});
+
 //post a /api/admin/verificar
 //recibe usuario y clave y responde si son validos o no
 //si falla, indica cual de los dos campos no coincide (usuario/clave) para marcarlo en rojo

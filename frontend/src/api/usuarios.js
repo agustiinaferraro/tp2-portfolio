@@ -8,9 +8,16 @@ import {
   traducirErrorFirebase,
   firebaseConfigurado,
 } from './firebase.js';
+import { peticionGET } from './client.js';
 
 //true cuando la plataforma de cuentas esta configurada (variables public_firebase_*)
 export const cuentaConfigurada = firebaseConfigurado;
+
+//email de la cuenta de firebase de la dueña del sitio (para ofrecer el panel en "mi cuenta")
+export async function obtenerEmailDueno() {
+  const datos = await peticionGET('/api/admin/dueno');
+  return datos.email;
+}
 
 //crea la cuenta en firebase: nombre, email y contraseña. devuelve usuario y token
 export async function registrarUsuario(datos) {

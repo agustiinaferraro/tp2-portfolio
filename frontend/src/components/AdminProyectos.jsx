@@ -15,6 +15,11 @@ import { obtenerServicios, crearServicio } from '../api/servicios.js';
 import { obtenerPerfil, actualizarPerfil } from '../api/perfil.js';
 import { obtenerConversaciones } from '../api/mensajes.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
+import {
+  leerSesion as leerSesionUsuario,
+  borrarSesion as borrarSesionUsuario,
+  obtenerEmailDueno,
+} from '../api/usuarios.js';
 import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
 import Loading from './Loading.jsx';
@@ -329,7 +334,8 @@ export default function AdminProyectos() {
   const [listaServicios, setListaServicios] = useState(serviciosEstaticos);
   const [mensaje, setMensaje] = useState(null);
 
-  //al entrar: si ya hay sesion guardada (por ejemplo desde el detalle de un proyecto) se reusa
+  //al entrar: si ya hay sesion guardada (por ejemplo desde el detalle de un proyecto) se reusa.
+  //si no, la dueña puede abrir el panel con su cuenta de "mi cuenta" (sesion de firebase)
   useEffect(() => {
     const sesion = leerSesion();
     if (sesion) {
@@ -339,6 +345,23 @@ export default function AdminProyectos() {
       cargarProyectos();
       cargarPerfil();
       cargarCantidadConversaciones();
+    } else {
+      obtenerEmailDueno()
+        .then((email) => {
+          const cuenta = leerSesionUsuario();
+          const esDueno =
+            cuenta?.token &&
+            (cuenta.email ?? '').toLowerCase() === (email ?? '').toLowerCase();
+          if (esDueno) {
+            //la sesion de la dueña se manda sola (las peticiones usan su token, sin clave)
+            setSesion(true);
+            setUsuario(cuenta.email);
+            cargarProyectos();
+            cargarPerfil();
+            cargarCantidadConversaciones();
+          }
+        })
+        .catch(() => {});
     }
     obtenerServicios()
       .then((lista) => setListaServicios(juntarServicios(lista)))
@@ -410,6 +433,7 @@ export default function AdminProyectos() {
 
   function salir() {
     borrarSesion();
+    borrarSesionUsuario();
     setSesion(false);
     setUsuario('');
     setClave('');
@@ -722,6 +746,13 @@ export default function AdminProyectos() {
             {cargandoSesion ? 'Verificando...' : 'Entrar'}
           </button>
         </form>
+        <p className="mt-4 text-center text-sm text-zinc-400">
+          ¿Sos la dueña del sitio?{' '}
+          <a href="/cuenta" className="font-medium text-verde-app hover:text-verde-app/80 underline transition-colors">
+            Entrá con tu cuenta en "Mi cuenta"
+          </a>{' '}
+          y el panel se abre solo.
+        </p>
       </div>
     );
   }
