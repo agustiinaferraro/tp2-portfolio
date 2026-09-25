@@ -50,7 +50,7 @@ export default function SelectorImagenes({ imagenes, alCambiar, mostrarMensaje }
         multiple
         onChange={alElegirArchivos}
         disabled={comprimiendo}
-        className="block w-full text-sm text-transparent file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-violeta-app file:text-black file:font-medium file:cursor-pointer hover:file:bg-violeta-app/90 file:transition-colors disabled:opacity-50"
+        className="block w-full text-sm text-transparent file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-violeta-app file:text-black file:font-medium file:cursor-pointer hover:file:bg-violeta-app/90 file:transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       />
       <p className="text-xs text-zinc-600">
         Podés elegir varias a la vez. Cada una se comprime sola. La primera es la portada y el resto se ven en el detalle.

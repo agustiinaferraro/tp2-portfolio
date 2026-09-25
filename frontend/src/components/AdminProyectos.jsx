@@ -880,7 +880,7 @@ export default function AdminProyectos() {
                     disabled={guardandoPerfil}
                     aria-label="Cambiar foto de portada"
                     title="Cambiar foto de portada"
-                    className="absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/70 backdrop-blur-md border border-zinc-700 text-zinc-300 hover:text-white hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    className="absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/70 backdrop-blur-md border border-zinc-700 text-zinc-300 hover:text-white hover:border-verde-app hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <IconoImagen className="w-4 h-4" />
                   </button>
@@ -902,7 +902,7 @@ export default function AdminProyectos() {
                         disabled={guardandoPerfil}
                         aria-label="Cambiar foto de perfil"
                         title="Cambiar foto de perfil"
-                        className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-black hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-black hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <IconoLapiz className="w-4 h-4" />
                       </button>
@@ -1159,7 +1159,7 @@ export default function AdminProyectos() {
                     disabled={guardandoPerfil}
                     aria-label="Cambiar foto de perfil"
                     title="Cambiar foto de perfil"
-                    className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-black hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    className="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-violeta-app text-black hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <IconoLapiz className="w-4 h-4" />
                   </button>

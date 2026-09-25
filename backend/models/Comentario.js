@@ -12,9 +12,8 @@ const comentarioSchema = new mongoose.Schema(
       index: true,
     },
     usuario: {
-      //id del usuario que comenta (los comentarios usuarios logueados)
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Usuario',
+      //id del usuario que comenta (uid de firebase, la plataforma de cuentas)
+      type: String,
       required: true,
     },
     nombre: {
