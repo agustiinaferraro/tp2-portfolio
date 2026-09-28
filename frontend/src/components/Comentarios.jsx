@@ -1,8 +1,8 @@
 //seccion de comentarios de un proyecto: leer es publico, comentar pide estar registrado
-//los visitantes pueden crear una cuenta o entrar, y una vez logueados dejan su comentario
+//el registro y el login se hacen en /cuenta; aca solo se le ofrece al visitante entrar
 import { useEffect, useState } from 'react';
 import { obtenerComentarios, publicarComentario } from '../api/comentarios.js';
-import { registrarUsuario, iniciarSesion, leerSesion, guardarSesion, borrarSesion } from '../api/usuarios.js';
+import { leerSesion, borrarSesion } from '../api/usuarios.js';
 import Loading from './Loading.jsx';
 
 //colores del circulo del avatar segun la primera letra del nombre
@@ -22,6 +22,14 @@ function colorAvatar(nombre) {
   return coloresAvatar[letra % coloresAvatar.length];
 }
 
+//si el nombre parece un correo, se muestra la parte de antes de la arroba:
+//un comentario nunca muestra el email completo del autor
+function nombreVisible(nombre) {
+  const limpio = String(nombre ?? '').trim();
+  if (!limpio) return 'Visitante';
+  return limpio.includes('@') ? limpio.split('@')[0] : limpio;
+}
+
 function formatearFecha(fecha) {
   try {
     return new Date(fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -38,13 +46,8 @@ export default function Comentarios({ proyectoId }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [sesion, setSesion] = useState(null);
-  //"formulario" | "login" | "registro"
-  const [modo, setModo] = useState('formulario');
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [form, setForm] = useState({ nombre: '', email: '', clave: '' });
-  const [enviandoAuth, setEnviandoAuth] = useState(false);
-  const [errorAuth, setErrorAuth] = useState('');
 
   //al abrir se cargan los comentarios del proyecto y la sesion guardada
   useEffect(() => {
@@ -81,7 +84,6 @@ export default function Comentarios({ proyectoId }) {
       if (/401/.test(err.message)) {
         borrarSesion();
         setSesion(null);
-        setModo('formulario');
       }
       setError(err.message);
     } finally {
@@ -89,43 +91,17 @@ export default function Comentarios({ proyectoId }) {
     }
   }
 
-  //registro o login: guarda la sesion en el navegador y habilita el comentario
-  async function manejarAuth(e) {
-    e.preventDefault();
-    if (enviandoAuth) return;
-
-    setEnviandoAuth(true);
-    setErrorAuth('');
-    try {
-      const respuesta =
-        modo === 'registro' ? await registrarUsuario(form) : await iniciarSesion(form);
-      guardarSesion({ token: respuesta.token, nombre: respuesta.usuario.nombre, email: respuesta.usuario.email });
-      setSesion({ token: respuesta.token, nombre: respuesta.usuario.nombre, email: respuesta.usuario.email });
-      setForm({ nombre: '', email: '', clave: '' });
-      setModo('formulario');
-    } catch (err) {
-      setErrorAuth(err.message);
-    } finally {
-      setEnviandoAuth(false);
-    }
-  }
-
   function cerrarSesion() {
     borrarSesion();
     setSesion(null);
-    setModo('formulario');
     setTexto('');
-  }
-
-  function cambiarCampo(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   let contenido;
   if (cargando) {
     contenido = <Loading claseContenedor="h-32" />;
   } else if (comentarios.length === 0) {
-    contenido = <p className="text-zinc-500 text-sm">Todavía no hay comentarios. ¡Si te gustó, contalo!</p>;
+    contenido = <p className="text-zinc-500 text-sm">Todavía no hay comentarios.</p>;
   } else {
     contenido = (
       <ul className="space-y-4">
@@ -139,7 +115,7 @@ export default function Comentarios({ proyectoId }) {
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-zinc-100 text-sm">{comentario.nombre}</span>
+                <span className="font-bold text-zinc-100 text-sm">{nombreVisible(comentario.nombre)}</span>
                 <span className="text-xs text-zinc-500">{formatearFecha(comentario.createdAt)}</span>
               </div>
               <p className="text-zinc-300 text-sm whitespace-pre-wrap break-words mt-1">{comentario.texto}</p>
@@ -172,9 +148,21 @@ export default function Comentarios({ proyectoId }) {
         {sesion?.token ? (
           /*logueado: caja para escribir el comentario*/
           <form onSubmit={manejarComentar} className="pt-4 border-t border-zinc-800 space-y-3">
-            <p className="text-sm text-zinc-400">
-              Comentás como <span className="font-bold text-white">{sesion.nombre}</span>
-              <button type="button" onClick={cerrarSesion} className="ml-2 text-xs text-zinc-500 underline hover:text-zinc-300 transition-colors">
+            <p className="text-sm text-zinc-400 flex items-center gap-2 flex-wrap">
+              {sesion.foto ? (
+                <img src={sesion.foto} alt="" className="w-6 h-6 rounded-full object-cover border border-zinc-700" />
+              ) : (
+                <span className={`shrink-0 flex items-center justify-center w-6 h-6 rounded-full border font-bold text-xs ${colorAvatar(sesion.nombre)}`}>
+                  {inicialAvatar(sesion.nombre)}
+                </span>
+              )}
+              <span>
+                Comentás como <span className="font-bold text-white">{nombreVisible(sesion.nombre)}</span>
+              </span>
+              <a href="/cuenta" className="text-xs text-zinc-500 underline hover:text-zinc-300 transition-colors">
+                Tu cuenta
+              </a>
+              <button type="button" onClick={cerrarSesion} className="text-xs text-zinc-500 underline hover:text-zinc-300 transition-colors">
                 Cerrar sesión
               </button>
             </p>
@@ -197,82 +185,27 @@ export default function Comentarios({ proyectoId }) {
             </div>
           </form>
         ) : (
-          /*sin sesion: botones para entrar o crear cuenta*/
-          <div className="pt-4 border-t border-zinc-800 space-y-4">
-            <p className="text-sm text-zinc-400">¿Querés dejar tu opinión? Ingresá o creá tu cuenta para comentar.</p>
-            {modo === 'formulario' ? (
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => setModo('login')}
-                  className="px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  Iniciar sesión
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModo('registro')}
-                  className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  Crear cuenta
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={manejarAuth} className="space-y-3 max-w-md">
-                {modo === 'registro' && (
-                  <input
-                    name="nombre"
-                    type="text"
-                    value={form.nombre}
-                    onChange={cambiarCampo}
-                    placeholder="Tu nombre"
-                    aria-label="Tu nombre"
-                    autoComplete="name"
-                    className={claseInput}
-                  />
-                )}
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={cambiarCampo}
-                  placeholder="Email"
-                  aria-label="Email"
-                  autoComplete="email"
-                  className={claseInput}
-                />
-                <input
-                  name="clave"
-                  type="password"
-                  value={form.clave}
-                  onChange={cambiarCampo}
-                  placeholder="Contraseña (mínimo 6 caracteres)"
-                  aria-label="Contraseña"
-                  autoComplete={modo === 'registro' ? 'new-password' : 'current-password'}
-                  className={claseInput}
-                />
-                {errorAuth && <p role="alert" className="text-red-400 text-sm">{errorAuth}</p>}
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={enviandoAuth}
-                    className="px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
-                  >
-                    {enviandoAuth ? 'Esperá...' : modo === 'registro' ? 'Crear cuenta' : 'Entrar'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setModo('formulario');
-                      setErrorAuth('');
-                    }}
-                    className="text-sm text-zinc-500 underline hover:text-zinc-300 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            )}
+          /*sin sesion: entrada discreta al registro/login (se hace en /cuenta)*/
+          <div className="pt-4 border-t border-zinc-800 space-y-3 text-center">
+            <p className="text-sm text-zinc-400">
+              {comentarios.length === 0
+                ? '¿Querés dejar tu opinión? Entrá a tu cuenta y comentá.'
+                : '¿Querés sumarte? Entrá a tu cuenta y comentá.'}
+            </p>
+            <div className="flex justify-center gap-3">
+              <a
+                href="/cuenta"
+                className="inline-block px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                Iniciar sesión
+              </a>
+              <a
+                href="/cuenta?modo=registro"
+                className="inline-block px-5 py-2 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                Crear cuenta
+              </a>
+            </div>
           </div>
         )}
       </div>

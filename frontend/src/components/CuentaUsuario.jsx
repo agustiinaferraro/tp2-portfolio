@@ -2,7 +2,7 @@
 //las cuentas se crean en firebase authentication y la sesion se guarda en el navegador
 //la misma sesion se usa para comentar en los proyectos
 //si la cuenta es de la dueña, tambien se le ofrece entrar al panel de administracion
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   registrarUsuario,
   iniciarSesion,
@@ -10,9 +10,11 @@ import {
   leerSesion,
   guardarSesion,
   borrarSesion,
+  actualizarFoto,
   cuentaConfigurada,
   obtenerEmailDueno,
 } from '../api/usuarios.js';
+import { comprimirImagen } from '../utils/imagen.js';
 
 const claseInput =
   'w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-verde-app transition-all';
@@ -42,13 +44,18 @@ function IconoGoogle() {
 
 export default function CuentaUsuario() {
   const [sesion, setSesion] = useState(leerSesion());
-  //"login" | "registro"
-  const [modo, setModo] = useState('login');
+  //"login" | "registro" (al llegar con ?modo=registro se abre la creacion de cuenta)
+  const [modo, setModo] = useState(() => {
+    if (typeof window === 'undefined') return 'login';
+    return new URLSearchParams(window.location.search).get('modo') === 'registro' ? 'registro' : 'login';
+  });
   const [form, setForm] = useState({ nombre: '', email: '', clave: '' });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   //email de la dueña del sitio, para ofrecerle el panel de administracion
   const [emailDueno, setEmailDueno] = useState('');
+  //input oculto para elegir la foto de perfil
+  const fotoInputRef = useRef(null);
 
   //solo deja ver el panel si la cuenta logueada es de la dueña
   const esDueno = !!sesion && sesion.email?.toLowerCase() === emailDueno.toLowerCase();
@@ -65,10 +72,24 @@ export default function CuentaUsuario() {
       token: respuesta.token,
       nombre: respuesta.usuario.nombre,
       email: respuesta.usuario.email,
+      foto: respuesta.usuario.foto ?? '',
     };
     guardarSesion(nuevaSesion);
     setSesion(nuevaSesion);
     setForm({ nombre: '', email: '', clave: '' });
+  }
+
+  //elige una foto de perfil, se comprime y se guarda en la sesion
+  async function cambiarFoto(e) {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+    setError('');
+    try {
+      const foto = await comprimirImagen(archivo);
+      setSesion(actualizarFoto(foto));
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   //entra con una cuenta de google (firebase abre el selector de cuentas)
@@ -117,19 +138,47 @@ export default function CuentaUsuario() {
       <div className="text-center space-y-2 mb-8">
         <h1 className="text-3xl font-extrabold text-white">Mi cuenta</h1>
         <p className="text-zinc-400">
-          {sesion ? 'Ya estás adentro' : 'Registrate o entrá para participar'}
+          {sesion ? 'Este es tu perfil' : 'Registrate o entrá para participar'}
         </p>
       </div>
 
       {sesion ? (
         <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-8 space-y-6 text-center">
-          <span className="mx-auto flex items-center justify-center w-20 h-20 rounded-full bg-verde-app/15 text-verde-app border border-verde-app/30 font-extrabold text-3xl">
-            {(sesion.nombre ?? '?').charAt(0).toUpperCase()}
-          </span>
+          <input
+            ref={fotoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={cambiarFoto}
+          />
+          <button
+            type="button"
+            onClick={() => fotoInputRef.current?.click()}
+            aria-label="Cambiar foto de perfil"
+            className="group mx-auto cursor-pointer"
+          >
+            <span className="relative flex items-center justify-center w-24 h-24 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700 transition-colors group-hover:border-verde-app">
+              {sesion.foto ? (
+                <img src={sesion.foto} alt="Foto de perfil" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-verde-app font-extrabold text-4xl">
+                  {(sesion.nombre ?? '?').charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="absolute inset-0 flex items-end justify-center pb-1 text-[11px] font-medium text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                Cambiar foto
+              </span>
+            </span>
+          </button>
           <div className="space-y-1">
             <p className="font-bold text-white text-xl">{sesion.nombre}</p>
             <p className="text-zinc-400 text-sm">{sesion.email}</p>
           </div>
+          <p className="text-sm text-zinc-500">
+            Tu cuenta ya está activa: cuando quieras, entrá a los proyectos y comentá los que más te
+            gusten.
+          </p>
+          {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
           <div className="space-y-3 pt-2">
             {esDueno && (
               <a
@@ -139,12 +188,6 @@ export default function CuentaUsuario() {
                 Gestionar mis proyectos
               </a>
             )}
-            <a
-              href="/proyectos"
-              className="block w-full px-5 py-2.5 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium text-center transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              Dejá tu opinión en los proyectos
-            </a>
             <button
               type="button"
               onClick={cerrarSesion}

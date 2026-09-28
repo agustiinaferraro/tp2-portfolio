@@ -39,8 +39,13 @@ async function sesionDesdeUsuario(usuarioFirebase) {
   const token = await usuarioFirebase.getIdToken();
   return {
     token,
-    nombre: usuarioFirebase.displayName || usuarioFirebase.email || 'Visitante',
+    //nombre elegido por el usuario; si no hay, se usa el de antes de la arroba del correo
+    nombre:
+      usuarioFirebase.displayName ||
+      (usuarioFirebase.email ? usuarioFirebase.email.split('@')[0] : 'Visitante'),
     email: usuarioFirebase.email,
+    //la foto puede venir de la cuenta de google o elegirse despues desde "mi cuenta"
+    foto: usuarioFirebase.photoURL || '',
   };
 }
 

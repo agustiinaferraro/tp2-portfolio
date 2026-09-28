@@ -42,7 +42,8 @@ export async function verificarTokenFirebase(token) {
   const datos = await getAuth(obtenerApp()).verifyIdToken(token);
   return {
     id: datos.uid,
-    nombre: datos.name ?? datos.email ?? 'Visitante',
+    //nombre elegido por el usuario (nunca se muestra el correo completo en los comentarios)
+    nombre: datos.name || (datos.email ? datos.email.split('@')[0] : 'Visitante'),
     email: datos.email ?? '',
   };
 }

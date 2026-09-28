@@ -23,7 +23,10 @@ export async function obtenerEmailDueno() {
 export async function registrarUsuario(datos) {
   try {
     const sesion = await crearCuentaFirebase(datos);
-    return { token: sesion.token, usuario: { nombre: sesion.nombre, email: sesion.email } };
+    return {
+      token: sesion.token,
+      usuario: { nombre: sesion.nombre, email: sesion.email, foto: sesion.foto },
+    };
   } catch (error) {
     throw new Error(traducirErrorFirebase(error));
   }
@@ -33,7 +36,10 @@ export async function registrarUsuario(datos) {
 export async function iniciarSesion(datos) {
   try {
     const sesion = await entrarConEmailFirebase(datos);
-    return { token: sesion.token, usuario: { nombre: sesion.nombre, email: sesion.email } };
+    return {
+      token: sesion.token,
+      usuario: { nombre: sesion.nombre, email: sesion.email, foto: sesion.foto },
+    };
   } catch (error) {
     throw new Error(traducirErrorFirebase(error));
   }
@@ -43,7 +49,10 @@ export async function iniciarSesion(datos) {
 export async function entrarConGoogle() {
   try {
     const sesion = await entrarConGoogleFirebase();
-    return { token: sesion.token, usuario: { nombre: sesion.nombre, email: sesion.email } };
+    return {
+      token: sesion.token,
+      usuario: { nombre: sesion.nombre, email: sesion.email, foto: sesion.foto },
+    };
   } catch (error) {
     throw new Error(traducirErrorFirebase(error));
   }
@@ -70,4 +79,13 @@ export function borrarSesion() {
   try {
     localStorage.removeItem(CLAVE_SESION);
   } catch {}
+}
+
+//guarda una nueva foto de perfil en la sesion (se elige desde "mi cuenta")
+//devuelve la sesion actualizada para refrescar la pantalla
+export function actualizarFoto(foto) {
+  const sesion = leerSesion();
+  const nueva = { ...(sesion ?? { nombre: '', email: '', token: '' }), foto };
+  guardarSesion(nueva);
+  return nueva;
 }
