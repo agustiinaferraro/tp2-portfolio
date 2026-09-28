@@ -271,27 +271,6 @@ export default function CuentaUsuario() {
           <span className="flex-1 h-px bg-zinc-700" aria-hidden="true" />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-zinc-800">
-          <button
-            type="button"
-            onClick={() => { setModo('login'); setError(''); }}
-            className={`py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-              modo === 'login' ? 'bg-violeta-app text-black' : 'text-zinc-300 hover:text-white'
-            }`}
-          >
-            Entrar
-          </button>
-          <button
-            type="button"
-            onClick={() => { setModo('registro'); setError(''); }}
-            className={`py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-              modo === 'registro' ? 'bg-violeta-app text-black' : 'text-zinc-300 hover:text-white'
-            }`}
-          >
-            Crear cuenta
-          </button>
-        </div>
-
         <form onSubmit={(e) => manejarEnvio(e, desdeVentana)} className="space-y-3">
           {modo === 'registro' && (
             <input
