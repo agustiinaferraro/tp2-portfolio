@@ -11,6 +11,7 @@ import {
   guardarSesion,
   borrarSesion,
   actualizarFoto,
+  actualizarNombre,
   cuentaConfigurada,
   obtenerEmailDueno,
 } from '../api/usuarios.js';
@@ -42,6 +43,24 @@ function IconoGoogle() {
   );
 }
 
+//lapiz para editar los datos del perfil
+function IconoLapiz({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+    </svg>
+  );
+}
+
 export default function CuentaUsuario() {
   const [sesion, setSesion] = useState(leerSesion());
   //"login" | "registro" (al llegar con ?modo=registro se abre la creacion de cuenta)
@@ -56,6 +75,10 @@ export default function CuentaUsuario() {
   const [emailDueno, setEmailDueno] = useState('');
   //input oculto para elegir la foto de perfil
   const fotoInputRef = useRef(null);
+  //edicion del nombre de usuario (fila del perfil)
+  const [editandoNombre, setEditandoNombre] = useState(false);
+  const [formNombre, setFormNombre] = useState('');
+  const [enviandoNombre, setEnviandoNombre] = useState(false);
 
   //solo deja ver el panel si la cuenta logueada es de la dueña
   const esDueno = !!sesion && sesion.email?.toLowerCase() === emailDueno.toLowerCase();
@@ -89,6 +112,30 @@ export default function CuentaUsuario() {
       setSesion(actualizarFoto(foto));
     } catch (err) {
       setError(err.message);
+    }
+  }
+
+  //abre la edicion del nombre con el valor actual
+  function empezarEditarNombre() {
+    setFormNombre(sesion?.nombre ?? '');
+    setError('');
+    setEditandoNombre(true);
+  }
+
+  //cambia el nombre de usuario en firebase y refresca la sesion
+  async function guardarNombre(e) {
+    e.preventDefault();
+    const limpio = formNombre.trim();
+    if (!limpio || enviandoNombre) return;
+    setEnviandoNombre(true);
+    setError('');
+    try {
+      setSesion(await actualizarNombre(limpio));
+      setEditandoNombre(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviandoNombre(false);
     }
   }
 
@@ -143,7 +190,7 @@ export default function CuentaUsuario() {
       </div>
 
       {sesion ? (
-        <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-8 space-y-6 text-center">
+        <div className="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden">
           <input
             ref={fotoInputRef}
             type="file"
@@ -151,50 +198,116 @@ export default function CuentaUsuario() {
             className="hidden"
             onChange={cambiarFoto}
           />
-          <button
-            type="button"
-            onClick={() => fotoInputRef.current?.click()}
-            aria-label="Cambiar foto de perfil"
-            className="group mx-auto cursor-pointer"
-          >
-            <span className="relative flex items-center justify-center w-24 h-24 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700 transition-colors group-hover:border-verde-app">
-              {sesion.foto ? (
-                <img src={sesion.foto} alt="Foto de perfil" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-verde-app font-extrabold text-4xl">
-                  {(sesion.nombre ?? '?').charAt(0).toUpperCase()}
-                </span>
-              )}
-              <span className="absolute inset-0 flex items-end justify-center pb-1 text-[11px] font-medium text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                Cambiar foto
-              </span>
-            </span>
-          </button>
-          <div className="space-y-1">
-            <p className="font-bold text-white text-xl">{sesion.nombre}</p>
-            <p className="text-zinc-400 text-sm">{sesion.email}</p>
-          </div>
-          <p className="text-sm text-zinc-500">
-            Tu cuenta ya está activa: cuando quieras, entrá a los proyectos y comentá los que más te
-            gusten.
-          </p>
-          {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
-          <div className="space-y-3 pt-2">
-            {esDueno && (
-              <a
-                href="/admin"
-                className="block w-full px-5 py-2.5 rounded-full bg-verde-app hover:bg-verde-app/90 text-black text-sm font-medium text-center transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Gestionar mis proyectos
-              </a>
-            )}
+
+          {/*cabecera del perfil: foto, nombre y estado (tipo wsp)*/}
+          <div className="flex items-center gap-4 p-6">
             <button
               type="button"
-              onClick={cerrarSesion}
-              className="w-full px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              onClick={() => fotoInputRef.current?.click()}
+              aria-label="Cambiar foto de perfil"
+              className="group relative shrink-0 cursor-pointer"
             >
-              Cerrar sesión
+              <span className="flex items-center justify-center w-20 h-20 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700 transition-colors group-hover:border-verde-app">
+                {sesion.foto ? (
+                  <img src={sesion.foto} alt="Foto de perfil" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-verde-app font-extrabold text-3xl">
+                    {(sesion.nombre ?? '?').charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </span>
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <IconoLapiz className="w-4 h-4" />
+              </span>
             </button>
+            <div className="min-w-0 text-left">
+              <p className="font-bold text-white text-lg truncate">{sesion.nombre}</p>
+              <p className="text-zinc-400 text-sm truncate">{sesion.email}</p>
+              <span className="inline-flex items-center gap-1.5 text-xs text-verde-app mt-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-verde-app" aria-hidden="true"></span>
+                Sesión activa
+              </span>
+            </div>
+          </div>
+
+          {/*opciones del perfil: una fila por dato (nombre editable, email fijo)*/}
+          <div className="border-t border-zinc-800 divide-y divide-zinc-800">
+            <div className="px-6 py-4">
+              <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">Nombre de usuario</p>
+              {editandoNombre ? (
+                <form onSubmit={guardarNombre} className="flex gap-2">
+                  <input
+                    type="text"
+                    autoFocus
+                    maxLength={30}
+                    value={formNombre}
+                    onChange={(e) => setFormNombre(e.target.value)}
+                    aria-label="Nombre de usuario"
+                    className={claseInput}
+                  />
+                  <button
+                    type="submit"
+                    disabled={enviandoNombre || !formNombre.trim()}
+                    className="shrink-0 px-4 py-2 rounded-xl bg-verde-app hover:bg-verde-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    {enviandoNombre ? 'Guardando...' : 'Guardar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditandoNombre(false);
+                      setError('');
+                    }}
+                    className="shrink-0 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm border border-zinc-700 transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={empezarEditarNombre}
+                  className="w-full flex items-center justify-between gap-3 text-left cursor-pointer group"
+                >
+                  <span className="font-medium text-zinc-100 truncate">{sesion.nombre}</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-zinc-400 group-hover:text-white transition-colors shrink-0">
+                    <IconoLapiz className="w-4 h-4" />
+                    Editar
+                  </span>
+                </button>
+              )}
+              <p className="text-xs text-zinc-500 mt-1">Así te ven los demás en los comentarios.</p>
+            </div>
+
+            <div className="px-6 py-4">
+              <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">Email</p>
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-medium text-zinc-100 truncate">{sesion.email}</span>
+                <span className="text-xs text-zinc-500 shrink-0">Lo usás para entrar</span>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 space-y-3">
+              <p className="text-sm text-zinc-500 text-center">
+                Entrá a los proyectos y comentá los que más te gusten.
+              </p>
+              {error && <p role="alert" className="text-red-400 text-sm text-center">{error}</p>}
+              {esDueno && (
+                <a
+                  href="/admin"
+                  className="block w-full px-5 py-2.5 rounded-full bg-verde-app hover:bg-verde-app/90 text-black text-sm font-medium text-center transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  Gestionar mis proyectos
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={cerrarSesion}
+                className="w-full px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                Cerrar sesión
+              </button>
+            </div>
           </div>
         </div>
       ) : !cuentaConfigurada ? (

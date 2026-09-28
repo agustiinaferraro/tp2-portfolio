@@ -5,6 +5,7 @@ import {
   crearCuentaFirebase,
   entrarConEmailFirebase,
   entrarConGoogleFirebase,
+  actualizarNombreFirebase,
   traducirErrorFirebase,
   firebaseConfigurado,
 } from './firebase.js';
@@ -86,6 +87,22 @@ export function borrarSesion() {
 export function actualizarFoto(foto) {
   const sesion = leerSesion();
   const nueva = { ...(sesion ?? { nombre: '', email: '', token: '' }), foto };
+  guardarSesion(nueva);
+  return nueva;
+}
+
+//cambia el nombre de usuario en firebase y refresca la sesion guardada
+//conserva la foto local (la de google o la que subio la persona)
+export async function actualizarNombre(nombre) {
+  const sesion = await actualizarNombreFirebase(nombre);
+  const previa = leerSesion() ?? {};
+  const nueva = {
+    ...previa,
+    token: sesion.token,
+    nombre: sesion.nombre,
+    email: sesion.email,
+    foto: previa.foto ?? sesion.foto ?? '',
+  };
   guardarSesion(nueva);
   return nueva;
 }

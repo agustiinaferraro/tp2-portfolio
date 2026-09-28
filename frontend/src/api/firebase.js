@@ -70,6 +70,26 @@ export async function entrarConGoogleFirebase() {
   return sesionDesdeUsuario(credenciales.user);
 }
 
+//cambia el nombre de usuario (displayName) en firebase y devuelve la sesion actualizada
+//se pide un token fresco para que el backend lea el nombre nuevo en los comentarios
+export async function actualizarNombreFirebase(nombre) {
+  const auth = obtenerAuth();
+  const usuario = auth.currentUser;
+  if (!usuario) {
+    throw new Error('No hay una sesión activa.');
+  }
+  await updateProfile(usuario, { displayName: String(nombre).trim() });
+  const token = await usuario.getIdToken(true);
+  return {
+    token,
+    nombre:
+      usuario.displayName ||
+      (usuario.email ? usuario.email.split('@')[0] : 'Visitante'),
+    email: usuario.email,
+    foto: usuario.photoURL || '',
+  };
+}
+
 //traduce los errores de firebase a mensajes claros para el usuario
 export function traducirErrorFirebase(error) {
   const mensajes = {
