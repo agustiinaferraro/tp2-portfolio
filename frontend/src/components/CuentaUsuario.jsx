@@ -105,9 +105,12 @@ export default function CuentaUsuario() {
   const [ventana, setVentana] = useState('');
   //cuentas guardadas en el navegador (varias cuentas como en ig)
   const [cuentas, setCuentas] = useState(() => listarCuentas());
-  //cambios del perfil pendientes de guardar (foto y/o nombre)
-  const [fotoPendiente, setFotoPendiente] = useState(null);
-  const [nombrePendiente, setNombrePendiente] = useState(null);
+  //foto elegida pero sin guardar todavia (se confirma en el perfil)
+  const [fotoNueva, setFotoNueva] = useState(null);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+  //donde se editan los campos, para cerrar el modo edicion al tocar afuera
+  const nombreEditRef = useRef(null);
+  const fotoEditRef = useRef(null);
 
   //solo deja ver el panel si la cuenta logueada es de la dueña
   const esDueno = !!sesion && sesion.email?.toLowerCase() === emailDueno.toLowerCase();
@@ -117,6 +120,21 @@ export default function CuentaUsuario() {
       .then((email) => setEmailDueno(email ?? ''))
       .catch(() => {});
   }, []);
+
+  //si se toca afuera de un campo en edicion, se cancela y queda el valor normal
+  useEffect(() => {
+    if (!editandoNombre && !fotoNueva) return;
+    function alTocarAfuera(e) {
+      const dentroNombre = nombreEditRef.current?.contains(e.target);
+      const dentroFoto = fotoEditRef.current?.contains(e.target);
+      if (dentroNombre || dentroFoto) return;
+      setEditandoNombre(false);
+      setFotoNueva(null);
+      setError('');
+    }
+    document.addEventListener('mousedown', alTocarAfuera);
+    return () => document.removeEventListener('mousedown', alTocarAfuera);
+  }, [editandoNombre, fotoNueva]);
 
   //guarda la sesion devuelta por firebase, la suma a las cuentas guardadas y actualiza la pantalla
   //si viene del dialogo "agregar cuenta", al final lo cierra
@@ -132,70 +150,73 @@ export default function CuentaUsuario() {
     guardarSesion(nuevaSesion);
     setSesion(nuevaSesion);
     setForm({ nombre: '', email: '', clave: '' });
-    setFotoPendiente(null);
-    setNombrePendiente(null);
+    setFotoNueva(null);
     setEditandoNombre(false);
     if (desdeVentana) setVentana('');
   }
 
-  //elige una foto de perfil, se comprime y se guarda en la sesion
+  //elige una foto de perfil, se comprime y queda lista para confirmar
   async function cambiarFoto(e) {
     const archivo = e.target.files?.[0];
     if (!archivo) return;
     setError('');
     try {
       const foto = await comprimirImagen(archivo);
-      setFotoPendiente(foto);
+      setFotoNueva(foto);
     } catch (err) {
       setError(err.message);
     }
   }
 
-  //abre la edicion del nombre con el valor actual (o el pendiente si ya se edito)
+  //confirma la foto nueva y la guarda en la sesion
+  async function guardarFoto() {
+    if (!fotoNueva || enviandoFoto) return;
+    setEnviandoFoto(true);
+    setError('');
+    try {
+      const nueva = actualizarFoto(fotoNueva);
+      guardarCuenta(nueva);
+      setCuentas(listarCuentas());
+      setSesion(nueva);
+      setFotoNueva(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviandoFoto(false);
+    }
+  }
+
+  //cancela la foto nueva sin guardarla
+  function cancelarFoto() {
+    setFotoNueva(null);
+    setError('');
+  }
+
+  //abre la edicion del nombre con el valor actual
   function empezarEditarNombre() {
-    setFormNombre(nombrePendiente ?? sesion?.nombre ?? '');
+    setFormNombre(sesion?.nombre ?? '');
     setError('');
     setEditandoNombre(true);
   }
 
-  //acepta el nombre escrito: queda pendiente hasta tocar "Guardar cambios"
-  function aceptarNombre(e) {
+  //guarda el nombre de usuario que se acaba de escribir
+  async function guardarNombre(e) {
     e.preventDefault();
     const limpio = formNombre.trim();
     if (!limpio || enviandoNombre) return;
-    setNombrePendiente(limpio);
-    setEditandoNombre(false);
-    setError('');
-  }
-
-  //guarda todos los cambios pendientes del perfil (foto y nombre) de una vez
-  async function guardarCambios() {
-    if (!fotoPendiente && !nombrePendiente) return;
     setEnviandoNombre(true);
     setError('');
     try {
-      let nueva = sesion;
-      if (nombrePendiente) nueva = await actualizarNombre(nombrePendiente);
-      if (fotoPendiente) nueva = actualizarFoto(fotoPendiente);
+      const nueva = await actualizarNombre(limpio);
       guardarCuenta(nueva);
       setCuentas(listarCuentas());
       setSesion(nueva);
-      setFotoPendiente(null);
-      setNombrePendiente(null);
       setEditandoNombre(false);
     } catch (err) {
       setError(err.message);
     } finally {
       setEnviandoNombre(false);
     }
-  }
-
-  //cancela los cambios del perfil que todavia no se guardaron
-  function descartarCambios() {
-    setFotoPendiente(null);
-    setNombrePendiente(null);
-    setEditandoNombre(false);
-    setError('');
   }
 
   //entra con una cuenta de google (firebase abre el selector de cuentas)
@@ -238,8 +259,7 @@ export default function CuentaUsuario() {
     guardarSesion(cuenta);
     setSesion(cuenta);
     setError('');
-    setFotoPendiente(null);
-    setNombrePendiente(null);
+    setFotoNueva(null);
     setEditandoNombre(false);
     setVentana('');
   }
@@ -373,8 +393,7 @@ export default function CuentaUsuario() {
     setSesion(null);
     setModo('login');
     setError('');
-    setFotoPendiente(null);
-    setNombrePendiente(null);
+    setFotoNueva(null);
     setEditandoNombre(false);
     setVentana('');
   }
@@ -384,7 +403,7 @@ export default function CuentaUsuario() {
       <div className="text-center space-y-2 mb-8">
         <h1 className="text-3xl font-extrabold text-white">Editar perfil</h1>
         <p className="text-zinc-400">
-          {sesion ? `${nombrePendiente ?? sesion.nombre}, este es tu perfil` : 'Registrate o entrá para participar'}
+          {sesion ? `${sesion.nombre}, este es tu perfil` : 'Registrate o entrá para participar'}
         </p>
       </div>
 
@@ -407,8 +426,8 @@ export default function CuentaUsuario() {
               className="group relative shrink-0 cursor-pointer"
             >
               <span className="flex items-center justify-center w-20 h-20 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700 transition-colors group-hover:border-verde-app">
-                {fotoPendiente ? (
-                  <img src={fotoPendiente} alt="Foto de perfil (pendiente)" className="w-full h-full object-cover" />
+                {fotoNueva ? (
+                  <img src={fotoNueva} alt="Foto nueva" className="w-full h-full object-cover" />
                 ) : sesion.foto ? (
                   <img src={sesion.foto} alt="Foto de perfil" className="w-full h-full object-cover" />
                 ) : (
@@ -422,16 +441,8 @@ export default function CuentaUsuario() {
               </span>
             </button>
             <div className="min-w-0 text-left">
-              <p className="font-bold text-white text-lg truncate">{nombrePendiente ?? sesion.nombre}</p>
+              <p className="font-bold text-white text-lg truncate">{sesion.nombre}</p>
               <p className="text-zinc-400 text-sm truncate">{sesion.email}</p>
-              {(fotoPendiente || nombrePendiente) && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-amber-400 mt-1">
-                  <svg aria-hidden="true" className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V9h2v7zm4 0h-2V9h2v7z" />
-                  </svg>
-                  Cambios pendientes
-                </span>
-              )}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 text-xs text-verde-app mt-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-verde-app" aria-hidden="true"></span>
@@ -449,12 +460,36 @@ export default function CuentaUsuario() {
             </div>
           </div>
 
+          {/*barra de confirmacion de la foto nueva (se guarda aca, no en un boton general)*/}
+          {fotoNueva && (
+            <div ref={fotoEditRef} className="border-t border-zinc-800 px-6 py-3 flex items-center justify-between gap-3">
+              <p className="text-xs text-zinc-400">Foto nueva lista para guardar</p>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={cancelarFoto}
+                  className="shrink-0 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm border border-zinc-700 transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={guardarFoto}
+                  disabled={enviandoFoto}
+                  className="shrink-0 px-4 py-2 rounded-xl bg-verde-app hover:bg-verde-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  {enviandoFoto ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/*opciones del perfil: una fila por dato (nombre editable, email fijo)*/}
           <div className="border-t border-zinc-800 divide-y divide-zinc-800">
             <div className="px-6 py-4">
               <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">Nombre de usuario</p>
               {editandoNombre ? (
-                <form onSubmit={aceptarNombre} className="flex gap-2">
+                <form ref={nombreEditRef} onSubmit={guardarNombre} className="flex gap-2">
                   <input
                     type="text"
                     autoFocus
@@ -466,10 +501,10 @@ export default function CuentaUsuario() {
                   />
                   <button
                     type="submit"
-                    disabled={!formNombre.trim()}
+                    disabled={enviandoNombre || !formNombre.trim()}
                     className="shrink-0 px-4 py-2 rounded-xl bg-verde-app hover:bg-verde-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
-                    Aceptar
+                    {enviandoNombre ? 'Guardando...' : 'Guardar'}
                   </button>
                   <button
                     type="button"
@@ -488,11 +523,8 @@ export default function CuentaUsuario() {
                   onClick={empezarEditarNombre}
                   className="w-full flex items-center justify-between gap-3 text-left cursor-pointer group"
                 >
-                  <span className="font-medium text-zinc-100 truncate">{nombrePendiente ?? sesion.nombre}</span>
+                  <span className="font-medium text-zinc-100 truncate">{sesion.nombre}</span>
                   <span className="inline-flex items-center gap-1.5 text-sm text-zinc-400 group-hover:text-white transition-colors shrink-0">
-                    {nombrePendiente && (
-                      <span className="text-xs text-amber-400 font-medium">pendiente</span>
-                    )}
                     <IconoLapiz className="w-4 h-4" />
                     Editar
                   </span>
@@ -510,29 +542,6 @@ export default function CuentaUsuario() {
             </div>
 
             <div className="px-6 py-4 border-t border-zinc-800 space-y-3">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={descartarCambios}
-                  disabled={(!fotoPendiente && !nombrePendiente) || enviandoNombre}
-                  className="flex-1 px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={guardarCambios}
-                  disabled={(!fotoPendiente && !nombrePendiente) || enviandoNombre}
-                  className="flex-[2] px-5 py-2.5 rounded-full bg-verde-app hover:bg-verde-app/90 text-black text-sm font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  {enviandoNombre ? 'Guardando...' : 'Guardar cambios'}
-                </button>
-              </div>
-              {!fotoPendiente && !nombrePendiente && (
-                <p className="text-xs text-zinc-500 text-center">
-                  No hay cambios sin guardar. Elegí una foto o edita tu nombre de usuario.
-                </p>
-              )}
               <p className="text-sm text-zinc-500 text-center">
                 Entrá a los proyectos y comentá los que más te gusten.
               </p>
