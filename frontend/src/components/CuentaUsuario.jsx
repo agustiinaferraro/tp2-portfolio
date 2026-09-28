@@ -687,11 +687,6 @@ export default function CuentaUsuario() {
                       </button>
                     </li>
                   ))}
-                  {cuentas.length <= 1 && (
-                    <li className="py-4 text-sm text-zinc-500 text-center">
-                      No tenés otras cuentas guardadas.
-                    </li>
-                  )}
                 </ul>
                 <button
                   type="button"
