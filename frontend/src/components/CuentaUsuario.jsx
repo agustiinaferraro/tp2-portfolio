@@ -509,33 +509,6 @@ export default function CuentaUsuario() {
               </div>
             </div>
 
-            <div className="px-6 py-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setVentana('agregar');
-                  setModo('login');
-                  setForm({ nombre: '', email: '', clave: '' });
-                  setError('');
-                }}
-                className="w-full flex items-center justify-between gap-3 text-left cursor-pointer group"
-              >
-                <span className="inline-flex items-center gap-2 font-medium text-zinc-100">
-                  <span aria-hidden="true" className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 group-hover:border-verde-app transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
-                  </span>
-                  Agregar otra cuenta
-                </span>
-                <span aria-hidden="true" className="text-zinc-500 group-hover:text-white transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </span>
-              </button>
-            </div>
-
             <div className="px-6 py-4 border-t border-zinc-800 space-y-3">
               <div className="flex gap-2">
                 <button
@@ -572,6 +545,26 @@ export default function CuentaUsuario() {
                   Gestionar mis proyectos
                 </a>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  setVentana('agregar');
+                  setModo('login');
+                  setForm({ nombre: '', email: '', clave: '' });
+                  setError('');
+                }}
+                className="w-full flex items-center justify-between gap-3 px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <svg aria-hidden="true" className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Agregar otra cuenta
+                </span>
+                <svg aria-hidden="true" className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
               <button
                 type="button"
                 onClick={cerrarSesion}
