@@ -193,6 +193,52 @@ const colores = {
     </dl>
   </div>
 
+  {/*titulo universitario: formacion destacada con la imagen del diploma*/}
+  <div class="px-4 py-10 max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-8">
+      <svg aria-hidden="true" class="w-8 h-8 text-violeta-app" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+      </svg>
+      Mi título universitario
+    </h2>
+    <div class="rounded-2xl bg-zinc-900 border border-zinc-800 p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start transition-colors hover:border-verde-app/40">
+      <a
+        href="/img/titulo.jpg"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Ver mi título en tamaño completo"
+        class="block w-full md:w-60 shrink-0 group"
+      >
+        <img
+          src="/img/titulo.jpg"
+          alt="Título de Técnica en Comunicación Interactiva y Diseño Multimedial"
+          loading="lazy"
+          class="w-full rounded-xl border border-zinc-700 object-cover bg-zinc-800 transition-transform duration-300 group-hover:scale-[1.02]"
+        />
+      </a>
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs px-3 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 font-bold">
+            Título universitario
+          </span>
+          <span class="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/30 font-bold">
+            Sigo estudiando
+          </span>
+        </div>
+        <h3 class="text-xl md:text-2xl font-bold text-white">
+          Técnica en Comunicación Interactiva y Diseño Multimedial
+        </h3>
+        <p class="text-sm text-violeta-app">Universidad Maimónides</p>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          Este es mi título universitario: lo obtuve en la Universidad Maimónides y con él sigo
+          formándome. Hoy estoy en 4º año de la Licenciatura en Tecnología Multimedial en la misma
+          universidad.
+        </p>
+      </div>
+    </div>
+  </div>
+
   {/*el recorrido en linea de tiempo: alterna las tarjetas a los lados en pantallas grandes*/}
   <div class="px-4 py-14 max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-8">
