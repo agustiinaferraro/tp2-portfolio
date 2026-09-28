@@ -61,6 +61,8 @@ export async function entrarConGoogle() {
 
 //sesion del usuario que comenta: se guarda en el localstorage del navegador
 const CLAVE_SESION = 'sesion-usuario';
+//lista de cuentas guardadas en el navegador (para cambiar de cuenta como en ig)
+const CLAVE_CUENTAS = 'cuentas-usuario';
 
 export function leerSesion() {
   try {
@@ -105,4 +107,35 @@ export async function actualizarNombre(nombre) {
   };
   guardarSesion(nueva);
   return nueva;
+}
+
+//devuelve las cuentas guardadas en el navegador (varias cuentas como en ig)
+export function listarCuentas() {
+  try {
+    const lista = JSON.parse(localStorage.getItem(CLAVE_CUENTAS) ?? '[]');
+    return Array.isArray(lista) ? lista : [];
+  } catch {
+    return [];
+  }
+}
+
+//guarda (o actualiza) una cuenta en la lista de cuentas del navegador
+export function guardarCuenta(cuenta) {
+  const lista = listarCuentas().filter((c) => c.email !== cuenta.email);
+  lista.push(cuenta);
+  try {
+    localStorage.setItem(CLAVE_CUENTAS, JSON.stringify(lista));
+  } catch {
+    //si se llena el espacio (por fotos pesadas) se conserva la cuenta activa sola
+  }
+  return lista;
+}
+
+//olvida una cuenta guardada (no borra la cuenta de firebase)
+export function olvidarCuenta(email) {
+  const lista = listarCuentas().filter((c) => c.email !== email);
+  try {
+    localStorage.setItem(CLAVE_CUENTAS, JSON.stringify(lista));
+  } catch {}
+  return lista;
 }

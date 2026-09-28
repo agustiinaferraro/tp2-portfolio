@@ -12,6 +12,9 @@ import {
   borrarSesion,
   actualizarFoto,
   actualizarNombre,
+  listarCuentas,
+  guardarCuenta,
+  olvidarCuenta,
   cuentaConfigurada,
   obtenerEmailDueno,
 } from '../api/usuarios.js';
@@ -61,6 +64,25 @@ function IconoLapiz({ className }) {
   );
 }
 
+//icono de cambio de cuenta (dos flechas encontradas)
+function IconoCambiar({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
+      <path d="M7 16V4m0 0L3 8m4-4 4 4" />
+      <path d="M17 8v12m0 0l4-4m-4 4-4-4" />
+    </svg>
+  );
+}
+
 export default function CuentaUsuario() {
   const [sesion, setSesion] = useState(leerSesion());
   //"login" | "registro" (al llegar con ?modo=registro se abre la creacion de cuenta)
@@ -79,6 +101,10 @@ export default function CuentaUsuario() {
   const [editandoNombre, setEditandoNombre] = useState(false);
   const [formNombre, setFormNombre] = useState('');
   const [enviandoNombre, setEnviandoNombre] = useState(false);
+  //dialogo de cuentas: "" (cerrado) | "cambiar" | "agregar"
+  const [ventana, setVentana] = useState('');
+  //cuentas guardadas en el navegador (varias cuentas como en ig)
+  const [cuentas, setCuentas] = useState(() => listarCuentas());
 
   //solo deja ver el panel si la cuenta logueada es de la dueña
   const esDueno = !!sesion && sesion.email?.toLowerCase() === emailDueno.toLowerCase();
@@ -89,17 +115,21 @@ export default function CuentaUsuario() {
       .catch(() => {});
   }, []);
 
-  //guarda la sesion devuelta por firebase y actualiza la pantalla
-  function aplicarSesion(respuesta) {
+  //guarda la sesion devuelta por firebase, la suma a las cuentas guardadas y actualiza la pantalla
+  //si viene del dialogo "agregar cuenta", al final lo cierra
+  function aplicarSesion(respuesta, desdeVentana = false) {
     const nuevaSesion = {
       token: respuesta.token,
       nombre: respuesta.usuario.nombre,
       email: respuesta.usuario.email,
       foto: respuesta.usuario.foto ?? '',
     };
+    guardarCuenta(nuevaSesion);
+    setCuentas(listarCuentas());
     guardarSesion(nuevaSesion);
     setSesion(nuevaSesion);
     setForm({ nombre: '', email: '', clave: '' });
+    if (desdeVentana) setVentana('');
   }
 
   //elige una foto de perfil, se comprime y se guarda en la sesion
@@ -140,12 +170,13 @@ export default function CuentaUsuario() {
   }
 
   //entra con una cuenta de google (firebase abre el selector de cuentas)
-  async function entrarConGoogle() {
+  //desdeVentana: true cuando se agrega otra cuenta desde el dialogo
+  async function entrarConGoogle(desdeVentana = false) {
     if (enviando) return;
     setEnviando(true);
     setError('');
     try {
-      aplicarSesion(await entrarConGoogleCuenta());
+      aplicarSesion(await entrarConGoogleCuenta(), desdeVentana);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,14 +189,14 @@ export default function CuentaUsuario() {
   }
 
   //registro o login: guarda la sesion y muestra los datos del usuario
-  async function manejarEnvio(e) {
+  async function manejarEnvio(e, desdeVentana = false) {
     e.preventDefault();
     if (enviando) return;
     setEnviando(true);
     setError('');
     try {
       const respuesta = modo === 'registro' ? await registrarUsuario(form) : await iniciarSesion(form);
-      aplicarSesion(respuesta);
+      aplicarSesion(respuesta, desdeVentana);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -173,11 +204,144 @@ export default function CuentaUsuario() {
     }
   }
 
+  //cambia la sesion activa a otra cuenta guardada (como cambiar de cuenta en ig)
+  function cambiarCuentaActiva(cuenta) {
+    guardarSesion(cuenta);
+    setSesion(cuenta);
+    setError('');
+    setVentana('');
+  }
+
+  //olvida una cuenta guardada en el navegador
+  function olvidarCuentaGuardada(email) {
+    olvidarCuenta(email);
+    setCuentas(listarCuentas());
+  }
+
+  //formulario de acceso (google + entrar/crear) usado en la portada y en "agregar cuenta"
+  function renderAcceso(desdeVentana) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => entrarConGoogle(desdeVentana)}
+          disabled={enviando}
+          className="w-full inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium border border-zinc-700 transition-all duration-200 hover:bg-zinc-100 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+          <IconoGoogle />
+          Continuar con Google
+        </button>
+
+        <div className="flex items-center gap-3 text-xs text-zinc-500">
+          <span className="flex-1 h-px bg-zinc-700" aria-hidden="true" />
+          o
+          <span className="flex-1 h-px bg-zinc-700" aria-hidden="true" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-zinc-800">
+          <button
+            type="button"
+            onClick={() => { setModo('login'); setError(''); }}
+            className={`py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              modo === 'login' ? 'bg-violeta-app text-black' : 'text-zinc-300 hover:text-white'
+            }`}
+          >
+            Entrar
+          </button>
+          <button
+            type="button"
+            onClick={() => { setModo('registro'); setError(''); }}
+            className={`py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              modo === 'registro' ? 'bg-violeta-app text-black' : 'text-zinc-300 hover:text-white'
+            }`}
+          >
+            Crear cuenta
+          </button>
+        </div>
+
+        <form onSubmit={(e) => manejarEnvio(e, desdeVentana)} className="space-y-3">
+          {modo === 'registro' && (
+            <input
+              name="nombre"
+              type="text"
+              value={form.nombre}
+              onChange={cambiarCampo}
+              placeholder="Tu nombre"
+              aria-label="Tu nombre"
+              autoComplete="name"
+              required
+              className={claseInput}
+            />
+          )}
+          <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={cambiarCampo}
+            placeholder="Email"
+            aria-label="Email"
+            autoComplete="email"
+            required
+            className={claseInput}
+          />
+          <input
+            name="clave"
+            type="password"
+            value={form.clave}
+            onChange={cambiarCampo}
+            placeholder={modo === 'registro' ? 'Contraseña (mínimo 6 caracteres)' : 'Tu contraseña'}
+            aria-label="Contraseña"
+            autoComplete={modo === 'registro' ? 'new-password' : 'current-password'}
+            required
+            className={claseInput}
+          />
+          {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={enviando}
+            className="w-full px-5 py-2.5 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            {enviando ? 'Esperá...' : modo === 'registro' ? 'Crear cuenta' : 'Entrar'}
+          </button>
+        </form>
+
+        {modo === 'login' ? (
+          <p className="text-center text-sm text-zinc-400">
+            ¿No tenés cuenta?{' '}
+            <button
+              type="button"
+              onClick={() => { setModo('registro'); setError(''); }}
+              className="font-medium text-verde-app hover:text-verde-app/80 underline transition-colors cursor-pointer"
+            >
+              Registrate acá
+            </button>
+          </p>
+        ) : (
+          <p className="text-center text-sm text-zinc-400">
+            ¿Ya tenés cuenta?{' '}
+            <button
+              type="button"
+              onClick={() => { setModo('login'); setError(''); }}
+              className="font-medium text-verde-app hover:text-verde-app/80 underline transition-colors cursor-pointer"
+            >
+              Entrá directamente
+            </button>
+          </p>
+        )}
+
+        <p className="text-xs text-zinc-500 text-center">
+          Con tu cuenta podés dejar comentarios en los proyectos. Sin registro podés mirar todo.
+        </p>
+      </>
+    );
+  }
+
   function cerrarSesion() {
     borrarSesion();
     setSesion(null);
     setModo('login');
     setError('');
+    setVentana('');
   }
 
   return (
@@ -223,10 +387,20 @@ export default function CuentaUsuario() {
             <div className="min-w-0 text-left">
               <p className="font-bold text-white text-lg truncate">{sesion.nombre}</p>
               <p className="text-zinc-400 text-sm truncate">{sesion.email}</p>
-              <span className="inline-flex items-center gap-1.5 text-xs text-verde-app mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-verde-app" aria-hidden="true"></span>
-                Sesión activa
-              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 text-xs text-verde-app mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-verde-app" aria-hidden="true"></span>
+                  Sesión activa
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setVentana('cambiar')}
+                  className="mt-1 inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <IconoCambiar className="w-3.5 h-3.5" />
+                  Cambiar
+                </button>
+              </div>
             </div>
           </div>
 
@@ -287,6 +461,33 @@ export default function CuentaUsuario() {
               </div>
             </div>
 
+            <div className="px-6 py-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setVentana('agregar');
+                  setModo('login');
+                  setForm({ nombre: '', email: '', clave: '' });
+                  setError('');
+                }}
+                className="w-full flex items-center justify-between gap-3 text-left cursor-pointer group"
+              >
+                <span className="inline-flex items-center gap-2 font-medium text-zinc-100">
+                  <span aria-hidden="true" className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 group-hover:border-verde-app transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
+                  Agregar otra cuenta
+                </span>
+                <span aria-hidden="true" className="text-zinc-500 group-hover:text-white transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+
             <div className="px-6 py-4 space-y-3">
               <p className="text-sm text-zinc-500 text-center">
                 Entrá a los proyectos y comentá los que más te gusten.
@@ -327,118 +528,97 @@ export default function CuentaUsuario() {
         </div>
       ) : (
         <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-8 space-y-5">
-          {/*acceso con google (plataforma de identidad integrada)*/}
-          <button
-            type="button"
-            onClick={entrarConGoogle}
-            disabled={enviando}
-            className="w-full inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium border border-zinc-700 transition-all duration-200 hover:bg-zinc-100 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          {renderAcceso(false)}
+        </div>
+      )}
+
+      {/*dialogo para cambiar o agregar cuentas (como en ig)*/}
+      {ventana && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => { setVentana(''); setError(''); }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={ventana === 'cambiar' ? 'Cambiar de cuenta' : 'Agregar cuenta'}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-700 p-6 shadow-2xl space-y-4"
           >
-            <IconoGoogle />
-            Continuar con Google
-          </button>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-bold text-white">
+                {ventana === 'cambiar' ? 'Cambiar de cuenta' : 'Agregar cuenta'}
+              </h2>
+              <button
+                type="button"
+                onClick={() => { setVentana(''); setError(''); }}
+                aria-label="Cerrar"
+                className="text-zinc-500 hover:text-white transition-colors cursor-pointer shrink-0"
+              >
+                <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-          <div className="flex items-center gap-3 text-xs text-zinc-500">
-            <span className="flex-1 h-px bg-zinc-700" aria-hidden="true" />
-            o
-            <span className="flex-1 h-px bg-zinc-700" aria-hidden="true" />
-          </div>
-
-          {/*selector entre entrar y crear cuenta*/}
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-zinc-800">
-            <button
-              type="button"
-              onClick={() => { setModo('login'); setError(''); }}
-              className={`py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                modo === 'login' ? 'bg-violeta-app text-black' : 'text-zinc-300 hover:text-white'
-              }`}
-            >
-              Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => { setModo('registro'); setError(''); }}
-              className={`py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                modo === 'registro' ? 'bg-violeta-app text-black' : 'text-zinc-300 hover:text-white'
-              }`}
-            >
-              Crear cuenta
-            </button>
-          </div>
-
-          <form onSubmit={manejarEnvio} className="space-y-3">
-            {modo === 'registro' && (
-              <input
-                name="nombre"
-                type="text"
-                value={form.nombre}
-                onChange={cambiarCampo}
-                placeholder="Tu nombre"
-                aria-label="Tu nombre"
-                autoComplete="name"
-                required
-                className={claseInput}
-              />
+            {ventana === 'cambiar' ? (
+              <>
+                <ul className="divide-y divide-zinc-800">
+                  {cuentas.filter((c) => c.email !== sesion.email).map((cuenta) => (
+                    <li key={cuenta.email} className="flex items-center gap-3 py-3">
+                      <button
+                        type="button"
+                        onClick={() => cambiarCuentaActiva(cuenta)}
+                        className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer group"
+                      >
+                        <span className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700">
+                          {cuenta.foto ? (
+                            <img src={cuenta.foto} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-verde-app font-bold">{cuenta.nombre?.charAt(0).toUpperCase() ?? '?'}</span>
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-medium text-zinc-100 truncate">{cuenta.nombre}</span>
+                          <span className="block text-xs text-zinc-500 truncate">{cuenta.email}</span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => olvidarCuentaGuardada(cuenta.email)}
+                        aria-label={`Olvidar cuenta de ${cuenta.email}`}
+                        title="Olvidar cuenta"
+                        className="text-zinc-500 hover:text-red-400 transition-colors cursor-pointer shrink-0"
+                      >
+                        <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" viewBox="0 0 24 24">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                  {cuentas.filter((c) => c.email !== sesion.email).length === 0 && (
+                    <li className="py-4 text-sm text-zinc-500 text-center">
+                      No tenés otras cuentas guardadas.
+                    </li>
+                  )}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVentana('agregar');
+                    setModo('login');
+                    setForm({ nombre: '', email: '', clave: '' });
+                    setError('');
+                  }}
+                  className="w-full px-5 py-2.5 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  Agregar cuenta
+                </button>
+              </>
+            ) : (
+              <div className="space-y-5">{renderAcceso(true)}</div>
             )}
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={cambiarCampo}
-              placeholder="Email"
-              aria-label="Email"
-              autoComplete="email"
-              required
-              className={claseInput}
-            />
-            <input
-              name="clave"
-              type="password"
-              value={form.clave}
-              onChange={cambiarCampo}
-              placeholder={modo === 'registro' ? 'Contraseña (mínimo 6 caracteres)' : 'Tu contraseña'}
-              aria-label="Contraseña"
-              autoComplete={modo === 'registro' ? 'new-password' : 'current-password'}
-              required
-              className={claseInput}
-            />
-            {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={enviando}
-              className="w-full px-5 py-2.5 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              {enviando ? 'Esperá...' : modo === 'registro' ? 'Crear cuenta' : 'Entrar'}
-            </button>
-          </form>
-
-          {modo === 'login' ? (
-            <p className="text-center text-sm text-zinc-400">
-              ¿No tenés cuenta?{' '}
-              <button
-                type="button"
-                onClick={() => { setModo('registro'); setError(''); }}
-                className="font-medium text-verde-app hover:text-verde-app/80 underline transition-colors cursor-pointer"
-              >
-                Registrate acá
-              </button>
-            </p>
-          ) : (
-            <p className="text-center text-sm text-zinc-400">
-              ¿Ya tenés cuenta?{' '}
-              <button
-                type="button"
-                onClick={() => { setModo('login'); setError(''); }}
-                className="font-medium text-verde-app hover:text-verde-app/80 underline transition-colors cursor-pointer"
-              >
-                Entrá directamente
-              </button>
-            </p>
-          )}
-
-          <p className="text-xs text-zinc-500 text-center">
-            Con tu cuenta podés dejar comentarios en los proyectos. Sin registro podés mirar todo.
-          </p>
+          </div>
         </div>
       )}
     </section>
