@@ -64,25 +64,6 @@ function IconoLapiz({ className }) {
   );
 }
 
-//icono de cambio de cuenta (dos flechas encontradas)
-function IconoCambiar({ className }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      viewBox="0 0 24 24"
-    >
-      <path d="M7 16V4m0 0L3 8m4-4 4 4" />
-      <path d="M17 8v12m0 0l4-4m-4 4-4-4" />
-    </svg>
-  );
-}
-
 export default function CuentaUsuario() {
   const [sesion, setSesion] = useState(leerSesion());
   //"login" | "registro" (al llegar con ?modo=registro se abre la creacion de cuenta)
@@ -451,10 +432,11 @@ export default function CuentaUsuario() {
                 <button
                   type="button"
                   onClick={() => setVentana('cambiar')}
-                  className="mt-1 inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  aria-label="Cambiar de cuenta"
+                  title="Cambiar de cuenta"
+                  className="mt-1 inline-flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
                 >
-                  <IconoCambiar className="w-3.5 h-3.5" />
-                  Cambiar
+                  <IconoLapiz className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
