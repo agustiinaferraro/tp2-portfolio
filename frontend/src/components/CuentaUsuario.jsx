@@ -429,15 +429,6 @@ export default function CuentaUsuario() {
                   <span className="w-1.5 h-1.5 rounded-full bg-verde-app" aria-hidden="true"></span>
                   Sesión activa
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setVentana('cambiar')}
-                  aria-label="Cambiar de cuenta"
-                  title="Cambiar de cuenta"
-                  className="mt-1 inline-flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  <IconoLapiz className="w-3.5 h-3.5" />
-                </button>
               </div>
             </div>
           </div>
