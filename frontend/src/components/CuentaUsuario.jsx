@@ -382,9 +382,9 @@ export default function CuentaUsuario() {
   return (
     <section className="max-w-md mx-auto px-4 py-16" aria-label="Mi cuenta">
       <div className="text-center space-y-2 mb-8">
-        <h1 className="text-3xl font-extrabold text-white">Mi cuenta</h1>
+        <h1 className="text-3xl font-extrabold text-white">Editar perfil</h1>
         <p className="text-zinc-400">
-          {sesion ? 'Este es tu perfil' : 'Registrate o entrá para participar'}
+          {sesion ? `${nombrePendiente ?? sesion.nombre}, este es tu perfil` : 'Registrate o entrá para participar'}
         </p>
       </div>
 
@@ -544,7 +544,7 @@ export default function CuentaUsuario() {
                   disabled={(!fotoPendiente && !nombrePendiente) || enviandoNombre}
                   className="flex-1 px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 cursor-pointer"
                 >
-                  Descartar
+                  Cancelar
                 </button>
                 <button
                   type="button"
