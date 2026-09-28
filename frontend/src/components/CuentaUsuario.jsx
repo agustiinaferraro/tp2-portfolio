@@ -557,9 +557,7 @@ export default function CuentaUsuario() {
               <button
                 type="button"
                 onClick={() => {
-                  setVentana('agregar');
-                  setModo('login');
-                  setForm({ nombre: '', email: '', clave: '' });
+                  setVentana('cambiar');
                   setError('');
                 }}
                 className="w-full flex items-center justify-between gap-3 px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
@@ -614,13 +612,13 @@ export default function CuentaUsuario() {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={ventana === 'cambiar' ? 'Cambiar de cuenta' : 'Agregar cuenta'}
+            aria-label={ventana === 'cambiar' ? 'Tus cuentas' : 'Agregar cuenta'}
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-700 p-6 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-bold text-white">
-                {ventana === 'cambiar' ? 'Cambiar de cuenta' : 'Agregar cuenta'}
+                {ventana === 'cambiar' ? 'Tus cuentas' : 'Agregar cuenta'}
               </h2>
               <button
                 type="button"
@@ -637,6 +635,26 @@ export default function CuentaUsuario() {
             {ventana === 'cambiar' ? (
               <>
                 <ul className="divide-y divide-zinc-800">
+                  {/*cuenta actual, arriba y marcada (como el selector de gmail)*/}
+                  <li className="flex items-center gap-3 py-3">
+                    <span className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700">
+                      {sesion.foto ? (
+                        <img src={sesion.foto} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-verde-app font-bold">{sesion.nombre?.charAt(0).toUpperCase() ?? '?'}</span>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium text-zinc-100 truncate">{sesion.nombre}</span>
+                      <span className="block text-xs text-zinc-500 truncate">{sesion.email}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-xs text-verde-app shrink-0">
+                      <svg aria-hidden="true" className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                      </svg>
+                      Sesión actual
+                    </span>
+                  </li>
                   {cuentas.filter((c) => c.email !== sesion.email).map((cuenta) => (
                     <li key={cuenta.email} className="flex items-center gap-3 py-3">
                       <button
@@ -669,7 +687,7 @@ export default function CuentaUsuario() {
                       </button>
                     </li>
                   ))}
-                  {cuentas.filter((c) => c.email !== sesion.email).length === 0 && (
+                  {cuentas.length <= 1 && (
                     <li className="py-4 text-sm text-zinc-500 text-center">
                       No tenés otras cuentas guardadas.
                     </li>
