@@ -40,6 +40,23 @@ function Cruz() {
   );
 }
 
+function Check({ className = '' }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 export default function Certificaciones() {
   const [abierta, setAbierta] = useState(null);
 
@@ -77,30 +94,26 @@ export default function Certificaciones() {
           {CERTIFICACIONES.map((cert) => (
             <li
               key={cert.nombre}
-              className="rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden transition-colors hover:border-violeta-app/40"
+              className="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden transition-all duration-200 hover:border-violeta-app/50 hover:-translate-y-1"
             >
-              <button type="button" onClick={() => setAbierta(cert)} className="block w-full text-left cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setAbierta(cert)}
+                className="block w-full text-left cursor-pointer"
+              >
                 <img
                   src={cert.imagen}
                   alt={cert.nombre}
                   loading="lazy"
                   className="w-full h-56 object-cover object-top bg-zinc-800 transition-transform duration-200 hover:scale-105"
                 />
-                <p className="flex items-center gap-2 px-4 py-3 text-zinc-200 text-sm">
-                  <svg
-                    aria-hidden="true"
-                    className="w-5 h-5 text-verde-app shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    viewBox="0 0 24 24"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  {cert.nombre}
-                </p>
+                <div className="px-4 py-3 space-y-1">
+                  <p className="flex items-center gap-2 text-white text-sm font-semibold">
+                    <Check className="w-5 h-5 text-verde-app shrink-0" />
+                    {cert.descripcion}
+                  </p>
+                  <p className="text-xs text-zinc-500 pl-7">Tocá para verlo completo</p>
+                </div>
               </button>
             </li>
           ))}
@@ -114,23 +127,26 @@ export default function Certificaciones() {
           aria-modal="true"
           aria-label={abierta.nombre}
           onClick={() => setAbierta(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 overflow-y-auto animacion-aparecer"
         >
-          <div className="relative max-w-4xl w-full animacion-aparecer">
-            <button
-              type="button"
-              onClick={() => setAbierta(null)}
-              aria-label="Cerrar"
-              className="absolute -top-2 -right-2 z-10 w-11 h-11 rounded-full bg-zinc-900 border border-zinc-700 text-white transition-all duration-200 cursor-pointer hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90"
-            >
-              <Cruz />
-            </button>
+          {/*la cruz va al costado de la card para no tapar la foto*/}
+          <button
+            type="button"
+            onClick={() => setAbierta(null)}
+            aria-label="Cerrar"
+            className="shrink-0 mr-3 self-start mt-2 w-12 h-12 rounded-full bg-zinc-900 border border-zinc-700 text-white transition-all duration-200 cursor-pointer hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90"
+          >
+            <Cruz />
+          </button>
+
+          <div className="max-w-3xl w-full">
+            <h3 className="text-2xl font-bold text-white text-center mb-1">{abierta.nombre}</h3>
+            <p className="text-sm text-zinc-400 text-center mb-4">{abierta.descripcion}</p>
             <img
               src={abierta.imagen}
-              alt={abierta.nombre}
-              className="w-full max-h-[80vh] object-contain rounded-xl border border-zinc-700 bg-zinc-900"
+              alt={abierta.descripcion}
+              className="w-full max-h-[75vh] object-contain rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl"
             />
-            <p className="mt-4 text-center text-zinc-200 text-sm">{abierta.descripcion}</p>
           </div>
         </div>
       )}
