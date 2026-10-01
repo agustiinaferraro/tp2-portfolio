@@ -191,8 +191,8 @@ async function importarVideos() {
     await Proyecto.updateOne({ _id: proyecto._id }, { $set: cambios });
     if (video) videos++;
 
-    //pausa breve para no gatillar el bloqueo de behance en tandas grandes
-    //await new Promise((r) => setTimeout(r, 1200));
+    //pausa entre galerias: behance bloquea si le piden muchasfollowed en poco tiempo
+    await new Promise((r) => setTimeout(r, 2000));
   }
 
   return { chequeados, videos };
