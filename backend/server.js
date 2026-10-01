@@ -15,6 +15,7 @@ import mensajesRouter from './routes/mensajes.js';
 import adminRouter from './routes/admin.js';
 import perfilRouter from './routes/perfil.js';
 import comentariosRouter from './routes/comentarios.js';
+import behanceRouter from './routes/behance.js';
 
 //se cargan las variables de entorno del archivo .env (solo importa en local)
 dotenv.config();
@@ -44,6 +45,7 @@ app.use('/api/mensajes', mensajesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/perfil', perfilRouter);
 app.use('/api/comentarios', comentariosRouter);
+app.use('/api/behance', behanceRouter);
 
 //ruta de prueba para saber que el servidor esta vivo
 app.get('/', (req, res) => {

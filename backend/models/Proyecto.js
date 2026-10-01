@@ -47,8 +47,14 @@ const proyectoSchema = new mongoose.Schema(
     },
     video: {
       //url directa a un video (mp4/webm) para el hero de la home; vacio = usa la portada
+      //tambien puede ser un embed de adobe ccv (https://www-ccv.adobe.io/v1/player/ccv/<id>/embed) que el hero resuelve
       type: String,
       default: '',
+    },
+    ultimoChequeoVideo: {
+      //cuando se intento por ultima vez traer el video desde behance (para no bombardear la galeria)
+      type: Date,
+      default: null,
     },
     destacado: {
       //true = proyecto destacado, false = normal
