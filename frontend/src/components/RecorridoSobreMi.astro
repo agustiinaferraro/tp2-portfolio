@@ -130,12 +130,19 @@ const habilidades = [
   },
 ];
 
+//certificaciones: cada una con su imagen (carpeta public/img/certificaciones)
 const certificaciones = [
-  'Photoshop',
-  'Illustrator',
-  'Figma',
-  'Ayudantía en Negocios Digitales II',
-  'Ayudantía en Diseño de Interfaces',
+  { nombre: 'Photoshop', imagen: '/img/certificaciones/photoshop.jpg' },
+  { nombre: 'Illustrator', imagen: '/img/certificaciones/illustrator.jpg' },
+  { nombre: 'Figma', imagen: '/img/certificaciones/figma.jpg' },
+  {
+    nombre: 'Ayudantía en Negocios Digitales II',
+    imagen: '/img/certificaciones/negocios-digitales.png',
+  },
+  {
+    nombre: 'Ayudantía en Diseño de Interfaces',
+    imagen: '/img/certificaciones/diseno-de-interfaces.png',
+  },
 ];
 
 //estilos por tipo de paso en el recorrido (punto, pildora de periodo y borde de tarjeta)
@@ -387,14 +394,24 @@ const colores = {
       </svg>
       Certificaciones
     </h2>
-    <ul class="grid sm:grid-cols-2 gap-3">
+    <ul class="grid sm:grid-cols-2 gap-4">
       {
-        certificaciones.map((plan) => (
-          <li class="flex items-center gap-3 rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-3 text-zinc-200 text-sm transition-colors hover:border-violeta-app/40">
-            <svg aria-hidden="true" class="w-5 h-5 text-verde-app shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            {plan}
+        certificaciones.map((cert) => (
+          <li class="rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden transition-colors hover:border-violeta-app/40">
+            <a href={cert.imagen} target="_blank" rel="noopener noreferrer" class="block">
+              <img
+                src={cert.imagen}
+                alt={cert.nombre}
+                loading="lazy"
+                class="w-full h-56 object-cover object-top bg-zinc-800 transition-transform duration-200 hover:scale-105"
+              />
+              <p class="flex items-center gap-2 px-4 py-3 text-zinc-200 text-sm">
+                <svg aria-hidden="true" class="w-5 h-5 text-verde-app shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {cert.nombre}
+              </p>
+            </a>
           </li>
         ))
       }

@@ -168,23 +168,13 @@ export default function GrillaProyectos() {
         ? proyectos.filter((p) => categoriasDeProyecto(p).length === 0)
         : proyectos.filter((p) => categoriasDeProyecto(p).includes(categoria));
 
-  //los proyectos visibles se agrupan por categoria (un proyecto puede aparecer en varias)
-  const grupos = [];
-  const ordenCategorias = categorias.map((c) => c.slug).filter((slug) => slug && slug !== SIN_CATEGORIA);
-  for (const slug of ordenCategorias) {
-    const items = visibles.filter((p) => categoriasDeProyecto(p).includes(slug));
-    if (items.length) {
-      grupos.push({
-        clave: slug,
-        nombre: servicios.find((s) => s.slug === slug)?.nombre ?? slug,
-        items,
-      });
-    }
-  }
-  const sinCategoria = visibles.filter((p) => categoriasDeProyecto(p).length === 0);
-  if (sinCategoria.length) {
-    grupos.push({ clave: 'sincategoria', nombre: 'Sin categoría', items: sinCategoria });
-  }
+  //un solo carrusel con todos los proyectos: al filtrar, ese mismo carrusel muestra solo los filtrados
+  const nombreCarrusel =
+    categoria === ''
+      ? 'Todos los proyectos'
+      : categoria === SIN_CATEGORIA
+        ? 'Sin categoría'
+        : (servicios.find((s) => s.slug === categoria)?.nombre ?? categoria);
 
   //estado: detalle de un proyecto (al llegar con ?id= o al tocar una tarjeta)
   if (detalleId) {
@@ -257,11 +247,7 @@ export default function GrillaProyectos() {
       {visibles.length === 0 ? (
         <p className="text-zinc-400 text-center">No hay proyectos en esta categoría todavía.</p>
       ) : (
-        <div className="space-y-12">
-          {grupos.map((g) => (
-            <SeccionCarrusel key={g.clave} clave={g.clave} nombre={g.nombre} items={g.items} />
-          ))}
-        </div>
+        <SeccionCarrusel clave={categoria || 'todos'} nombre={nombreCarrusel} items={visibles} />
       )}
     </div>
   );
