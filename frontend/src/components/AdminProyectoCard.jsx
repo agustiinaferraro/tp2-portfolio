@@ -1,4 +1,5 @@
 //tarjeta de un proyecto en el carrusel del panel admin: imagen, titulo, categoria y botones editar/borrar
+//toda la card es clickeable: abre la edicion del proyecto (los botones hacen su propia accion)
 function IconoLapiz({ className }) {
   return (
     <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -22,7 +23,19 @@ function IconoTacho({ className }) {
 export default function AdminProyectoCard({ proyecto, grupoNombre, alEditar, alEliminar }) {
   const tieneImagen = !!(proyecto.imagen || proyecto.imagenes?.[0]);
   return (
-    <article className="group relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 focus-within:ring-2 focus-within:ring-verde-app">
+    <article
+      role="button"
+      tabIndex={0}
+      aria-label={`Editar ${proyecto.titulo}`}
+      onClick={() => alEditar(proyecto)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          alEditar(proyecto);
+        }
+      }}
+      className="group relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 focus-within:ring-2 focus-within:ring-verde-app cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+    >
       {tieneImagen ? (
         <img
           src={proyecto.imagen || proyecto.imagenes[0]}
@@ -41,19 +54,25 @@ export default function AdminProyectoCard({ proyecto, grupoNombre, alEditar, alE
       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
         <button
           type="button"
-          onClick={() => alEditar(proyecto)}
+          onClick={(e) => {
+            e.stopPropagation();
+            alEditar(proyecto);
+          }}
           aria-label={`Editar ${proyecto.titulo}`}
           title="Editar"
-          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-black hover:bg-verde-app transition-colors cursor-pointer"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-verde-app hover:text-black hover:bg-verde-app hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
         >
           <IconoLapiz className="w-4 h-4" />
         </button>
         <button
           type="button"
-          onClick={() => alEliminar(proyecto)}
+          onClick={(e) => {
+            e.stopPropagation();
+            alEliminar(proyecto);
+          }}
           aria-label={`Eliminar ${proyecto.titulo}`}
           title="Eliminar"
-          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-red-400 hover:text-white hover:bg-red-600 transition-colors cursor-pointer"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900/90 text-red-400 hover:text-white hover:bg-red-600 hover:scale-110 active:scale-90 transition-all duration-200 cursor-pointer"
         >
           <IconoTacho className="w-4 h-4" />
         </button>

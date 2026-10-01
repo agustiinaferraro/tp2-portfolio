@@ -1,53 +1,54 @@
-//tarjeta de un proyecto: muestra la portada y los datos, con la opcion de ir al detalle
+//tarjeta de un proyecto: casi toda la card es clickeable y lleva al detalle
+//lo unico aparte es el link externo (behance/web), que no puede ir dentro del otro
 //se reusa en los carruseles de la grilla de proyectos
 export default function ProyectoCard({ proyecto }) {
   return (
-    <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-verde-app/50 transition-colors">
-      {/*portada: la principal o la primera de la galeria, clickeable hacia el detalle*/}
-      {(proyecto.imagen || proyecto.imagenes?.[0]) && (
-        <figure className="m-0">
-          <a href={`/proyectos/?id=${proyecto._id}`}>
+    <article className="group h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-verde-app/50 hover:scale-105 active:scale-95 transition-all duration-200">
+      {/*link al detalle: abarca la portada y el contenido de la card*/}
+      <a href={`/proyectos/?id=${proyecto._id}`} className="flex flex-col flex-1 min-h-0">
+        {/*portada: la principal o la primera de la galeria*/}
+        {(proyecto.imagen || proyecto.imagenes?.[0]) && (
+          <figure className="m-0">
             <img
               src={proyecto.imagen || proyecto.imagenes[0]}
               alt={`Imagen del proyecto ${proyecto.titulo}`}
-              className="w-full h-44 object-cover hover:opacity-90 transition-opacity"
+              className="w-full h-44 object-cover group-hover:opacity-90 transition-opacity"
             />
-          </a>
-        </figure>
-      )}
-      <div className="p-6 flex flex-col gap-3 flex-1 min-h-0">
-        <h3 className="text-xl font-bold text-white line-clamp-2">
-          <a href={`/proyectos/?id=${proyecto._id}`} className="hover:text-verde-app/80 transition-colors">
+          </figure>
+        )}
+        <div className="p-6 flex flex-col gap-3 flex-1 min-h-0">
+          <h3 className="text-xl font-bold text-white line-clamp-2 group-hover:text-verde-app/80 transition-colors">
             {proyecto.titulo}
+          </h3>
+          {/*tags / roles aplicados*/}
+          {proyecto.tags?.length > 0 && (
+            <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
+              {proyecto.tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="text-xs px-2 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-zinc-400 text-sm leading-relaxed flex-1 min-h-0 line-clamp-3">{proyecto.resumen}</p>
+        </div>
+      </a>
+      {/*link externo del proyecto (sale de la card para no anidar links)*/}
+      {proyecto.link && (
+        <p className="px-6 pb-6">
+          <a
+            href={proyecto.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm font-medium text-verde-app hover:text-verde-app/80 hover:scale-105 active:scale-95 transition-all duration-200"
+          >
+            {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
           </a>
-        </h3>
-        {/*tags / roles aplicados*/}
-        {proyecto.tags?.length > 0 && (
-          <ul className="flex flex-wrap gap-2" aria-label="Etiquetas del proyecto">
-            {proyecto.tags.map((tag) => (
-              <li
-                key={tag}
-                className="text-xs px-2 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20"
-              >
-                {tag}
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="text-zinc-400 text-sm leading-relaxed flex-1 min-h-0 line-clamp-3">{proyecto.resumen}</p>
-        {proyecto.link && (
-          <p className="mt-auto">
-            <a
-              href={proyecto.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium text-verde-app hover:text-verde-app/80 transition-colors inline-flex items-center gap-1"
-            >
-              {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
-            </a>
-          </p>
-        )}
-      </div>
+        </p>
+      )}
     </article>
   );
 }
