@@ -2,6 +2,7 @@
 //recorrido sobre mi: linea de tiempo con el trayecto completo del cv
 //se agrupa en presentacion, numeros, recorrido, habilidades y certificaciones
 //el tipo de cada paso decide el color (verde = estudio, violeta = trabajo, dorado = logro)
+import Certificaciones from './Certificaciones.jsx';
 
 const estadisticas = [
   {
@@ -130,20 +131,7 @@ const habilidades = [
   },
 ];
 
-//certificaciones: cada una con su imagen (carpeta public/img/certificaciones)
-const certificaciones = [
-  { nombre: 'Photoshop', imagen: '/img/certificaciones/photoshop.jpg' },
-  { nombre: 'Illustrator', imagen: '/img/certificaciones/illustrator.jpg' },
-  { nombre: 'Figma', imagen: '/img/certificaciones/figma.jpg' },
-  {
-    nombre: 'Ayudantía en Negocios Digitales II',
-    imagen: '/img/certificaciones/negocios-digitales.png',
-  },
-  {
-    nombre: 'Ayudantía en Diseño de Interfaces',
-    imagen: '/img/certificaciones/diseno-de-interfaces.png',
-  },
-];
+
 
 //estilos por tipo de paso en el recorrido (punto, pildora de periodo y borde de tarjeta)
 const colores = {
@@ -385,36 +373,6 @@ const colores = {
     </div>
   </div>
 
-  {/*certificaciones*/}
-  <div class="px-4 pb-16 max-w-4xl mx-auto">
-    <h2 class="text-3xl font-bold text-white text-left inline-flex items-center gap-3 mb-8">
-      <svg aria-hidden="true" class="w-8 h-8 text-violeta-app" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-      </svg>
-      Certificaciones
-    </h2>
-    <ul class="grid sm:grid-cols-2 gap-4">
-      {
-        certificaciones.map((cert) => (
-          <li class="rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden transition-colors hover:border-violeta-app/40">
-            <a href={cert.imagen} target="_blank" rel="noopener noreferrer" class="block">
-              <img
-                src={cert.imagen}
-                alt={cert.nombre}
-                loading="lazy"
-                class="w-full h-56 object-cover object-top bg-zinc-800 transition-transform duration-200 hover:scale-105"
-              />
-              <p class="flex items-center gap-2 px-4 py-3 text-zinc-200 text-sm">
-                <svg aria-hidden="true" class="w-5 h-5 text-verde-app shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {cert.nombre}
-              </p>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
+  {/*certificaciones: imagen que se abre en grande (isla de react)*/}
+  <Certificaciones client:visible />
 </section>
