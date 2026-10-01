@@ -62,7 +62,7 @@ export default function HeroCarrusel() {
 
   if (cargando) {
     return (
-      <section aria-label="Proyectos destacados" className="max-w-3xl mx-auto px-4 pb-10">
+      <section aria-label="Proyectos destacados" className="max-w-5xl mx-auto px-4 pb-10">
         <div className="h-[400px] md:h-[500px] bg-black rounded-2xl flex overflow-hidden">
           <Loading claseContenedor="" />
         </div>
@@ -89,82 +89,83 @@ export default function HeroCarrusel() {
   }
 
   return (
-    <section aria-label="Proyectos destacados" className="max-w-3xl mx-auto px-4 pb-10">
-      <div
-        className="relative w-full h-[400px] md:h-[500px] overflow-hidden rounded-2xl"
-        onMouseEnter={() => setPausado(true)}
-        onMouseLeave={() => setPausado(false)}
-      >
-        <a
-          href={`/proyectos/?id=${proyecto._id}`}
-          className="block absolute inset-0 bg-black group"
-        >
-          {/*fondo negro que tapa el cambio entre una imagen y la otra*/}
-          <div
-            className={`absolute inset-0 bg-black transition-opacity duration-500 ${fade ? 'opacity-0' : 'opacity-100'}`}
-          />
-
-          {/*portada del proyecto actual*/}
-          <img
-            key={proyecto._id}
-            src={proyecto.imagen || proyecto.imagenes[0]}
-            alt={`Proyecto ${proyecto.titulo}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}
-          />
-
-          {/*degradado para que el texto se lea sobre cualquier imagen*/}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/90" />
-
-          {/*datos del proyecto sobre la imagen*/}
-          <div className="absolute inset-0 flex flex-col justify-center items-start px-5 md:px-10 text-white">
-            {categoria && (
-              <span className="text-verde-app font-medium tracking-widest uppercase text-sm mb-2">
-                {categoria.nombre}
-              </span>
-            )}
-            <h2 className="text-3xl md:text-5xl font-extrabold leading-tight mb-3">{proyecto.titulo}</h2>
-            {proyecto.resumen && (
-              <p className="text-zinc-300 md:text-lg line-clamp-2 max-w-xl">{proyecto.resumen}</p>
-            )}
-            <span className="mt-4 font-medium text-verde-app inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-              Ver proyecto <span aria-hidden="true">→</span>
-            </span>
-          </div>
-        </a>
-
-        {/*flechas para avanzar o volver, independientes del link de la portada*/}
+    <section aria-label="Proyectos destacados" className="max-w-5xl mx-auto px-4 pb-10">
+      {/*flechas a los costados: fuera de la imagen para no tapar el proyecto*/}
+      <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={anterior}
           aria-label="Proyecto anterior"
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 inline-flex items-center justify-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-white hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-white hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">←</span>
         </button>
+        <div
+          className="relative flex-1 min-w-0 w-full h-[400px] md:h-[500px] overflow-hidden rounded-2xl"
+          onMouseEnter={() => setPausado(true)}
+          onMouseLeave={() => setPausado(false)}
+        >
+          <a
+            href={`/proyectos/?id=${proyecto._id}`}
+            className="block absolute inset-0 bg-black group"
+          >
+            {/*fondo negro que tapa el cambio entre una imagen y la otra*/}
+            <div
+              className={`absolute inset-0 bg-black transition-opacity duration-500 ${fade ? 'opacity-0' : 'opacity-100'}`}
+            />
+
+            {/*portada del proyecto actual*/}
+            <img
+              key={proyecto._id}
+              src={proyecto.imagen || proyecto.imagenes[0]}
+              alt={`Proyecto ${proyecto.titulo}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}
+            />
+
+            {/*degradado para que el texto se lea sobre cualquier imagen*/}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/90" />
+
+            {/*datos del proyecto sobre la imagen*/}
+            <div className="absolute inset-0 flex flex-col justify-center items-start px-5 md:px-10 text-white">
+              {categoria && (
+                <span className="text-verde-app font-medium tracking-widest uppercase text-sm mb-2">
+                  {categoria.nombre}
+                </span>
+              )}
+              <h2 className="text-3xl md:text-5xl font-extrabold leading-tight mb-3">{proyecto.titulo}</h2>
+              {proyecto.resumen && (
+                <p className="text-zinc-300 md:text-lg line-clamp-2 max-w-xl">{proyecto.resumen}</p>
+              )}
+              <span className="mt-4 font-medium text-verde-app inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                Ver proyecto <span aria-hidden="true">→</span>
+              </span>
+            </div>
+          </a>
+
+          {/*puntitos: muestran en que proyecto estas y saltan al tocarlos*/}
+          <div className="absolute bottom-4 inset-x-0 z-20 flex justify-center gap-2">
+            {proyectos.map((p, indice) => (
+              <button
+                key={p._id}
+                type="button"
+                onClick={() => irA(indice)}
+                aria-label={`Ir al proyecto ${indice + 1}`}
+                aria-current={indice === actual ? 'true' : undefined}
+                className={`w-2.5 h-2.5 rounded-full transition-colors cursor-pointer ${
+                  indice === actual ? 'bg-verde-app' : 'bg-white/35 hover:bg-white/70'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
         <button
           type="button"
           onClick={siguiente}
           aria-label="Siguiente proyecto"
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 inline-flex items-center justify-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-white hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-white hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
         >
           <span aria-hidden="true">→</span>
         </button>
-
-        {/*puntitos: muestran en que proyecto estas y saltan al tocarlos*/}
-        <div className="absolute bottom-4 inset-x-0 z-20 flex justify-center gap-2">
-          {proyectos.map((p, indice) => (
-            <button
-              key={p._id}
-              type="button"
-              onClick={() => irA(indice)}
-              aria-label={`Ir al proyecto ${indice + 1}`}
-              aria-current={indice === actual ? 'true' : undefined}
-              className={`w-2.5 h-2.5 rounded-full transition-colors cursor-pointer ${
-                indice === actual ? 'bg-verde-app' : 'bg-white/35 hover:bg-white/70'
-              }`}
-            />
-          ))}
-        </div>
       </div>
     </section>
   );

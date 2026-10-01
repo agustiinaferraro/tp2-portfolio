@@ -58,7 +58,7 @@ export default function ServicioDetalle({ slug }) {
 
   //estado: con datos
   return (
-    <section className="max-w-3xl mx-auto px-4 py-24">
+    <section className="max-w-5xl mx-auto px-4 py-16">
       <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-verde-app/10 border border-verde-app/20 text-verde-app mb-6">
         <IconoServicio slug={servicio.slug} className="w-8 h-8" />
       </span>
@@ -70,7 +70,7 @@ export default function ServicioDetalle({ slug }) {
       {proyectos.length > 0 && (
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-white">Proyectos de {servicio.nombre}</h2>
-          <ul className="mt-6 grid gap-6 sm:grid-cols-2">
+          <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {proyectos.map((proyecto) => (
               <li key={proyecto._id}>
                 <article className="h-full flex flex-col overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-verde-app/50 transition-colors">

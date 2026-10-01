@@ -39,10 +39,12 @@ export default function GrillaServicios() {
   }
 
   //estado: con datos → se muestran las tarjetas
+  //en pantallas chicas es un carrusel horizontal (se ve parte del siguiente para invitar a scrollear)
+  //en pantallas grandes pasa a grilla
   return (
-    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="flex gap-6 overflow-x-auto snap-x pb-3 carrusel-scroll sm:overflow-visible sm:snap-none sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:grid-rows-1 sm:pb-0">
       {servicios.map((servicio) => (
-        <li key={servicio._id}>
+        <li key={servicio._id} className="shrink-0 snap-start w-72 sm:w-auto sm:shrink">
           <ServicioCard servicio={servicio} />
         </li>
       ))}

@@ -2,6 +2,7 @@
 //se apoya en la capa de datos (api/proyectos.js) para obtener la informacion
 //maneja los estados: "cargando", "con datos", "sin datos" y "error"
 //los chips de arriba filtran la grilla por categoria (interaccion significativa)
+//un proyecto puede estar en varias categorias (campo "servicios") y aparece en todas
 //si la url trae ?id=, en lugar de la grilla muestra el detalle de ese proyecto
 import { useEffect, useRef, useState } from 'react';
 import { obtenerProyectos } from '../api/proyectos.js';
@@ -22,6 +23,16 @@ function juntarServicios(listaApi) {
   return [...porSlug.values()];
 }
 
+//categorias de un proyecto: la lista nueva ("servicios") o la vieja ("servicio")
+function categoriasDeProyecto(proyecto) {
+  const lista = Array.isArray(proyecto.servicios) && proyecto.servicios.length
+    ? proyecto.servicios
+    : proyecto.servicio
+      ? [proyecto.servicio]
+      : [];
+  return [...new Set(lista.map((s) => String(s).trim()).filter(Boolean))];
+}
+
 //desplazamiento del carrusel: usa el scroll animado nativo del navegador, que es mas fluido
 //el snap de las tarjetas se aplica solo al final, sin pelear con la animacion
 function desplazarSuave(contenedor, dir) {
@@ -31,8 +42,37 @@ function desplazarSuave(contenedor, dir) {
 }
 
 //seccion con titulo y carrusel horizontal de proyectos
+//las flechas se desactivan cuando no hay mas proyectos para ese lado (evita confusion)
 function SeccionCarrusel({ clave, nombre, items }) {
   const ref = useRef(null);
+  const [alInicio, setAlInicio] = useState(true);
+  const [alFinal, setAlFinal] = useState(items.length <= 1);
+
+  //al scrollear se avisa si queda contenido a cada lado para (des)habilitar las flechas
+  useEffect(() => {
+    const contenedor = ref.current;
+    if (!contenedor) return;
+    const actualizar = () => {
+      const tolerancia = 8;
+      const fin = contenedor.scrollWidth - contenedor.clientWidth;
+      setAlInicio(contenedor.scrollLeft <= tolerancia);
+      setAlFinal(contenedor.scrollLeft >= fin - tolerancia);
+    };
+    actualizar();
+    contenedor.addEventListener('scroll', actualizar);
+    window.addEventListener('resize', actualizar);
+    return () => {
+      contenedor.removeEventListener('scroll', actualizar);
+      window.removeEventListener('resize', actualizar);
+    };
+  }, [items.length]);
+
+  const claseFlecha = (desactivado) =>
+    `shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 transition-all duration-200 cursor-pointer ${
+      desactivado
+        ? 'opacity-40 cursor-not-allowed'
+        : 'hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app'
+    }`;
 
   return (
     <section aria-labelledby={`proyectos-seccion-${clave}`}>
@@ -40,12 +80,13 @@ function SeccionCarrusel({ clave, nombre, items }) {
         {nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({items.length})</span>
       </h2>
       <div className="flex items-center gap-2">
-        {/*flechas a los costados del carrusel (no tapan las tarjetas): crecen al hover y encogen al click*/}
+        {/*flechas a los costados del carrusel (no tapan las tarjetas)*/}
         <button
           type="button"
           onClick={() => desplazarSuave(ref.current, -1)}
+          disabled={alInicio}
           aria-label={`Ver proyectos anteriores de ${nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className={claseFlecha(alInicio)}
         >
           <span aria-hidden="true">←</span>
         </button>
@@ -61,8 +102,9 @@ function SeccionCarrusel({ clave, nombre, items }) {
         <button
           type="button"
           onClick={() => desplazarSuave(ref.current, 1)}
+          disabled={alFinal}
           aria-label={`Ver más proyectos de ${nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className={claseFlecha(alFinal)}
         >
           <span aria-hidden="true">→</span>
         </button>
@@ -105,8 +147,10 @@ export default function GrillaProyectos() {
   }, []);
 
   //categorias con proyectos para mostrar como chips de filtro
-  const conCategoria = [...new Set(proyectos.map((p) => p.servicio).filter(Boolean))];
-  const tieneSinCategoria = proyectos.some((p) => !p.servicio);
+  const conCategoria = [
+    ...new Set(proyectos.flatMap((p) => categoriasDeProyecto(p))),
+  ];
+  const tieneSinCategoria = proyectos.some((p) => categoriasDeProyecto(p).length === 0);
   const categorias = [
     { slug: '', nombre: 'Todos' },
     ...conCategoria.map((slug) => ({
@@ -120,13 +164,15 @@ export default function GrillaProyectos() {
   const visibles =
     categoria === ''
       ? proyectos
-      : proyectos.filter((p) => (categoria === SIN_CATEGORIA ? !p.servicio : p.servicio === categoria));
+      : categoria === SIN_CATEGORIA
+        ? proyectos.filter((p) => categoriasDeProyecto(p).length === 0)
+        : proyectos.filter((p) => categoriasDeProyecto(p).includes(categoria));
 
-  //los proyectos visibles se agrupan por categoria para mostrar titulos de seccion
+  //los proyectos visibles se agrupan por categoria (un proyecto puede aparecer en varias)
   const grupos = [];
   const ordenCategorias = categorias.map((c) => c.slug).filter((slug) => slug && slug !== SIN_CATEGORIA);
   for (const slug of ordenCategorias) {
-    const items = visibles.filter((p) => p.servicio === slug);
+    const items = visibles.filter((p) => categoriasDeProyecto(p).includes(slug));
     if (items.length) {
       grupos.push({
         clave: slug,
@@ -135,7 +181,7 @@ export default function GrillaProyectos() {
       });
     }
   }
-  const sinCategoria = visibles.filter((p) => !p.servicio);
+  const sinCategoria = visibles.filter((p) => categoriasDeProyecto(p).length === 0);
   if (sinCategoria.length) {
     grupos.push({ clave: 'sincategoria', nombre: 'Sin categoría', items: sinCategoria });
   }
@@ -182,11 +228,15 @@ export default function GrillaProyectos() {
   //cada tarjeta lleva a la pagina de detalle con ?id=
   return (
     <div className="space-y-6">
-      {/*filtro por categoria: modifica que proyectos se ven*/}
+      {/*filtro por categoria: scroll horizontal, en pantallas chicas se ve apenas la proxima*/}
       {categorias.length > 1 && (
-        <ul className="flex flex-wrap gap-2" aria-label="Filtrar proyectos por categoría" role="group">
+        <ul
+          className="flex gap-2 overflow-x-auto snap-x pb-2 carrusel-scroll"
+          aria-label="Filtrar proyectos por categoría"
+          role="group"
+        >
           {categorias.map((c) => (
-            <li key={c.slug}>
+            <li key={c.slug} className="shrink-0 snap-start">
               <button
                 type="button"
                 onClick={() => setCategoria(c.slug)}

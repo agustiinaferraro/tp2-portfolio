@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { obtenerProyectoPorId, actualizarProyecto, verificarClave } from '../api/proyectos.js';
 import { obtenerServicios, crearServicio } from '../api/servicios.js';
 import { leerSesion, guardarSesion, borrarSesion } from '../api/sesionAdmin.js';
-import { OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
 import SelectorImagenes from './SelectorImagenes.jsx';
 import Loading from './Loading.jsx';
 import Comentarios from './Comentarios.jsx';
@@ -24,6 +23,16 @@ function juntarServicios(listaApi) {
 //las nuevas no tienen pagina pero si se muestran como chip
 function esCategoriaConocida(slug) {
   return serviciosEstaticos.some((s) => s.slug === slug);
+}
+
+//categorias de un proyecto: la lista nueva ("servicios") o la vieja ("servicio")
+function categoriasDeProyecto(proyecto) {
+  const lista = Array.isArray(proyecto.servicios) && proyecto.servicios.length
+    ? proyecto.servicios
+    : proyecto.servicio
+      ? [proyecto.servicio]
+      : [];
+  return [...new Set(lista.map((s) => String(s).trim()).filter(Boolean))];
 }
 
 export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver = null }) {
@@ -46,7 +55,8 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   const [resumen, setResumen] = useState('');
   const [link, setLink] = useState('');
   const [tagsTexto, setTagsTexto] = useState('');
-  const [servicio, setServicio] = useState('');
+  const [serviciosSel, setServiciosSel] = useState([]);
+  const [usarCategoriaNueva, setUsarCategoriaNueva] = useState(false);
   const [nuevaNombre, setNuevaNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [imagenes, setImagenes] = useState([]);
@@ -95,7 +105,8 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     setResumen(proyecto.resumen ?? '');
     setLink(proyecto.link ?? '');
     setTagsTexto((proyecto.tags ?? []).join(', '));
-    setServicio(proyecto.servicio ?? '');
+    setServiciosSel(categoriasDeProyecto(proyecto));
+    setUsarCategoriaNueva(false);
     setNuevaNombre('');
     setNuevaDescripcion('');
     setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
@@ -146,16 +157,17 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     setGuardando(true);
     setMensaje(null);
     try {
-      let slugServicio = servicio;
-      //si se elige "crear categoria nueva", se crea o se reusa una con ese nombre
-      if (servicio === OPCION_NUEVA_CATEGORIA) {
+      let listaServicios = serviciosSel;
+      //si se pide crear categoria nueva, se crea o se reusa una con ese nombre y se agrega a la lista
+      if (usarCategoriaNueva) {
         if (!nuevaNombre.trim()) {
           mostrarMensaje('Escribí el nombre de la categoría nueva', 'error');
           setGuardando(false);
           return;
         }
         const creado = await crearServicio(nuevaNombre.trim(), nuevaDescripcion.trim(), clave);
-        slugServicio = creado.datos.slug;
+        const slugNuevo = creado.datos.slug;
+        listaServicios = [...new Set([...serviciosSel, slugNuevo])];
         obtenerServicios()
           .then((lista) => setServicios(juntarServicios(lista)))
           .catch(() => {});
@@ -166,7 +178,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
         resumen: resumen.trim(),
         link: link.trim(),
         tags: tagsTexto.split(',').map((t) => t.trim()).filter(Boolean),
-        servicio: slugServicio,
+        servicios: listaServicios,
         //la primera imagen del formulario es la portada y el resto la galeria
         imagen: imagenes[0] ?? '',
         imagenes: imagenes.slice(1),
@@ -212,7 +224,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   //estado: error
   if (error) {
     return (
-      <section className="max-w-3xl mx-auto px-4 py-16">
+      <section className="max-w-4xl mx-auto px-4 py-16">
         {volver}
         <p role="alert" className="text-red-400 mt-6">
           No se pudo cargar el proyecto.
@@ -224,7 +236,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   //estado: cargando
   if (cargando) {
     return (
-      <section className="max-w-3xl mx-auto px-4 py-16">
+      <section className="max-w-4xl mx-auto px-4 py-16">
         {volver}
         <Loading claseContenedor="h-48" />
       </section>
@@ -234,21 +246,20 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   //estado: sin datos
   if (!proyecto) {
     return (
-      <section className="max-w-3xl mx-auto px-4 py-16">
+      <section className="max-w-4xl mx-auto px-4 py-16">
         {volver}
         <p className="text-zinc-400 mt-6">No encontramos ese proyecto.</p>
       </section>
     );
   }
 
-  const nombreCategoria =
-    servicios.find((s) => s.slug === proyecto.servicio)?.nombre ?? (proyecto.servicio ? proyecto.servicio : '');
+  const categoriasProyecto = categoriasDeProyecto(proyecto);
 
   //todas las imagenes del proyecto: la portada primero y la galeria extra despues
   const galeria = [proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean);
 
   return (
-    <section className="max-w-3xl mx-auto px-4 py-16">
+    <section className="max-w-4xl mx-auto px-4 py-16">
       <div className="space-y-2">
         {volver}
         <div className="flex items-center justify-between">
@@ -359,22 +370,25 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
       <h1 className="text-4xl font-bold text-white mt-8">{proyecto.titulo}</h1>
 
       <ul className="flex flex-wrap gap-2 mt-4">
-        {nombreCategoria && (
-          <li>
-            {esCategoriaConocida(proyecto.servicio) ? (
-              <a
-                href={`/servicios/${proyecto.servicio}`}
-                className="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20 hover:bg-verde-app/20 transition-colors"
-              >
-                {nombreCategoria}
-              </a>
-            ) : (
-              <span className="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20">
-                {nombreCategoria}
-              </span>
-            )}
-          </li>
-        )}
+        {categoriasProyecto.map((slug) => {
+          const nombre = servicios.find((s) => s.slug === slug)?.nombre ?? slug;
+          return (
+            <li key={slug}>
+              {esCategoriaConocida(slug) ? (
+                <a
+                  href={`/servicios/${slug}`}
+                  className="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20 hover:bg-verde-app/20 transition-colors"
+                >
+                  {nombre}
+                </a>
+              ) : (
+                <span className="text-xs px-3 py-1 rounded-full bg-verde-app/10 text-verde-app border border-verde-app/20">
+                  {nombre}
+                </span>
+              )}
+            </li>
+          );
+        })}
         {(proyecto.tags ?? []).map((tag) => (
           <li
             key={tag}
@@ -478,26 +492,50 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="det-servicio" className="block text-sm text-zinc-300">
-              Categoría / servicio
+            <label className="block text-sm text-zinc-300">
+              Categorías / servicios
             </label>
-            <select
-              id="det-servicio"
-              value={servicio}
-              onChange={(e) => setServicio(e.target.value)}
-              className={claseInput}
-            >
-              <option value="">Sin categoría</option>
-              {servicios.map((s) => (
-                <option key={s.slug} value={s.slug}>
-                  {s.nombre}
-                </option>
-              ))}
-              <option value={OPCION_NUEVA_CATEGORIA}>+ Crear categoría nueva...</option>
-            </select>
+            {/*un proyecto puede estar en varias categorías (aparece en todas)*/}
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {servicios.map((s) => {
+                const marcado = serviciosSel.includes(s.slug);
+                return (
+                  <li key={s.slug}>
+                    <label
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-all duration-200 ${
+                        marcado
+                          ? 'bg-verde-app/10 border-verde-app/40 text-white'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={marcado}
+                        onChange={() =>
+                          setServiciosSel((previo) =>
+                            previo.includes(s.slug) ? previo.filter((x) => x !== s.slug) : [...previo, s.slug]
+                          )
+                        }
+                        className="w-4 h-4 accent-verde-app cursor-pointer shrink-0"
+                      />
+                      <span className="flex-1">{s.nombre}</span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+            <label className="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer pt-2">
+              <input
+                type="checkbox"
+                checked={usarCategoriaNueva}
+                onChange={(e) => setUsarCategoriaNueva(e.target.checked)}
+                className="w-4 h-4 accent-verde-app cursor-pointer"
+              />
+              Crear categoría nueva
+            </label>
           </div>
 
-          {servicio === OPCION_NUEVA_CATEGORIA && (
+          {usarCategoriaNueva && (
             <div className="space-y-3 rounded-xl border border-verde-app/30 bg-verde-app/5 p-4">
               <div className="space-y-1">
                 <label htmlFor="det-nueva-nombre" className="block text-sm text-zinc-300">

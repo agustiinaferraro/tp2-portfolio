@@ -20,7 +20,7 @@ import {
   borrarSesion as borrarSesionUsuario,
   obtenerEmailDueno,
 } from '../api/usuarios.js';
-import { comprimirImagen, OPCION_NUEVA_CATEGORIA } from '../utils/imagen.js';
+import { comprimirImagen } from '../utils/imagen.js';
 import AdminMensajes from './AdminMensajes.jsx';
 import AdminProyectoCard from './AdminProyectoCard.jsx';
 import Loading from './Loading.jsx';
@@ -106,18 +106,32 @@ function nombreServicio(lista, slug) {
   return lista.find((s) => s.slug === slug)?.nombre ?? '';
 }
 
+//categorias de un proyecto: la lista nueva ("servicios") o la vieja ("servicio")
+function categoriasDeProyecto(proyecto) {
+  const lista = Array.isArray(proyecto.servicios) && proyecto.servicios.length
+    ? proyecto.servicios
+    : proyecto.servicio
+      ? [proyecto.servicio]
+      : [];
+  return [...new Set(lista.map((s) => String(s).trim()).filter(Boolean))];
+}
+
 //agrupa los proyectos por categoria para la portada del panel
+//un proyecto con varias categorias aparece en cada uno de sus grupos
 function agruparProyectos(lista, listaServicios) {
   const grupos = [];
   const indices = new Map();
   for (const proyecto of lista) {
-    const slug = proyecto.servicio ?? '';
-    const nombre = nombreServicio(listaServicios, slug) || 'Sin categoría';
-    if (!indices.has(slug)) {
-      indices.set(slug, grupos.length);
-      grupos.push({ slug, clave: slug || '__sin__', nombre, proyectos: [] });
+    const slugs = categoriasDeProyecto(proyecto);
+    for (const slug of Array.from(slugs.length ? slugs : [''])) {
+      const clave = slug || '__sin__';
+      const nombre = nombreServicio(listaServicios, slug) || 'Sin categoría';
+      if (!indices.has(clave)) {
+        indices.set(clave, grupos.length);
+        grupos.push({ slug, clave, nombre, proyectos: [] });
+      }
+      grupos[indices.get(clave)].proyectos.push(proyecto);
     }
-    grupos[indices.get(slug)].proyectos.push(proyecto);
   }
   grupos.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   return grupos;
@@ -179,8 +193,38 @@ function desplazarSuave(contenedor, dir) {
 }
 
 //carrusel horizontal de una categoria con sus proyectos (flechas a los costados)
+//las flechas se desactivan cuando no queda contenido para ese lado
 function CarruselAdmin({ grupo, numero, alEditar, alEliminar }) {
   const ref = useRef(null);
+  const [alInicio, setAlInicio] = useState(true);
+  const [alFinal, setAlFinal] = useState(grupo.proyectos.length <= 1);
+
+  //al scrollear se avisa si queda contenido a cada lado para (des)habilitar las flechas
+  useEffect(() => {
+    const contenedor = ref.current;
+    if (!contenedor) return;
+    const actualizar = () => {
+      const tolerancia = 8;
+      const fin = contenedor.scrollWidth - contenedor.clientWidth;
+      setAlInicio(contenedor.scrollLeft <= tolerancia);
+      setAlFinal(contenedor.scrollLeft >= fin - tolerancia);
+    };
+    actualizar();
+    contenedor.addEventListener('scroll', actualizar);
+    window.addEventListener('resize', actualizar);
+    return () => {
+      contenedor.removeEventListener('scroll', actualizar);
+      window.removeEventListener('resize', actualizar);
+    };
+  }, [grupo.proyectos.length]);
+
+  const claseFlecha = (desactivado) =>
+    `shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 transition-all duration-200 cursor-pointer ${
+      desactivado
+        ? 'opacity-40 cursor-not-allowed'
+        : 'hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app'
+    }`;
+
   return (
     <section
       id={`admin-grupo-${numero}`}
@@ -195,8 +239,9 @@ function CarruselAdmin({ grupo, numero, alEditar, alEliminar }) {
         <button
           type="button"
           onClick={() => desplazarSuave(ref.current, -1)}
+          disabled={alInicio}
           aria-label={`Ver proyectos anteriores de ${grupo.nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className={claseFlecha(alInicio)}
         >
           <span aria-hidden="true">←</span>
         </button>
@@ -217,8 +262,9 @@ function CarruselAdmin({ grupo, numero, alEditar, alEliminar }) {
         <button
           type="button"
           onClick={() => desplazarSuave(ref.current, 1)}
+          disabled={alFinal}
           aria-label={`Ver más proyectos de ${grupo.nombre}`}
-          className="shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app transition-all duration-200 cursor-pointer"
+          className={claseFlecha(alFinal)}
         >
           <span aria-hidden="true">→</span>
         </button>
@@ -248,7 +294,9 @@ export default function AdminProyectos() {
 
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
-  const [servicio, setServicio] = useState('');
+  //categorias elegidas del proyecto (pueden ser varias: aparece en todas)
+  const [serviciosSel, setServiciosSel] = useState([]);
+  const [usarCategoriaNueva, setUsarCategoriaNueva] = useState(false);
   const [nuevaNombre, setNuevaNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [imagenes, setImagenes] = useState([]);
@@ -391,7 +439,8 @@ export default function AdminProyectos() {
   function resetearFormulario() {
     setTitulo('');
     setResumen('');
-    setServicio('');
+    setServiciosSel([]);
+    setUsarCategoriaNueva(false);
     setNuevaNombre('');
     setNuevaDescripcion('');
     setImagenes([]);
@@ -412,7 +461,8 @@ export default function AdminProyectos() {
     setEditandoId(proyecto._id);
     setTitulo(proyecto.titulo ?? '');
     setResumen(proyecto.resumen ?? '');
-    setServicio(proyecto.servicio ?? '');
+    setServiciosSel(categoriasDeProyecto(proyecto));
+    setUsarCategoriaNueva(false);
     setNuevaNombre('');
     setNuevaDescripcion('');
     setImagenes([proyecto.imagen, ...(proyecto.imagenes ?? [])].filter(Boolean));
@@ -420,6 +470,13 @@ export default function AdminProyectos() {
     setMensaje(null);
     setVista('proyecto');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  //marca o desmarca una categoria en la lista del proyecto
+  function alternarCategoria(slug) {
+    setServiciosSel((previo) =>
+      previo.includes(slug) ? previo.filter((s) => s !== slug) : [...previo, slug]
+    );
   }
 
   async function guardarProyecto(evento) {
@@ -430,16 +487,17 @@ export default function AdminProyectos() {
     }
     setGuardando(true);
     setMensaje(null);
-    let slugServicio = servicio.trim();
-    //si se elige "crear categoria nueva", se crea o se reusa una con ese nombre
-    if (slugServicio === OPCION_NUEVA_CATEGORIA) {
+    let listaServicios = serviciosSel;
+    //si se pide crear categoria nueva, se crea o se reusa una con ese nombre y se agrega a la lista
+    if (usarCategoriaNueva) {
       if (!nuevaNombre.trim()) {
         mostrarMensaje('Escribí el nombre de la categoría nueva', 'error');
         setGuardando(false);
         return;
       }
       const creado = await crearServicio(nuevaNombre.trim(), nuevaDescripcion.trim(), clave);
-      slugServicio = creado.datos.slug;
+      const slugNuevo = creado.datos.slug;
+      listaServicios = [...new Set([...serviciosSel, slugNuevo])];
       obtenerServicios()
         .then((lista) => setListaServicios(juntarServicios(lista)))
         .catch(() => {});
@@ -448,7 +506,7 @@ export default function AdminProyectos() {
     const datos = {
       titulo: titulo.trim(),
       resumen: resumen.trim(),
-      servicio: slugServicio,
+      servicios: listaServicios,
       imagen: imagenes[0] ?? '',
       imagenes: imagenes.slice(1),
       destacado,
@@ -1028,27 +1086,49 @@ export default function AdminProyectos() {
               </label>
 
               <div className="space-y-1">
-                <label htmlFor="admin-servicio" className="block text-sm text-zinc-300">
-                  Categoría / servicio
+                <label className="block text-sm text-zinc-300">
+                  Categorías / servicios
                 </label>
-                <select
-                  id="admin-servicio"
-                  value={servicio}
-                  onChange={(e) => setServicio(e.target.value)}
-                  className={claseInput}
-                >
-                  <option value="">Sin categoría</option>
-                  {listaServicios.map((s) => (
-                    <option key={s.slug} value={s.slug}>
-                      {s.nombre}
-                    </option>
-                  ))}
-                  <option value={OPCION_NUEVA_CATEGORIA}>+ Crear categoría nueva...</option>
-                </select>
-                <p className="text-xs text-zinc-600">Elegí en qué servicio aparece este proyecto.</p>
+                {/*un proyecto puede estar en varias categorías (aparece en todas)*/}
+                <ul className="grid gap-2 sm:grid-cols-2">
+                  {listaServicios.map((s) => {
+                    const marcado = serviciosSel.includes(s.slug);
+                    return (
+                      <li key={s.slug}>
+                        <label
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-all duration-200 ${
+                            marcado
+                              ? 'bg-verde-app/10 border-verde-app/40 text-white'
+                              : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={marcado}
+                            onChange={() => alternarCategoria(s.slug)}
+                            className="w-4 h-4 accent-verde-app cursor-pointer shrink-0"
+                          />
+                          <span className="flex-1">{s.nombre}</span>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <label className="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer pt-2">
+                  <input
+                    type="checkbox"
+                    checked={usarCategoriaNueva}
+                    onChange={(e) => setUsarCategoriaNueva(e.target.checked)}
+                    className="w-4 h-4 accent-verde-app cursor-pointer"
+                  />
+                  Crear categoría nueva
+                </label>
+                <p className="text-xs text-zinc-600">
+                  Si no tildás ninguna, el proyecto queda "Sin categoría".
+                </p>
               </div>
 
-              {servicio === OPCION_NUEVA_CATEGORIA && (
+              {usarCategoriaNueva && (
                 <div className="space-y-3 rounded-xl border border-verde-app/30 bg-verde-app/5 p-4">
                   <div className="space-y-1">
                     <label htmlFor="admin-nueva-nombre" className="block text-sm text-zinc-300">

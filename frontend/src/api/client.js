@@ -14,6 +14,19 @@ export async function peticionGET(ruta) {
   return respuesta.json();
 }
 
+//funcion generica de get con sesion de usuario: manda el token de firebase en el header
+//para las rutas que exigen estar logueado (ej. leer la propia conversacion de contacto)
+export async function peticionGETAutenticada(ruta, token) {
+  const respuesta = await fetch(`${API_BASE}${ruta}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!respuesta.ok) {
+    const cuerpo = await respuesta.json().catch(() => null);
+    throw new Error(cuerpo?.mensaje ?? `Error al consultar ${ruta}: ${respuesta.status}`);
+  }
+  return respuesta.json();
+}
+
 //funcion generica para enviar datos a la api (post)
 //convierte el objeto a json y lo manda en el body de la peticion
 export async function peticionPOST(ruta, datos) {

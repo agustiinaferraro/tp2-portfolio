@@ -1,9 +1,9 @@
 //rutas de la api de mensajes
 //el post es publico (el formulario de contacto lo usa), la lectura y el borrado piden clave de admin
-import crypto from 'node:crypto';
 import { Router } from 'express';
 import Mensaje from '../models/Mensaje.js';
 import esAdmin from '../middlewares/esAdmin.js';
+import esAutenticado from '../middlewares/esAutenticado.js';
 
 const router = Router();
 
@@ -46,9 +46,29 @@ router.get('/conversaciones', esAdmin, async (req, res) => {
   }
 });
 
+//get a /api/mensajes/mio (visitante logueado)
+//devuelve la conversacion de la persona que está logueada (sus mensajes y las respuestas del admin)
+//el email sale del token de sesion: no se puede espiar la conversacion de otro usuario
+router.get('/mio', esAutenticado, async (req, res) => {
+  try {
+    const { email } = req.usuario;
+    const emailNormalizado = String(email).trim().toLowerCase();
+
+    const mensajes = await Mensaje.find({ email: emailNormalizado })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    //no se devuelve el token de la conversacion (sigue siendo interno)
+    res.json(mensajes.map(({ token: omitido, ...resto }) => resto));
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener la conversación', error: error.message });
+  }
+});
+
 //get a /api/mensajes/publico/:email (publico pero con token)
 //devuelve los mensajes de la conversacion del visitante (los suyos y las respuestas del admin)
 //el token se genera al enviar el primer mensaje y solo lo conoce esa persona
+//es el mecanismo viejo (sin cuenta); la api nueva usa /mio con la sesion de la cuenta
 router.get('/publico/:email', async (req, res) => {
   try {
     const { email } = req.params;
@@ -113,38 +133,35 @@ router.post('/conversaciones/:email/respuesta', esAdmin, async (req, res) => {
   }
 });
 
-//post a /api/mensajes
-//recibe los datos del formulario de contacto y los guarda en la base
-//si es el primer mensaje de esa persona genera un token secreto para su conversacion
-router.post('/', async (req, res) => {
+//post a /api/mensajes (visitante logueado)
+//recibe un mensaje de contacto y lo guarda en la base
+//exige estar logueado: el nombre y el email salen del token de sesion (firebase los verifica)
+router.post('/', esAutenticado, async (req, res) => {
   try {
-    const { nombre, email, mensaje } = req.body ?? {};
+    const { mensaje } = req.body ?? {};
+    const { email, nombre } = req.usuario;
 
-    //validacion: si falta algun campo, respondemos 400 con un mensaje claro
-    if (!nombre || !email || !mensaje) {
-      return res.status(400).json({
-        mensaje: 'Faltan datos: nombre, email y mensaje son obligatorios',
-      });
+    //validacion: el mensaje no puede estar vacio
+    if (!mensaje || !String(mensaje).trim()) {
+      return res.status(400).json({ mensaje: 'El mensaje no puede estar vacío' });
     }
 
     const emailNormalizado = String(email).trim().toLowerCase();
-    const existente = await Mensaje.findOne({ email: emailNormalizado }).sort({ createdAt: -1 }).lean();
 
-    //los mensajes de una misma persona comparten el token (su conversacion)
-    //si la conversacion vieja no tenia token (o es la primera), se genera uno nuevo
-    const tokenExistente = existente?.token ?? '';
-    const generoToken = !tokenExistente;
-    const token = tokenExistente || crypto.randomBytes(24).toString('hex');
+    //validacion del email: el token de firebase lo da verificado, pero se re-chequea el formato
+    const esEmailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado);
+    if (!esEmailValido) {
+      return res.status(400).json({ mensaje: 'El email no es válido. Registrate con un email real.' });
+    }
 
-    const nuevoMensaje = await Mensaje.create({ nombre, email, mensaje, token });
-
-    const datos = nuevoMensaje.toObject();
-    //si la conversacion ya existia con token no se revela (solo se muestra al crearla)
-    res.status(201).json({
-      mensaje: 'Mensaje recibido',
-      datos,
-      token: generoToken ? token : undefined,
+    const nuevoMensaje = await Mensaje.create({
+      nombre: String(nombre).trim() || emailNormalizado,
+      email: emailNormalizado,
+      mensaje: String(mensaje).trim(),
+      token: '',
     });
+
+    res.status(201).json({ mensaje: 'Mensaje recibido', datos: nuevoMensaje.toObject() });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al guardar el mensaje', error: error.message });
   }

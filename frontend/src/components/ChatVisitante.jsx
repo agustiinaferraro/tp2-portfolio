@@ -1,10 +1,12 @@
 //chat del visitante: muestra su conversacion con la admin y permite seguir mandando mensajes
+//la identidad sale de la sesion de la cuenta (el backend la valida con el token de firebase)
 //el header va estilo chat de red social: el nombre de agustina arriba con la flecha de volver al lado
 import { useEffect, useState } from 'react';
-import { enviarMensaje, obtenerMensajesPublicos } from '../api/mensajes.js';
+import { enviarMensaje, obtenerMensajesMios } from '../api/mensajes.js';
 import Loading from './Loading.jsx';
 
-export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver, nombreAdmin = 'Agustina Ferraro' }) {
+export default function ChatVisitante({ sesion, whatsapp, nombreAdmin = 'Agustina Ferraro' }) {
+  const { email, nombre, token } = sesion ?? {};
   const [mensajes, setMensajes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -14,7 +16,7 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
   //al abrir se trae la conversacion completa (lo que mando y lo que le respondieron)
   useEffect(() => {
     let activo = true;
-    obtenerMensajesPublicos(email, token)
+    obtenerMensajesMios(token)
       .then((lista) => {
         if (activo) setMensajes(lista);
       })
@@ -27,9 +29,9 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
     return () => {
       activo = false;
     };
-  }, [email, token]);
+  }, [token]);
 
-  //manda un mensaje nuevo y lo agrega al final de la conversacion
+  //manda un mensaje nuevo y lo agrega al final de la conversacion (aparece al instante)
   async function manejarEnvio(e) {
     e.preventDefault();
     if (enviando || !texto.trim()) return;
@@ -37,7 +39,7 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
     setEnviando(true);
     setError('');
     try {
-      const respuesta = await enviarMensaje({ nombre, email, mensaje: texto.trim() });
+      const respuesta = await enviarMensaje({ mensaje: texto.trim() }, token);
       const nuevo = respuesta?.datos;
       if (nuevo) setMensajes((prev) => [...prev, nuevo]);
       setTexto('');
@@ -58,9 +60,17 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
         <button type="button" onClick={() => window.location.reload()} className="text-violeta-app text-sm underline">Reintentar</button>
       </div>
     );
+  } else if (mensajes.length === 0) {
+    contenido = (
+      <div className="py-12 text-center">
+        <p className="text-zinc-400 text-sm">
+          Todavía no hay mensajes. Contame sobre tu proyecto, te leo.
+        </p>
+      </div>
+    );
   } else {
     contenido = (
-      <ul className="space-y-3 overflow-y-auto max-h-72 pr-1">
+      <ul className="space-y-3 overflow-y-auto max-h-72 pr-1" aria-label="Conversación con Agustina">
         {mensajes.map((m) => {
           const esDeAgustina = m.esRespuesta === true;
           return (
@@ -86,31 +96,23 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
 
   return (
     <div className="p-6 rounded-2xl bg-black/60 border border-zinc-800 space-y-4">
-      {/*header tipo redes: flecha de volver al lado del nombre de agustina*/}
+      {/*header tipo redes: el nombre de agustina arriba con un indicador de en linea*/}
       <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-        <button
-          type="button"
-          onClick={onVolver}
-          aria-label="Volver"
-          title="Volver"
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-zinc-900/70 border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-all duration-200 hover:scale-105 active:scale-95"
-        >
-          <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-violeta-app/20 border border-violeta-app/30 text-violeta-app font-bold text-lg">
-            {nombreAdmin.charAt(0).toUpperCase()}
-          </span>
-          <div className="leading-tight">
-            <p className="font-bold text-zinc-100">{nombreAdmin}</p>
-            <p className="text-xs text-emerald-400 flex items-center gap-1">
-              <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              En línea
-            </p>
-          </div>
+        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-violeta-app/20 border border-violeta-app/30 text-violeta-app font-bold text-lg">
+          {nombreAdmin.charAt(0).toUpperCase()}
+        </span>
+        <div className="leading-tight">
+          <p className="font-bold text-zinc-100">{nombreAdmin}</p>
+          <p className="text-xs text-emerald-400 flex items-center gap-1">
+            <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            En línea
+          </p>
         </div>
+        {nombre && (
+          <span className="ml-auto text-xs text-zinc-500 truncate max-w-[10rem]">
+            Chateando como {nombre}
+          </span>
+        )}
       </div>
 
       {contenido}
@@ -130,15 +132,15 @@ export default function ChatVisitante({ email, token, nombre, whatsapp, onVolver
         <button
           type="submit"
           disabled={enviando || !texto.trim()}
-          className="px-4 py-2 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="px-4 py-2 rounded-xl bg-violeta-app hover:bg-violeta-app/90 text-black text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
         >
-          Enviar
+          {enviando ? 'Enviando...' : 'Enviar'}
         </button>
       </form>
 
       {whatsapp && (
         <a
-          href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hola! Soy ${nombre}. Quiero seguir hablando sobre mi proyecto.`)}`}
+          href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hola! Soy ${nombre ?? ''}. Quiero seguir hablando sobre mi proyecto.`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="block text-center text-sm text-emerald-300 underline hover:text-emerald-200 transition-colors"

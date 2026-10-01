@@ -14,9 +14,12 @@ router.get('/', async (req, res) => {
     const { destacados, ligero, servicio } = req.query;
 
     //filtro: se arman las condiciones que lleguen (destacados y/o servicio)
+    //un proyecto entra en una categoria si es su servicio principal o si esta en su lista de servicios
     const filtro = {};
     if (destacados === 'true') filtro.destacado = true;
-    if (servicio) filtro.servicio = servicio;
+    if (servicio) {
+      filtro.$or = [{ servicio }, { servicios: servicio }];
+    }
 
     //proyeccion: el modo ligero no manda las imagenes (pesan bastante en base64)
     const proyeccion = ligero === 'true' ? { titulo: 1, resumen: 1, tags: 1 } : null;
@@ -46,7 +49,7 @@ router.get('/:id', async (req, res) => {
 //crea un proyecto nuevo con titulo (obligatorio), y resumen, imagenes, imagen, servicio y destacado opcionales
 router.post('/', esAdmin, async (req, res) => {
   try {
-    const { titulo, resumen, imagen, imagenes, servicio, destacado } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio, servicios, destacado } = req.body ?? {};
 
     //validacion: el titulo es obligatorio
     if (!titulo || !titulo.trim()) {
@@ -56,12 +59,20 @@ router.post('/', esAdmin, async (req, res) => {
     //las imagenes extra se guardan sin vacias ni espacios de mas
     const galeria = (imagenes ?? []).map((i) => (typeof i === 'string' ? i.trim() : '')).filter(Boolean);
 
+    //la lista de servicios se normaliza (sin vacios); el primero queda como servicio principal
+    const listaServicios = Array.isArray(servicios)
+      ? [...new Set(servicios.map((s) => String(s).trim()).filter(Boolean))]
+      : servicio
+        ? [servicio.trim()]
+        : [];
+
     const nuevoProyecto = await Proyecto.create({
       titulo: titulo.trim(),
       resumen: resumen ?? '',
       imagen: imagen ?? '',
       imagenes: galeria,
-      servicio: servicio ?? '',
+      servicio: listaServicios[0] ?? '',
+      servicios: listaServicios,
       tags: [],
       link: '',
       destacado: destacado === true,
@@ -78,7 +89,7 @@ router.post('/', esAdmin, async (req, res) => {
 router.put('/:id', esAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, resumen, imagen, imagenes, servicio, destacado } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio, servicios, destacado } = req.body ?? {};
 
     //se arma un objeto solo con los campos que vinieron en la peticion
     const cambios = {};
@@ -88,7 +99,20 @@ router.put('/:id', esAdmin, async (req, res) => {
     if (imagenes !== undefined) {
       cambios.imagenes = (imagenes ?? []).map((i) => (typeof i === 'string' ? i.trim() : '')).filter(Boolean);
     }
-    if (servicio !== undefined) cambios.servicio = servicio;
+    //si llegó la lista de servicios se normaliza y el primero queda como principal
+    if (servicios !== undefined || servicio !== undefined) {
+      const lista = Array.isArray(servicios)
+        ? [...new Set(servicios.map((s) => String(s).trim()).filter(Boolean))]
+        : servicio !== undefined
+          ? [String(servicio).trim()]
+          : undefined;
+      if (lista) {
+        cambios.servicios = lista;
+        cambios.servicio = lista[0] ?? '';
+      } else if (servicio === '') {
+        cambios.servicio = '';
+      }
+    }
     if (destacado !== undefined) cambios.destacado = destacado === true;
 
     const actualizado = await Proyecto.findByIdAndUpdate(id, cambios, {

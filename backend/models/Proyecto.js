@@ -19,10 +19,16 @@ const proyectoSchema = new mongoose.Schema(
       default: [],
     },
     servicio: {
-      //slug del servicio al que pertenece (ej. "diseno-grafico-identidad")
+      //slug del servicio principal (ej. "diseno-grafico-identidad")
+      //se conserva por compatibilidad; los nuevos proyectos usan "servicios"
       //vacio = sin categoria
       type: String,
       default: '',
+    },
+    servicios: {
+      //todos los servicios a los que pertenece el proyecto (varios: aparece en todas sus categorias)
+      type: [String],
+      default: [],
     },
     imagen: {
       //imagen de portada en base64 que se sube desde el panel admin
