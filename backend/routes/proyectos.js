@@ -49,7 +49,7 @@ router.get('/:id', async (req, res) => {
 //crea un proyecto nuevo con titulo (obligatorio), y resumen, imagenes, imagen, servicio y destacado opcionales
 router.post('/', esAdmin, async (req, res) => {
   try {
-    const { titulo, resumen, imagen, imagenes, servicio, servicios, destacado } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio, servicios, destacado, link, video } = req.body ?? {};
 
     //validacion: el titulo es obligatorio
     if (!titulo || !titulo.trim()) {
@@ -74,7 +74,8 @@ router.post('/', esAdmin, async (req, res) => {
       servicio: listaServicios[0] ?? '',
       servicios: listaServicios,
       tags: [],
-      link: '',
+      link: link ?? '',
+      video: video ?? '',
       destacado: destacado === true,
     });
 
@@ -89,13 +90,15 @@ router.post('/', esAdmin, async (req, res) => {
 router.put('/:id', esAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, resumen, imagen, imagenes, servicio, servicios, destacado } = req.body ?? {};
+    const { titulo, resumen, imagen, imagenes, servicio, servicios, destacado, link, video } = req.body ?? {};
 
     //se arma un objeto solo con los campos que vinieron en la peticion
     const cambios = {};
     if (titulo !== undefined) cambios.titulo = titulo;
     if (resumen !== undefined) cambios.resumen = resumen;
     if (imagen !== undefined) cambios.imagen = imagen;
+    if (link !== undefined) cambios.link = link;
+    if (video !== undefined) cambios.video = video;
     if (imagenes !== undefined) {
       cambios.imagenes = (imagenes ?? []).map((i) => (typeof i === 'string' ? i.trim() : '')).filter(Boolean);
     }

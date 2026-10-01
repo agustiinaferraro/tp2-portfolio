@@ -294,6 +294,8 @@ export default function AdminProyectos() {
 
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
+  const [link, setLink] = useState('');
+  const [video, setVideo] = useState('');
   //categorias elegidas del proyecto (pueden ser varias: aparece en todas)
   const [serviciosSel, setServiciosSel] = useState([]);
   const [usarCategoriaNueva, setUsarCategoriaNueva] = useState(false);
@@ -439,6 +441,8 @@ export default function AdminProyectos() {
   function resetearFormulario() {
     setTitulo('');
     setResumen('');
+    setLink('');
+    setVideo('');
     setServiciosSel([]);
     setUsarCategoriaNueva(false);
     setNuevaNombre('');
@@ -461,6 +465,8 @@ export default function AdminProyectos() {
     setEditandoId(proyecto._id);
     setTitulo(proyecto.titulo ?? '');
     setResumen(proyecto.resumen ?? '');
+    setLink(proyecto.link ?? '');
+    setVideo(proyecto.video ?? '');
     setServiciosSel(categoriasDeProyecto(proyecto));
     setUsarCategoriaNueva(false);
     setNuevaNombre('');
@@ -509,6 +515,8 @@ export default function AdminProyectos() {
       servicios: listaServicios,
       imagen: imagenes[0] ?? '',
       imagenes: imagenes.slice(1),
+      link: link.trim(),
+      video: video.trim(),
       destacado,
     };
     try {
@@ -1071,6 +1079,34 @@ export default function AdminProyectos() {
                   placeholder="Contá de qué se trata el proyecto..."
                   rows={4}
                   className={`${claseInput} resize-y`}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="admin-link" className="block text-sm text-zinc-300">
+                  Link del proyecto (opcional, para el botón "Ver en Behance")
+                </label>
+                <input
+                  id="admin-link"
+                  type="text"
+                  value={link}
+                  onChange={(e) => setLink(e.target.value)}
+                  placeholder="https://www.behance.net/gallery/..."
+                  className={claseInput}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="admin-video" className="block text-sm text-zinc-300">
+                  Video para el hero de la home (opcional, URL directa .mp4)
+                </label>
+                <input
+                  id="admin-video"
+                  type="text"
+                  value={video}
+                  onChange={(e) => setVideo(e.target.value)}
+                  placeholder="https://algo.com/video.mp4"
+                  className={claseInput}
                 />
               </div>
 

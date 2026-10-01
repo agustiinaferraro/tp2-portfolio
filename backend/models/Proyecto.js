@@ -45,6 +45,11 @@ const proyectoSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    video: {
+      //url directa a un video (mp4/webm) para el hero de la home; vacio = usa la portada
+      type: String,
+      default: '',
+    },
     destacado: {
       //true = proyecto destacado, false = normal
       type: Boolean,

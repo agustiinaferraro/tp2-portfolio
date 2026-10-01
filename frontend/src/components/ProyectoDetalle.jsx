@@ -54,6 +54,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
   const [titulo, setTitulo] = useState('');
   const [resumen, setResumen] = useState('');
   const [link, setLink] = useState('');
+  const [video, setVideo] = useState('');
   const [tagsTexto, setTagsTexto] = useState('');
   const [serviciosSel, setServiciosSel] = useState([]);
   const [usarCategoriaNueva, setUsarCategoriaNueva] = useState(false);
@@ -104,6 +105,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
     setTitulo(proyecto.titulo ?? '');
     setResumen(proyecto.resumen ?? '');
     setLink(proyecto.link ?? '');
+    setVideo(proyecto.video ?? '');
     setTagsTexto((proyecto.tags ?? []).join(', '));
     setServiciosSel(categoriasDeProyecto(proyecto));
     setUsarCategoriaNueva(false);
@@ -177,6 +179,7 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
         titulo: titulo.trim(),
         resumen: resumen.trim(),
         link: link.trim(),
+        video: video.trim(),
         tags: tagsTexto.split(',').map((t) => t.trim()).filter(Boolean),
         servicios: listaServicios,
         //la primera imagen del formulario es la portada y el resto la galeria
@@ -462,6 +465,20 @@ export default function ProyectoDetalle({ id, proyectoInicial = null, alVolver =
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="https://..."
+              className={claseInput}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="det-video" className="block text-sm text-zinc-300">
+              Video para el hero de la home (opcional, URL directa .mp4)
+            </label>
+            <input
+              id="det-video"
+              type="text"
+              value={video}
+              onChange={(e) => setVideo(e.target.value)}
+              placeholder="https://algo.com/video.mp4"
               className={claseInput}
             />
           </div>
