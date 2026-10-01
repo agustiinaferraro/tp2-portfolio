@@ -107,13 +107,10 @@ export default function Certificaciones() {
                   loading="lazy"
                   className="w-full h-56 object-cover object-top bg-zinc-800 transition-transform duration-200 hover:scale-105"
                 />
-                <div className="px-4 py-3 space-y-1">
-                  <p className="flex items-center gap-2 text-white text-sm font-semibold">
-                    <Check className="w-5 h-5 text-verde-app shrink-0" />
-                    {cert.descripcion}
-                  </p>
-                  <p className="text-xs text-zinc-500 pl-7">Tocá para verlo completo</p>
-                </div>
+                <p className="flex items-center gap-2 px-4 py-3 text-white text-sm font-semibold">
+                  <Check className="w-5 h-5 text-verde-app shrink-0" />
+                  {cert.descripcion}
+                </p>
               </button>
             </li>
           ))}
