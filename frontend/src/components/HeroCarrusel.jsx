@@ -9,6 +9,28 @@ import Loading from './Loading.jsx';
 const INTERVALO_MS = 5000;
 const DURACION_FUNDIDO_MS = 500;
 
+//convierte la url del proyecto en algo reproducible:
+//  - links de youtube/vimeo → iframe (autoplay mudo en loop)
+//  - cualquier .mp4/.webm → video directo
+function urlDelVideo(url) {
+  const youtube = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (youtube) {
+    const id = youtube[1];
+    return {
+      tipo: 'iframe',
+      src: `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&modestbranding=1&rel=0`,
+    };
+  }
+  const vimeo = url.match(/(?:vimeo\.com|player\.vimeo\.com\/video)\/(\d{6,})/);
+  if (vimeo) {
+    return {
+      tipo: 'iframe',
+      src: `https://player.vimeo.com/video/${vimeo[1]}?autoplay=1&muted=1&loop=1&background=1`,
+    };
+  }
+  return { tipo: 'video', src: url };
+}
+
 export default function HeroCarrusel() {
   const [proyectos, setProyectos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -58,7 +80,9 @@ export default function HeroCarrusel() {
   if (proyectos.length === 0) return null;
 
   const proyecto = proyectos[actual];
-  const tieneVideo = Boolean(proyecto.video);
+  const video = proyecto.video ? urlDelVideo(proyecto.video) : null;
+  const esVideo = video?.tipo === 'video';
+  const esIframe = video?.tipo === 'iframe';
 
   return (
     <section aria-label="Proyectos en video" className="max-w-5xl mx-auto px-4 pb-10">
@@ -71,17 +95,28 @@ export default function HeroCarrusel() {
         />
 
         {/*video del proyecto (si carga) o su portada*/}
-        {tieneVideo ? (
+        {esVideo ? (
           <video
             key={proyecto._id}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
               fade ? 'opacity-100' : 'opacity-0'
             }`}
-            src={proyecto.video}
+            src={video.src}
             autoPlay
             muted
             loop
             playsInline
+          />
+        ) : esIframe ? (
+          <iframe
+            key={proyecto._id}
+            title={`Video del proyecto ${proyecto.titulo}`}
+            src={video.src}
+            className={`absolute inset-0 w-full h-full border-0 transition-opacity duration-500 ${
+              fade ? 'opacity-100' : 'opacity-0'
+            }`}
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            allowFullScreen
           />
         ) : (
           <img
