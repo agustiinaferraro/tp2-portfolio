@@ -67,9 +67,9 @@ export default function FormularioContacto() {
           href={`https://wa.me/${telefonoWhatsapp}?text=${encodeURIComponent('¡Hola! Te escribo desde tu portfolio.')}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+          className="inline-block px-6 py-3 rounded-full bg-whatsapp hover:bg-whatsapp-claro text-black font-medium transition-all duration-200 hover:scale-105 active:scale-95"
         >
-          Hablar por WhatsApp
+          ¡Hablar por WhatsApp!
         </a>
       </div>
     </div>

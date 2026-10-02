@@ -4,6 +4,9 @@
 @theme {
   --color-violeta-app: #b884e7;
   --color-verde-app: #69f5cc;
+  /*verde de la marca whatsapp, mas llamativo que el verde de la paleta*/
+  --color-whatsapp: #25d366;
+  --color-whatsapp-claro: #4ce783;
   --color-black: #0e0e0e;
   --color-white: #fffbfb;
   /*tipografia: segoe ui (recta) para el cuerpo y plus jakarta sans (curva) para los titulos*/

@@ -4,11 +4,12 @@
 //los chips de arriba filtran la grilla por categoria (interaccion significativa)
 //un proyecto puede estar en varias categorias (campo "servicios") y aparece en todas
 //si la url trae ?id=, en lugar de la grilla muestra el detalle de ese proyecto
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { obtenerProyectos } from '../api/proyectos.js';
 import { obtenerServicios } from '../api/servicios.js';
 import ProyectoDetalle from './ProyectoDetalle.jsx';
 import ProyectoCard from './ProyectoCard.jsx';
+import Carrusel, { ALTO_PROYECTO, TARJETA_CARRUSEL } from './Carrusel.jsx';
 import Loading from './Loading.jsx';
 import { servicios as serviciosEstaticos } from '../data/servicios.js';
 
@@ -33,87 +34,49 @@ function categoriasDeProyecto(proyecto) {
   return [...new Set(lista.map((s) => String(s).trim()).filter(Boolean))];
 }
 
-//desplazamiento del carrusel: usa el scroll animado nativo del navegador, que es mas fluido
-//el snap de las tarjetas se aplica solo al final, sin pelear con la animacion
-function desplazarSuave(contenedor, dir) {
-  if (!contenedor) return;
-  const paso = Math.max(320, contenedor.clientWidth * 0.75);
-  contenedor.scrollTo({ left: contenedor.scrollLeft + dir * paso, behavior: 'smooth' });
+//seccion con titulo y carrusel horizontal de proyectos
+function SeccionCarrusel({ clave, nombre, items }) {
+  return (
+    <Carrusel
+      etiqueta={`Proyectos de ${nombre}`}
+      clave={clave}
+      titulo={
+        <h2 className="text-2xl font-bold text-white mb-1">
+          {nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({items.length})</span>
+        </h2>
+      }
+    >
+      {items.map((proyecto) => (
+        <li
+          key={proyecto._id}
+          className={`shrink-0 snap-start ${TARJETA_CARRUSEL} ${ALTO_PROYECTO}`}
+        >
+          <ProyectoCard proyecto={proyecto} />
+        </li>
+      ))}
+    </Carrusel>
+  );
 }
 
-//seccion con titulo y carrusel horizontal de proyectos
-//las flechas se desactivan cuando no hay mas proyectos para ese lado (evita confusion)
-function SeccionCarrusel({ clave, nombre, items }) {
-  const ref = useRef(null);
-  const [alInicio, setAlInicio] = useState(true);
-  const [alFinal, setAlFinal] = useState(items.length <= 1);
-
-  //al scrollear se avisa si queda contenido a cada lado para (des)habilitar las flechas
-  useEffect(() => {
-    const contenedor = ref.current;
-    if (!contenedor) return;
-    const actualizar = () => {
-      const tolerancia = 8;
-      const fin = contenedor.scrollWidth - contenedor.clientWidth;
-      setAlInicio(contenedor.scrollLeft <= tolerancia);
-      setAlFinal(contenedor.scrollLeft >= fin - tolerancia);
-    };
-    actualizar();
-    contenedor.addEventListener('scroll', actualizar);
-    window.addEventListener('resize', actualizar);
-    return () => {
-      contenedor.removeEventListener('scroll', actualizar);
-      window.removeEventListener('resize', actualizar);
-    };
-  }, [items.length]);
-
-  const claseFlecha = (desactivado) =>
-    `shrink-0 self-center w-11 h-11 rounded-full bg-black/80 border border-zinc-700 text-zinc-200 transition-all duration-200 cursor-pointer ${
-      desactivado
-        ? 'opacity-40 cursor-not-allowed'
-        : 'hover:scale-110 hover:bg-verde-app hover:text-black hover:border-verde-app active:scale-90 active:bg-violeta-app active:text-black active:border-violeta-app'
-    }`;
-
+//version grilla (pagina de proyectos): todas las tarjetas a la vista, sin flechas
+function SeccionGrilla({ nombre, items }) {
   return (
-    <section aria-labelledby={`proyectos-seccion-${clave}`}>
-      <h2 id={`proyectos-seccion-${clave}`} className="text-2xl font-bold text-white mb-4">
+    <section aria-label={`Proyectos de ${nombre}`} className="space-y-4">
+      <h2 className="text-2xl font-bold text-white">
         {nombre} <span className="ml-2 text-sm font-normal text-zinc-500">({items.length})</span>
       </h2>
-      <div className="flex items-center gap-2">
-        {/*flechas a los costados del carrusel (no tapan las tarjetas)*/}
-        <button
-          type="button"
-          onClick={() => desplazarSuave(ref.current, -1)}
-          disabled={alInicio}
-          aria-label={`Ver proyectos anteriores de ${nombre}`}
-          className={claseFlecha(alInicio)}
-        >
-          <span aria-hidden="true">←</span>
-        </button>
-        <div className="flex-1 min-w-0">
-          <ul ref={ref} className="flex gap-6 overflow-x-auto snap-x pb-3 carrusel-scroll">
-            {items.map((proyecto) => (
-              <li key={proyecto._id} className="shrink-0 snap-start w-72 h-[26rem]">
-                <ProyectoCard proyecto={proyecto} />
-              </li>
-            ))}
-          </ul>
-        </div>
-        <button
-          type="button"
-          onClick={() => desplazarSuave(ref.current, 1)}
-          disabled={alFinal}
-          aria-label={`Ver más proyectos de ${nombre}`}
-          className={claseFlecha(alFinal)}
-        >
-          <span aria-hidden="true">→</span>
-        </button>
-      </div>
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((proyecto) => (
+          <li key={proyecto._id} className="h-[26rem]">
+            <ProyectoCard proyecto={proyecto} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-export default function GrillaProyectos() {
+export default function GrillaProyectos({ vista = 'carrusel' }) {
   const [proyectos, setProyectos] = useState([]);
   const [servicios, setServicios] = useState(serviciosEstaticos);
   const [cargando, setCargando] = useState(true);
@@ -246,6 +209,8 @@ export default function GrillaProyectos() {
 
       {visibles.length === 0 ? (
         <p className="text-zinc-400 text-center">No hay proyectos en esta categoría todavía.</p>
+      ) : vista === 'grilla' ? (
+        <SeccionGrilla nombre={nombreCarrusel} items={visibles} />
       ) : (
         <SeccionCarrusel clave={categoria || 'todos'} nombre={nombreCarrusel} items={visibles} />
       )}

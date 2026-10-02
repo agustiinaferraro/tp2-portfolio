@@ -1,8 +1,11 @@
 ---
 //seccion de proyectos: marco y titulo (estaticos)
 //la grilla con los datos dinamicos vive en grillaproyectos.jsx (isla de react)
+//"vista" decide como se ven: carrusel (home) o grilla completa (pagina de proyectos)
 import GrillaProyectos from './GrillaProyectos.jsx';
 import SaludoPersonalizado from './SaludoPersonalizado.jsx';
+
+const { vista = 'carrusel' } = Astro.props;
 ---
 
 <section id="proyectos" class="py-16 px-4">
@@ -33,6 +36,6 @@ import SaludoPersonalizado from './SaludoPersonalizado.jsx';
         />
       </p>
     </div>
-    <GrillaProyectos client:load />
+    <GrillaProyectos client:load vista={vista} />
   </div>
 </section>

@@ -57,19 +57,15 @@ export default function HeroCarrusel() {
   //videos de adobe resueltos: id del ccv → url del mp4 actual
   const [mp4s, setMp4s] = useState({});
 
-  //carga: los que tienen video primero y despues los que tienen portada
+  //carga: solo los proyectos que tienen video (si no hay ninguno se pide la lista completa)
   useEffect(() => {
     obtenerProyectosDestacados()
       .then((destacados) => {
-        if (destacados.length > 0) return destacados;
-        return obtenerProyectos();
+        const conVideo = destacados.filter((p) => p.video);
+        if (conVideo.length > 0) return conVideo;
+        return obtenerProyectos().then((todos) => todos.filter((p) => p.video));
       })
-      .then((datos) => {
-        const conMedia = datos.filter((p) => p.video || p.imagen || p.imagenes?.[0]);
-        const conVideo = conMedia.filter((p) => p.video);
-        const sinVideo = conMedia.filter((p) => !p.video);
-        setProyectos([...conVideo, ...sinVideo]);
-      })
+      .then((datos) => setProyectos(datos))
       .catch(() => setProyectos([]))
       .finally(() => setCargando(false));
   }, []);
@@ -138,7 +134,7 @@ export default function HeroCarrusel() {
           }`}
         />
 
-        {/*video del proyecto (si carga) o su portada*/}
+        {/*video del proyecto; mientras el mp4 de adobe resuelve se ve la portada*/}
         {esVideo ? (
           <video
             key={proyecto._id}
@@ -165,7 +161,7 @@ export default function HeroCarrusel() {
         ) : (
           <img
             key={proyecto._id}
-            src={proyecto.imagen || proyecto.imagenes[0]}
+            src={proyecto.imagen || proyecto.imagenes?.[0] || ''}
             alt=""
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
               fade ? 'opacity-100' : 'opacity-0'
@@ -173,8 +169,8 @@ export default function HeroCarrusel() {
           />
         )}
 
-        {/*degradado para dar profundidad visual sin cubrir el video*/}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/90" />
+        {/*degradado suave para dar profundidad sin tapar el video*/}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40" />
       </a>
     </section>
   );

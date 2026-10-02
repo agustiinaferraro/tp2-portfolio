@@ -44,16 +44,16 @@ export default function FooterRedes() {
 
   return (
     <>
-      <ul className="flex flex-wrap justify-center items-center gap-6">
+      <ul className="flex flex-wrap justify-center items-center gap-7">
         {enlaces.map((enlace) => (
           <li key={enlace.texto}>
             <a
               href={enlace.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center gap-1.5 text-xs text-zinc-400 hover:text-white hover:scale-110 active:scale-95 transition-all duration-200 p-1 group"
+              className="flex flex-col items-center gap-2 text-sm text-zinc-400 hover:text-white hover:scale-110 active:scale-95 transition-all duration-200 p-1.5 group"
             >
-              <img src={enlace.icono} alt="" className="w-6 h-6 object-contain transition-transform duration-200" />
+              <img src={enlace.icono} alt="" className="w-11 h-11 object-contain transition-transform duration-200" />
               <span>{enlace.texto}</span>
             </a>
           </li>

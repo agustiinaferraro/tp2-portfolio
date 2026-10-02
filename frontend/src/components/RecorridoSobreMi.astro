@@ -3,6 +3,7 @@
 //se agrupa en presentacion, numeros, recorrido, habilidades y certificaciones
 //el tipo de cada paso decide el color (verde = estudio, violeta = trabajo, dorado = logro)
 import Certificaciones from './Certificaciones.jsx';
+import LogoHerramienta from './LogoHerramienta.jsx';
 
 const estadisticas = [
   {
@@ -108,26 +109,45 @@ const recorrido = [
   },
 ];
 
+//habilidades agrupadas por area
+//cada herramienta con logo se marca con { texto, logo }; las demas son texto solo
 const habilidades = [
   {
     grupo: 'Diseño',
     version: 'pen-tool',
-    items: ['Photoshop', 'Illustrator', 'Certificados institucionales'],
+    items: [
+      { texto: 'Photoshop', logo: 'photoshop' },
+      { texto: 'Illustrator', logo: 'illustrator' },
+      'Certificados institucionales',
+    ],
   },
   {
     grupo: 'UX / UI',
     version: 'layout',
-    items: ['Figma', 'Experiencia de usuario', 'Diseño de interfaces'],
+    items: [
+      { texto: 'Figma', logo: 'figma' },
+      'Experiencia de usuario',
+      'Diseño de interfaces',
+    ],
   },
   {
     grupo: 'Video',
     version: 'video',
-    items: ['Premiere', 'After Effects', 'Animación'],
+    items: [
+      { texto: 'Premiere', logo: 'premiere' },
+      { texto: 'After Effects', logo: 'aftereffects' },
+      'Animación',
+    ],
   },
   {
     grupo: 'Desarrollo',
     version: 'codigo',
-    items: ['HTML', 'CSS', 'JavaScript', 'React'],
+    items: [
+      { texto: 'HTML', logo: 'html' },
+      { texto: 'CSS', logo: 'css' },
+      { texto: 'JavaScript', logo: 'javascript' },
+      { texto: 'React', logo: 'react' },
+    ],
   },
 ];
 
@@ -361,8 +381,15 @@ const colores = {
             <ul class="flex flex-wrap gap-2">
               {
                 grupo.items.map((item) => (
-                  <li class="text-sm px-3 py-1 rounded-full bg-zinc-800/80 border border-zinc-700 text-zinc-300">
-                    {item}
+                  <li class="flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-zinc-800/80 border border-zinc-700 text-zinc-300">
+                    {typeof item === 'string' ? (
+                      item
+                    ) : (
+                      <>
+                        <LogoHerramienta logo={item.logo} className="w-4 h-4 shrink-0" />
+                        <span>{item.texto}</span>
+                      </>
+                    )}
                   </li>
                 ))
               }

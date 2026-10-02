@@ -92,19 +92,21 @@ export default function ChatVisitante({ sesion, nombreAdmin = 'Agustina Ferraro'
     contenido = (
       <ul className="space-y-3 overflow-y-auto max-h-72 pr-1" aria-label={`Conversación con ${nombreAdmin}`}>
         {mensajes.map((m) => {
+          //como en cualquier chat: lo que escribe el visitante a la derecha (verde de la marca)
+          //y lo que responde la dueña del sitio a la izquierda (gris del sitio)
           const esDeAgustina = m.esRespuesta === true;
           return (
-            <li key={m._id} className={`flex flex-col ${esDeAgustina ? 'items-end' : 'items-start'}`}>
+            <li key={m._id} className={`flex flex-col ${esDeAgustina ? 'items-start' : 'items-end'}`}>
               <div
                 className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${
                   esDeAgustina
-                    ? 'bg-violeta-app/20 border border-violeta-app/30 text-violeta-app text-right'
-                    : 'bg-zinc-800 border border-zinc-700 text-zinc-200'
+                    ? 'rounded-tl-sm bg-zinc-800 border border-zinc-700 text-zinc-200'
+                    : 'rounded-tr-sm bg-verde-app text-black'
                 }`}
               >
                 <p className="m-0 whitespace-pre-wrap break-words">{m.mensaje}</p>
               </div>
-              <span className={`text-[11px] text-zinc-500 mt-1 ${esDeAgustina ? 'text-right' : ''}`}>
+              <span className={`text-[11px] text-zinc-500 mt-1 ${esDeAgustina ? '' : 'text-right'}`}>
                 {esDeAgustina ? m.nombre || nombreAdmin : nombre}
               </span>
             </li>
