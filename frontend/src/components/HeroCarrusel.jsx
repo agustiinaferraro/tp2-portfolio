@@ -129,8 +129,8 @@ export default function HeroCarrusel() {
   const esIframe = video?.tipo === 'iframe';
 
   return (
-    <section aria-label="Proyectos en video" className="max-w-5xl mx-auto px-4 pb-10">
-      <a href={`/proyectos/?id=${proyecto._id}`} className="block relative overflow-hidden rounded-2xl h-[400px] md:h-[500px]">
+    <section aria-label="Proyectos en video" className="absolute inset-0">
+      <a href={`/proyectos/?id=${proyecto._id}`} className="block relative overflow-hidden h-full w-full">
         {/*fondo negro que tapa el cambio entre un video y otro*/}
         <div
           className={`absolute inset-0 bg-black transition-opacity duration-500 ${

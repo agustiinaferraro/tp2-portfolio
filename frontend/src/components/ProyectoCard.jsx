@@ -45,7 +45,7 @@ export default function ProyectoCard({ proyecto }) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm font-medium text-verde-app hover:text-verde-app/80 hover:scale-105 active:scale-95 transition-all duration-200"
           >
-            {proyecto.link.includes('behance.net') ? 'Ver en Behance' : 'Abrir web'} <span aria-hidden="true">→</span>
+            {proyecto.link.includes('behance.net') ? 'Ver detalle' : 'Abrir web'} <span aria-hidden="true">→</span>
           </a>
         </p>
       )}

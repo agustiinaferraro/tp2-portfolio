@@ -99,9 +99,9 @@ export default function ServicioDetalle({ slug }) {
                           href={proyecto.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-medium text-verde-app hover:text-verde-app/80 transition-colors inline-flex items-center gap-1"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-verde-app hover:text-verde-app/80 hover:scale-105 active:scale-95 transition-all duration-200"
                         >
-                          Ver proyecto <span aria-hidden="true">→</span>
+                          Ver detalle <span aria-hidden="true">→</span>
                         </a>
                       </p>
                     )}

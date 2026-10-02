@@ -2,6 +2,7 @@
 //seccion de servicios: marco y titulo (estaticos)
 //la grilla con los datos dinamicos vive en grillaservicios.jsx (isla de react)
 import GrillaServicios from './GrillaServicios.jsx';
+import SaludoPersonalizado from './SaludoPersonalizado.jsx';
 ---
 
 <section id="servicios" class="py-16 px-4 bg-zinc-900/40 border-y border-zinc-800/50">
@@ -23,7 +24,11 @@ import GrillaServicios from './GrillaServicios.jsx';
         Servicios
       </h2>
       <p class="text-zinc-400">
-        Lo que puedo ofrecerte para llevar tu proyecto del concepto al resultado.
+        <SaludoPersonalizado
+          client:load
+          sinNombre="Lo que puedo ofrecerte para llevar tu proyecto del concepto al resultado."
+          conNombre="Estos servicios te van a gustar, {nombre}."
+        />
       </p>
     </div>
     <GrillaServicios client:load />

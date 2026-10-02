@@ -1084,7 +1084,7 @@ export default function AdminProyectos() {
 
               <div className="space-y-1">
                 <label htmlFor="admin-link" className="block text-sm text-zinc-300">
-                  Link del proyecto (opcional, para el botón "Ver en Behance")
+                  Link del proyecto (opcional, para el botón "Ver detalle")
                 </label>
                 <input
                   id="admin-link"

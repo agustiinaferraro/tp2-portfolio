@@ -16,8 +16,10 @@ export default function ServicioCard({ servicio }) {
         <p className="text-zinc-400 text-sm leading-relaxed">
           {servicio.descripcion}
         </p>
-        <p className="mt-4 text-sm font-medium text-verde-app group-hover:text-verde-app/80 transition-colors">
-          Ver más →
+        <p className="mt-4">
+          <span className="inline-flex items-center gap-1 text-sm font-medium text-verde-app group-hover:text-verde-app/80 hover:scale-105 active:scale-95 transition-all duration-200">
+            Ver más <span aria-hidden="true">→</span>
+          </span>
         </p>
       </article>
     </a>

@@ -1,9 +1,22 @@
 ---
 //seccion de inicio (hero): presentacion principal del portfolio
-//es estatica, por eso es un componente astro (no manda javascript al navegador)
+//el carrusel de videos queda de fondo y la presentacion encima
+//el resto es estatico, asi que es un componente astro (no manda javascript al navegador)
+import HeroCarrusel from './HeroCarrusel.jsx';
 ---
 
-<section id="inicio" class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+<section id="inicio" class="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 overflow-hidden">
+  {/*los proyectos en video pasan de fondo, detras de la presentacion*/}
+  <div class="absolute inset-0 -z-10">
+    <HeroCarrusel client:load />
+  </div>
+  {/*velo oscuro para que el texto se lea siempre sobre el video*/}
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 -z-10 bg-gradient-to-b from-black/80 via-black/70 to-black/85"
+  >
+  </div>
+
   <div class="max-w-3xl mx-auto text-center space-y-6">
     <p class="text-verde-app font-medium tracking-widest uppercase text-sm">
       Agustina Ferraro

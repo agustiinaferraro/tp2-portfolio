@@ -2,6 +2,7 @@
 //seccion de proyectos: marco y titulo (estaticos)
 //la grilla con los datos dinamicos vive en grillaproyectos.jsx (isla de react)
 import GrillaProyectos from './GrillaProyectos.jsx';
+import SaludoPersonalizado from './SaludoPersonalizado.jsx';
 ---
 
 <section id="proyectos" class="py-16 px-4">
@@ -25,7 +26,11 @@ import GrillaProyectos from './GrillaProyectos.jsx';
         Proyectos
       </h2>
       <p class="text-zinc-400">
-        Una selección de mis trabajos. Cargados dinámicamente desde la base de datos.
+        <SaludoPersonalizado
+          client:load
+          sinNombre="Una selección de mis trabajos. Cargados dinámicamente desde la base de datos."
+          conNombre="{nombre}, estos son los proyectos. Están cargados dinámicamente desde la base de datos."
+        />
       </p>
     </div>
     <GrillaProyectos client:load />
