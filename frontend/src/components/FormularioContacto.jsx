@@ -42,12 +42,7 @@ export default function FormularioContacto() {
 
   //estado: persona logueada → chat directo con la admin (muestra su charla y puede seguir mandando)
   if (sesion?.token) {
-    return (
-      <ChatVisitante
-        sesion={sesion}
-        whatsapp={telefonoWhatsapp}
-      />
-    );
+    return <ChatVisitante sesion={sesion} />;
   }
 
   //estado: sin cuenta → se pide registrarse/entrar para poder escribir
@@ -60,12 +55,23 @@ export default function FormularioContacto() {
         Registrate o entrá a tu cuenta y vas a poder hablar directo conmigo:
         tu mensaje y la respuesta quedan en un chat.
       </p>
-      <a
-        href="/cuenta"
-        className="inline-block px-6 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-      >
-        Crear cuenta o entrar
-      </a>
+      <div className="flex flex-wrap gap-3 justify-center">
+        <a
+          href="/cuenta"
+          className="inline-block px-6 py-3 rounded-full bg-violeta-app hover:bg-violeta-app/90 text-black font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          Crear cuenta o entrar
+        </a>
+        {/*si todavia no tiene cuenta, whatsapp queda como via directa*/}
+        <a
+          href={`https://wa.me/${telefonoWhatsapp}?text=${encodeURIComponent('¡Hola! Te escribo desde tu portfolio.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          Hablar por WhatsApp
+        </a>
+      </div>
     </div>
   );
 }

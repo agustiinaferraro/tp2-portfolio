@@ -9,6 +9,7 @@ import {
   GoogleAuthProvider,
   updateProfile,
   getAuth,
+  onIdTokenChanged,
 } from 'firebase/auth';
 
 //configuracion publica del proyecto de firebase
@@ -88,6 +89,31 @@ export async function actualizarNombreFirebase(nombre) {
     email: usuario.email,
     foto: usuario.photoURL || '',
   };
+}
+
+//el token de firebase dura una hora: si el navegador quedo mucho tiempo abierto (o la sesion es vieja),
+//el guardado en el localstorage ya vencio y la api responde 401
+//esta funcion devuelve el token siempre fresco (o null si no hay sesion de firebase)
+export function tokenActual() {
+  return new Promise((resolver) => {
+    if (!firebaseConfigurado) return resolver(null);
+    try {
+      const auth = obtenerAuth();
+      //espera a que firebase termine de leer la sesion guardada en el navegador
+      const desuscribir = onIdTokenChanged(auth, (usuario) => {
+        desuscribir();
+        if (!usuario) return resolver(null);
+        usuario.getIdToken().then(resolver).catch(() => resolver(null));
+      });
+      //si no responde rapido, se corta para no dejar la interfaz esperando
+      setTimeout(() => {
+        desuscribir();
+        resolver(auth.currentUser ? auth.currentUser.getIdToken().catch(() => null) : null);
+      }, 3000);
+    } catch {
+      resolver(null);
+    }
+  });
 }
 
 //traduce los errores de firebase a mensajes claros para el usuario

@@ -2,7 +2,7 @@
 //el registro y el login se hacen en /cuenta; aca solo se le ofrece al visitante entrar
 import { useEffect, useState } from 'react';
 import { obtenerComentarios, publicarComentario } from '../api/comentarios.js';
-import { leerSesion, borrarSesion } from '../api/usuarios.js';
+import { leerSesion, borrarSesion, sesionConTokenFresco } from '../api/usuarios.js';
 import Loading from './Loading.jsx';
 
 //colores del circulo del avatar segun la primera letra del nombre
@@ -62,7 +62,10 @@ export default function Comentarios({ proyectoId }) {
       .finally(() => {
         if (activo) setCargando(false);
       });
-    setSesion(leerSesion());
+    //la sesion se pide con token fresco: el guardado en el navegador puede estar vencido
+    sesionConTokenFresco().then((nueva) => {
+      if (activo) setSesion(nueva);
+    });
     return () => {
       activo = false;
     };

@@ -8,6 +8,7 @@ import {
   actualizarNombreFirebase,
   traducirErrorFirebase,
   firebaseConfigurado,
+  tokenActual,
 } from './firebase.js';
 import { peticionGET } from './client.js';
 
@@ -82,6 +83,25 @@ export function borrarSesion() {
   try {
     localStorage.removeItem(CLAVE_SESION);
   } catch {}
+}
+
+//el token guardado en el navegador caduca (firebase dura una hora) y la api responde 401
+//esta funcion devuelve la sesion con un token siempre fresco, o null si ya no hay sesion
+export async function sesionConTokenFresco() {
+  const sesion = leerSesion();
+  if (!sesion?.email) return null;
+
+  const token = await tokenActual();
+  //si firebase ya no tiene sesion, la del navegador esta vencida: se limpia
+  if (!token) {
+    if (sesion.token) borrarSesion();
+    return null;
+  }
+
+  const nueva = { ...sesion, token };
+  guardarSesion(nueva);
+  guardarCuenta(nueva);
+  return nueva;
 }
 
 //guarda una nueva foto de perfil en la sesion (se elige desde "mi cuenta")
